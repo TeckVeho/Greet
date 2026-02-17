@@ -1,65 +1,191 @@
-import Image from "next/image";
+"use client"
+
+import * as React from "react"
+import { useRouter } from "next/navigation"
+import { AppLayout } from "@/components/app-layout"
+import { RestaurantTable } from "@/components/restaurant-table"
+import { RestaurantCards } from "@/components/restaurant-cards"
+import { SearchFilterBar } from "@/components/search-filter-bar"
+import { RestaurantFormDialog } from "@/components/restaurant-form-dialog"
+import { FilterDialog, FilterState } from "@/components/filter-dialog"
+import { mockRestaurants } from "@/lib/mock-data"
+import { useAuth } from "@/lib/auth-context"
+import { sortRestaurants, type SortOption } from "@/lib/utils"
 
 export default function Home() {
+  const router = useRouter()
+  const { user, isLoading } = useAuth()
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
+  const [isFilterOpen, setIsFilterOpen] = React.useState(false)
+  // モバイルでは常にカード表示
+  const [viewMode, setViewMode] = React.useState<"table" | "cards">("cards")
+  const [filterState, setFilterState] = React.useState<FilterState>({
+    areas: [],
+    genres: [],
+    hasPrivateRoom: undefined,
+    smokingAllowed: undefined,
+    priceRanges: [],
+  })
+  const [sortOption, setSortOption] = React.useState<SortOption>("createdAt_desc")
+
+  // 認証チェック
+  React.useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login")
+    }
+  }, [user, isLoading, router])
+
+  // フィルタリング・並び替え
+  const filteredRestaurants = React.useMemo(() => {
+    const filtered = mockRestaurants.filter((restaurant) => {
+      // 検索クエリでフィルタリング
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const matchesSearch =
+          restaurant.name.toLowerCase().includes(query) ||
+          restaurant.area.toLowerCase().includes(query) ||
+          restaurant.genres.some((genre) => genre.toLowerCase().includes(query))
+        if (!matchesSearch) return false
+      }
+
+      // エリアでフィルタリング
+      if (filterState.areas.length > 0 && !filterState.areas.includes(restaurant.area)) {
+        return false
+      }
+
+      // ジャンルでフィルタリング
+      if (filterState.genres.length > 0 && !restaurant.genres.some((g) => filterState.genres.includes(g))) {
+        return false
+      }
+
+      // 個室でフィルタリング
+      if (filterState.hasPrivateRoom !== undefined && restaurant.hasPrivateRoom !== filterState.hasPrivateRoom) {
+        return false
+      }
+
+      // 喫煙でフィルタリング
+      if (filterState.smokingAllowed !== undefined && restaurant.smokingAllowed !== filterState.smokingAllowed) {
+        return false
+      }
+
+      // 価格帯でフィルタリング
+      if (filterState.priceRanges.length > 0 && !filterState.priceRanges.includes(restaurant.priceRange)) {
+        return false
+      }
+
+      return true
+    })
+    return sortRestaurants(filtered, sortOption)
+  }, [searchQuery, filterState, sortOption])
+
+  // アクティブフィルター数の計算
+  const activeFilterCount = React.useMemo(() => {
+    return (
+      filterState.areas.length +
+      filterState.genres.length +
+      filterState.priceRanges.length +
+      (filterState.hasPrivateRoom !== undefined ? 1 : 0) +
+      (filterState.smokingAllowed !== undefined ? 1 : 0)
+    )
+  }, [filterState])
+
+  const handleFilterClick = () => {
+    setIsFilterOpen(true)
+  }
+
+  const handleNewRestaurant = () => {
+    setIsDialogOpen(true)
+  }
+
+  if (isLoading || !user) {
+    return null
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <AppLayout>
+      <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+        {/* ページヘッダー */}
+        <div className="mb-8">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="text-2xl md:text-3xl">🍽️</span>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              飲食店データベース
+            </h1>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            接待に最適な飲食店の情報を一元管理
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* 検索・フィルターバー */}
+        <div className="mb-6">
+          <SearchFilterBar
+            onSearchChange={setSearchQuery}
+            onFilterClick={handleFilterClick}
+            onNewClick={handleNewRestaurant}
+            activeFilterCount={activeFilterCount}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            sortOption={sortOption}
+            onSortChange={setSortOption}
+          />
         </div>
-      </main>
-    </div>
-  );
+
+        {/* テーブル/カード表示（モバイルは常にカード） */}
+        {viewMode === "cards" || typeof window !== 'undefined' && window.innerWidth < 768 ? (
+          <RestaurantCards restaurants={filteredRestaurants} />
+        ) : (
+          <div className="rounded-lg border border-border bg-card">
+            <RestaurantTable restaurants={filteredRestaurants} />
+          </div>
+        )}
+
+        {/* 件数表示 */}
+        <div className="mt-4 text-sm text-muted-foreground">
+          {filteredRestaurants.length} 件の飲食店
+        </div>
+        
+        {/* モバイル用CTAボタン（余白を確保） */}
+        <div className="h-20 md:hidden" />
+      </div>
+
+      {/* モバイル用固定CTAボタン */}
+      <button
+        onClick={handleNewRestaurant}
+        className="md:hidden fixed bottom-4 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
+        aria-label="新規登録"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+      </button>
+
+      {/* 新規登録モーダル */}
+      <RestaurantFormDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        mode="create"
+      />
+
+      {/* フィルターダイアログ */}
+      <FilterDialog
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+        filters={filterState}
+        onFiltersChange={setFilterState}
+      />
+    </AppLayout>
+  )
 }
