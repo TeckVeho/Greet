@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Company {
+  id          String       @id @default(uuid())
+  name        String       @db.VarChar(100)
+  code        String       @unique @db.VarChar(20)
+  icon        String?      @db.VarChar(10)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  users       User[]
+  restaurants Restaurant[]
+
+  @@map("companies")
+}
+
+model User {
+  id           String       @id @default(uuid())
+  email        String       @unique @db.VarChar(255)
+  passwordHash String       @map("password_hash") @db.VarChar(255)
+  name         String       @db.VarChar(100)
+  role         Role         @default(user)
+  department   String?      @db.VarChar(100)
+  avatar       String?      @db.Text
+  icon         String?      @db.VarChar(10)
+  companyId    String       @map("company_id")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  lastLoginAt  DateTime?    @map("last_login_at")
+  company      Company      @relation(fields: [companyId], references: [id])
+  restaurants  Restaurant[]
+  reviews      Review[]
+  favorites    Favorite[]
+
+  @@map("users")
+}
+
+enum Role {
+  admin
+  user
+}
+
+model Restaurant {
+  id             String            @id @default(uuid())
+  name           String            @db.VarChar(200)
+  area           Area
+  hasPrivateRoom Boolean           @default(false) @map("has_private_room")
+  priceRange     PriceRange        @default(UNKNOWN) @map("price_range")
+  address        String?           @db.VarChar(300)
+  phone          String?           @db.VarChar(20)
+  url            String?           @db.Text
+  smokingAllowed Boolean           @default(false) @map("smoking_allowed")
+  coverImage     String?           @db.Text @map("cover_image")
+  icon           String?           @db.VarChar(10)
+  createdById    String            @map("created_by")
+  companyId      String            @map("company_id")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+  createdBy      User              @relation(fields: [createdById], references: [id])
+  company        Company           @relation(fields: [companyId], references: [id])
+  genres         RestaurantGenre[]
+  reviews        Review[]
+  favorites      Favorite[]
+
+  @@map("restaurants")
+}
+
+enum Area {
+  GINZA        @map("銀座")
+  AKASAKA      @map("赤坂")
+  ROPPONGI     @map("六本木")
+  SHIMBASHI    @map("新橋")
+  AZABU        @map("麻布")
+  EBIISU       @map("恵比寿")
+  OMOTESANDO   @map("表参道")
+  OTHER        @map("その他")
+}
+
+enum PriceRange {
+  RANGE_5000   @map("~5000")
+  RANGE_10000  @map("5000~10000")
+  RANGE_20000  @map("10000~20000")
+  RANGE_OVER   @map("20000~")
+  UNKNOWN      @map("要確認")
+}
+
+model RestaurantGenre {
+  id           String     @id @default(uuid())
+  restaurantId String     @map("restaurant_id")
+  genre        Genre
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, genre])
+  @@map("restaurant_genres")
+}
+
+enum Genre {
+  SUSHI        @map("寿司")
+  FRENCH       @map("フレンチ")
+  ITALIAN      @map("イタリアン")
+  WASHOKU      @map("和食")
+  CHINESE      @map("中華")
+  TEPPANYAKI   @map("鉄板焼き")
+  YAKINIKU     @map("焼肉")
+  TEMPURA      @map("天ぷら")
+  KAPPO        @map("割烹")
+  OTHER        @map("その他")
+}
+
+model Review {
+  id           String     @id @default(uuid())
+  restaurantId String     @map("restaurant_id")
+  authorId     String     @map("author_id")
+  occasion     String     @db.VarChar(200)
+  result       String     @db.Text
+  rating       Int?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  author       User       @relation(fields: [authorId], references: [id])
+
+  @@map("reviews")
+}
+
+model Favorite {
+  id           String     @id @default(uuid())
+  userId       String     @map("user_id")
+  restaurantId String     @map("restaurant_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, restaurantId])
+  @@map("favorites")
+}
+
