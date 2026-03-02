@@ -7,15 +7,24 @@ export const validator =
     const validate = schema.safeParse(req[target])
 
     if (!validate.success) {
-      return res.status(400).send({
-        errors: validate.error.issues.map(issue => issue.message),
-        status: 400,
-        message: 'バリデーションエラー',
+      const details = validate.error.issues.map(issue => ({
+        field: issue.path.join('.') || undefined,
+        message: issue.message,
+      }))
+
+      res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'バリデーションエラーが発生しました',
+          details,
+        },
       })
-    } else {
-      ;(req as any)[target] = validate.data
-      next()
+      return
     }
+
+    ;(req as any)[target] = validate.data
+    next()
   }
 export function validateBody<T extends z.ZodTypeAny>(schema: T) {
   return validator(schema, 'body')

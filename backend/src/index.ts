@@ -1,12 +1,15 @@
-import express, { Request, Response } from 'express'
+import 'dotenv/config'
+import express from 'express'
+import { authRouter } from './routes/auth'
 
 const app = express()
-const PORT = 3000
+const PORT = process.env.PORT ? Number(process.env.PORT) : 4000
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World')
-})
+app.use(express.json())
+
+app.use('/api/auth', authRouter)
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`Server running: http://localhost:${PORT}`)
 })
