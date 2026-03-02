@@ -1,11 +1,8 @@
-import type { Request, Response, NextFunction } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import type { JwtPayload } from '../types/express'
 
 const JWT_SECRET = process.env.JWT_SECRET
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required')
-}
 
 /**
  * JWT 認証ミドルウェア。
@@ -26,6 +23,9 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
   }
 
   const token = authHeader.slice(7)
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required')
+  }
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload
     req.user = {

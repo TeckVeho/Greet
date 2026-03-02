@@ -21,6 +21,7 @@ model Company {
 
 model User {
   id           String       @id @default(uuid())
+
   email        String       @unique @db.VarChar(255)
   passwordHash String       @map("password_hash") @db.VarChar(255)
   name         String       @db.VarChar(100)
@@ -29,6 +30,7 @@ model User {
   avatar       String?      @db.Text
   icon         String?      @db.VarChar(10)
   companyId    String       @map("company_id")
+  
   createdAt    DateTime     @default(now()) @map("created_at")
   updatedAt    DateTime     @updatedAt @map("updated_at")
   lastLoginAt  DateTime?    @map("last_login_at")
@@ -47,6 +49,7 @@ enum Role {
 
 model Restaurant {
   id             String            @id @default(uuid())
+  
   name           String            @db.VarChar(200)
   area           Area
   hasPrivateRoom Boolean           @default(false) @map("has_private_room")
@@ -57,6 +60,7 @@ model Restaurant {
   smokingAllowed Boolean           @default(false) @map("smoking_allowed")
   coverImage     String?           @db.Text @map("cover_image")
   icon           String?           @db.VarChar(10)
+  
   createdById    String            @map("created_by")
   companyId      String            @map("company_id")
   createdAt      DateTime          @default(now()) @map("created_at")
@@ -116,9 +120,11 @@ model Review {
   id           String     @id @default(uuid())
   restaurantId String     @map("restaurant_id")
   authorId     String     @map("author_id")
+
   occasion     String     @db.VarChar(200)
   result       String     @db.Text
   rating       Int?
+
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
