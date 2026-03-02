@@ -1,0 +1,354 @@
+import 'dotenv/config'
+import { PrismaClient, Area, PriceRange, Genre, Role } from '@prisma/client'
+import { PrismaMariaDb } from '@prisma/adapter-mariadb'
+import * as bcrypt from 'bcrypt'
+
+const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
+const prisma = new PrismaClient({ adapter })
+
+const SALT_ROUNDS = 12
+
+async function main() {
+  const passwordHash = await bcrypt.hash('password123', SALT_ROUNDS)
+
+  const companyGreet = await prisma.company.upsert({
+    where: { code: 'GREET' },
+    update: {},
+    create: {
+      name: '株式会社グリート',
+      code: 'GREET',
+      icon: '🏢',
+    },
+  })
+  const companyYamada = await prisma.company.upsert({
+    where: { code: 'YAMADA' },
+    update: {},
+    create: {
+      name: '山田商事',
+      code: 'YAMADA',
+      icon: '🏬',
+    },
+  })
+  const companySuzuki = await prisma.company.upsert({
+    where: { code: 'SUZUKI' },
+    update: {},
+    create: {
+      name: '鈴木物産',
+      code: 'SUZUKI',
+      icon: '🏭',
+    },
+  })
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      email: 'admin@example.com',
+      passwordHash,
+      name: '管理者 太郎',
+      role: Role.admin,
+      department: '総務部',
+      icon: '👤',
+      companyId: companyGreet.id,
+    },
+  })
+
+  const user1 = await prisma.user.upsert({
+    where: { email: 'user1@example.com' },
+    update: {},
+    create: {
+      email: 'user1@example.com',
+      passwordHash,
+      name: '山田 花子',
+      role: Role.user,
+      department: '営業部',
+      icon: '🌸',
+      companyId: companyYamada.id,
+    },
+  })
+  const user2 = await prisma.user.upsert({
+    where: { email: 'user2@example.com' },
+    update: {},
+    create: {
+      email: 'user2@example.com',
+      passwordHash,
+      name: '鈴木 一郎',
+      role: Role.user,
+      department: '営業部',
+      icon: '🌟',
+      companyId: companySuzuki.id,
+    },
+  })
+  const user3 = await prisma.user.upsert({
+    where: { email: 'user3@example.com' },
+    update: {},
+    create: {
+      email: 'user3@example.com',
+      passwordHash,
+      name: '佐藤 次郎',
+      role: Role.user,
+      department: 'マーケティング部',
+      icon: '🍀',
+      companyId: companyGreet.id,
+    },
+  })
+  const user4 = await prisma.user.upsert({
+    where: { email: 'user4@example.com' },
+    update: {},
+    create: {
+      email: 'user4@example.com',
+      passwordHash,
+      name: '田中 三郎',
+      role: Role.user,
+      department: '人事部',
+      icon: '📌',
+      companyId: companyYamada.id,
+    },
+  })
+  const user5 = await prisma.user.upsert({
+    where: { email: 'user5@example.com' },
+    update: {},
+    create: {
+      email: 'user5@example.com',
+      passwordHash,
+      name: '高橋 四郎',
+      role: Role.user,
+      department: '開発部',
+      icon: '🔧',
+      companyId: companySuzuki.id,
+    },
+  })
+  const user6 = await prisma.user.upsert({
+    where: { email: 'user6@example.com' },
+    update: {},
+    create: {
+      email: 'user6@example.com',
+      passwordHash,
+      name: '伊藤 五郎',
+      role: Role.user,
+      department: '経理部',
+      icon: '📊',
+      companyId: companyGreet.id,
+    },
+  })
+
+  const restaurantGinza = await prisma.restaurant.upsert({
+    where: { id: 'seed-rest-ginza' },
+    update: {},
+    create: {
+      id: 'seed-rest-ginza',
+      name: '銀座 しのはら',
+      area: Area.GINZA,
+      hasPrivateRoom: true,
+      priceRange: PriceRange.RANGE_OVER,
+      address: '東京都中央区銀座6-3-12',
+      phone: '03-1234-5678',
+      url: 'https://example.com/ginza',
+      smokingAllowed: false,
+      icon: '🍱',
+      createdById: adminUser.id,
+      companyId: companyGreet.id,
+    },
+  })
+  await prisma.restaurantGenre.createMany({
+    data: [
+      { restaurantId: restaurantGinza.id, genre: Genre.WASHOKU },
+      { restaurantId: restaurantGinza.id, genre: Genre.KAPPO },
+    ],
+    skipDuplicates: true,
+  })
+  const restaurantAkasaka = await prisma.restaurant.upsert({
+    where: { id: 'seed-rest-akasaka' },
+    update: {},
+    create: {
+      id: 'seed-rest-akasaka',
+      name: '赤坂 フレンチ亭',
+      area: Area.AKASAKA,
+      hasPrivateRoom: true,
+      priceRange: PriceRange.RANGE_20000,
+      address: '東京都港区赤坂2-14-1',
+      smokingAllowed: false,
+      icon: '🍷',
+      createdById: user1.id,
+      companyId: companyYamada.id,
+    },
+  })
+  await prisma.restaurantGenre.createMany({
+    data: [{ restaurantId: restaurantAkasaka.id, genre: Genre.FRENCH }],
+    skipDuplicates: true,
+  })
+  const restaurantRoppongi = await prisma.restaurant.upsert({
+    where: { id: 'seed-rest-roppongi' },
+    update: {},
+    create: {
+      id: 'seed-rest-roppongi',
+      name: '六本木 焼肉 黒毛和牛',
+      area: Area.ROPPONGI,
+      hasPrivateRoom: true,
+      priceRange: PriceRange.RANGE_10000,
+      icon: '🥩',
+      createdById: user2.id,
+      companyId: companySuzuki.id,
+    },
+  })
+  await prisma.restaurantGenre.createMany({
+    data: [{ restaurantId: restaurantRoppongi.id, genre: Genre.YAKINIKU }],
+    skipDuplicates: true,
+  })
+  const restaurantShimbashi = await prisma.restaurant.upsert({
+    where: { id: 'seed-rest-shimbashi' },
+    update: {},
+    create: {
+      id: 'seed-rest-shimbashi',
+      name: '新橋 寿司 海鮮',
+      area: Area.SHIMBASHI,
+      hasPrivateRoom: false,
+      priceRange: PriceRange.RANGE_20000,
+      icon: '🍣',
+      createdById: user3.id,
+      companyId: companyGreet.id,
+    },
+  })
+  await prisma.restaurantGenre.createMany({
+    data: [{ restaurantId: restaurantShimbashi.id, genre: Genre.SUSHI }],
+    skipDuplicates: true,
+  })
+  const restaurantEbisu = await prisma.restaurant.upsert({
+    where: { id: 'seed-rest-ebisu' },
+    update: {},
+    create: {
+      id: 'seed-rest-ebisu',
+      name: '恵比寿 イタリアン',
+      area: Area.EBIISU,
+      hasPrivateRoom: true,
+      priceRange: PriceRange.RANGE_10000,
+      icon: '🍝',
+      createdById: user4.id,
+      companyId: companyYamada.id,
+    },
+  })
+  await prisma.restaurantGenre.createMany({
+    data: [{ restaurantId: restaurantEbisu.id, genre: Genre.ITALIAN }],
+    skipDuplicates: true,
+  })
+
+  await prisma.review.upsert({
+    where: { id: 'seed-review-1' },
+    update: {},
+    create: {
+      id: 'seed-review-1',
+      restaurantId: restaurantGinza.id,
+      authorId: user1.id,
+      occasion: '部長クラス接待',
+      result: '非常に喜んでいただけました。個室が静かで会話もしやすい。',
+      rating: 5,
+    },
+  })
+  await prisma.review.upsert({
+    where: { id: 'seed-review-2' },
+    update: {},
+    create: {
+      id: 'seed-review-2',
+      restaurantId: restaurantGinza.id,
+      authorId: user2.id,
+      occasion: '取引先との打ち上げ',
+      result: '料理のクオリティが高く、コースも満足いただけた。',
+      rating: 4,
+    },
+  })
+  await prisma.review.upsert({
+    where: { id: 'seed-review-3' },
+    update: {},
+    create: {
+      id: 'seed-review-3',
+      restaurantId: restaurantGinza.id,
+      authorId: adminUser.id,
+      occasion: '役員接待',
+      result: '落ち着いた空間で重要な商談がまとまった。',
+      rating: 5,
+    },
+  })
+  await prisma.review.upsert({
+    where: { id: 'seed-review-4' },
+    update: {},
+    create: {
+      id: 'seed-review-4',
+      restaurantId: restaurantAkasaka.id,
+      authorId: user3.id,
+      occasion: '記念日ディナー',
+      result: 'フレンチのコースが丁寧で、接待にも最適。',
+      rating: 5,
+    },
+  })
+  await prisma.review.upsert({
+    where: { id: 'seed-review-5' },
+    update: {},
+    create: {
+      id: 'seed-review-5',
+      restaurantId: restaurantAkasaka.id,
+      authorId: user4.id,
+      occasion: '取締役接待',
+      result: '個室でプライベートな雰囲気。ワインのペアリングも良かった。',
+      rating: 4,
+    },
+  })
+  await prisma.review.upsert({
+    where: { id: 'seed-review-6' },
+    update: {},
+    create: {
+      id: 'seed-review-6',
+      restaurantId: restaurantRoppongi.id,
+      authorId: user5.id,
+      occasion: '若手社員の慰労',
+      result: '焼肉の質が高く、ボリュームもあり満足。',
+      rating: 4,
+    },
+  })
+  await prisma.review.upsert({
+    where: { id: 'seed-review-7' },
+    update: {},
+    create: {
+      id: 'seed-review-7',
+      restaurantId: restaurantRoppongi.id,
+      authorId: user6.id,
+      occasion: '営業接待',
+      result: '個室でにぎやかに。コスパも良い。',
+      rating: 5,
+    },
+  })
+  await prisma.review.upsert({
+    where: { id: 'seed-review-8' },
+    update: {},
+    create: {
+      id: 'seed-review-8',
+      restaurantId: restaurantShimbashi.id,
+      authorId: adminUser.id,
+      occasion: '経理部接待',
+      result: '鮮度の良いネタで、お客様にも好評だった。',
+      rating: 5,
+    },
+  })
+  await prisma.review.upsert({
+    where: { id: 'seed-review-9' },
+    update: {},
+    create: {
+      id: 'seed-review-9',
+      restaurantId: restaurantEbisu.id,
+      authorId: user1.id,
+      occasion: 'カジュアル接待',
+      result: 'イタリアンで気軽に利用。パスタが美味しい。',
+      rating: 4,
+    },
+  })
+
+  console.log('Seed completed: 3 companies, 7 users, 5 restaurants, 9 reviews.')
+}
+
+main()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
