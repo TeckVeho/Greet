@@ -6,7 +6,7 @@ export const createUserSchema = z.object({
     .min(2, { message: 'ユーザー名は2文字以上である必要があります' })
     .max(100, { message: 'ユーザー名は100文字以内である必要があります' }),
   email: z.string().email({ message: '有効なメールアドレスを指定してください' }),
-  passwordHash: z.string().min(6, { message: 'パスワードは6文字以上である必要があります' }),
+  password: z.string().min(6, { message: 'パスワードは6文字以上である必要があります' }),
   role: z.enum(['user', 'admin'], { message: '役割は"user"または"admin"である必要があります' }),
   department: z
     .string()

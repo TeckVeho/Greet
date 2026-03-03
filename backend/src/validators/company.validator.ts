@@ -1,6 +1,6 @@
 import z from 'zod'
 
-const companySchema = z.object({
+export const companySchema = z.object({
   name: z
     .string()
     .min(1, { message: '会社名を入力してください' })

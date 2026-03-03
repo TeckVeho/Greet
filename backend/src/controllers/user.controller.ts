@@ -8,8 +8,9 @@ class UserController {
   }
 
   public getUserById = async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string)
-    const result = await userService.findById(String(id))
+    const rawUserId = req.params.userId
+    const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId
+    const result = await userService.findById(userId)
     res.status(result.statusCode).json(result)
   }
 
@@ -19,14 +20,16 @@ class UserController {
   }
 
   public updateUser = async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string)
-    const result = await userService.update(String(id), req.body)
+    const rawUserId = req.params.userId
+    const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId
+    const result = await userService.update(userId, req.body)
     res.status(result.statusCode).json(result)
   }
 
   public deleteUser = async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string)
-    const result = await userService.delete(String(id))
+    const rawUserId = req.params.userId
+    const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId
+    const result = await userService.delete(userId)
     res.status(result.statusCode).json(result)
   }
 }
