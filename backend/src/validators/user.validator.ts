@@ -1,6 +1,6 @@
 import z from 'zod'
 
-const createUserSchema = z.object({
+export const createUserSchema = z.object({
   name: z
     .string()
     .min(2, { message: 'ユーザー名は2文字以上である必要があります' })
@@ -18,12 +18,12 @@ const createUserSchema = z.object({
 })
 const updateUserSchema = createUserSchema.partial()
 
-const listUserQuerySchema = z.object({
+export const listUserQuerySchema = z.object({
   limit: z.number().int().positive().max(100).optional(),
   page: z.number().int().positive().optional(),
 })
 
-const userIdSchema = z.object({
+export const userIdSchema = z.object({
   userId: z.string().uuid({ message: '有効なユーザーIDを指定してください' }),
 })
 
