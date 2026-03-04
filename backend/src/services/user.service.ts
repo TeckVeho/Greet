@@ -1,6 +1,7 @@
-import { prisma } from '../prisma'
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
+import { prisma } from '../prisma'
+import { createUserBody } from '../validators/user.validator'
 
 export class UserService {
   async findAll() {
@@ -45,16 +46,7 @@ export class UserService {
     return { success: true, data: safeUser, statusCode: StatusCodes.OK }
   }
 
-  async create(userData: {
-    name: string
-    email: string
-    password: string
-    role: 'user' | 'admin'
-    department?: string
-    avatar?: string
-    icon?: string
-    companyId: string
-  }) {
+  async create(userData: createUserBody) {
     const { password, ...rest } = userData
     const hashedPassword = await bcrypt.hash(password, 12)
     const user = await prisma.user.create({
@@ -75,19 +67,7 @@ export class UserService {
     return { success: true, data: safeUser, statusCode: StatusCodes.CREATED }
   }
 
-  async update(
-    id: string,
-    userData: Partial<{
-      name: string
-      email: string
-      password: string
-      role: 'user' | 'admin'
-      department?: string
-      avatar?: string
-      icon?: string
-      companyId: string
-    }>,
-  ) {
+  async update(id: string, userData: Partial<createUserBody>) {
     const { password, ...rest } = userData
     const data: any = { ...rest }
     if (password) {
@@ -111,7 +91,11 @@ export class UserService {
 
   async delete(id: string) {
     await prisma.user.delete({ where: { id } })
-    return { success: true, data: { message: 'ユーザーを削除しました' }, statusCode: StatusCodes.OK }
+    return {
+      success: true,
+      data: { message: 'ユーザーを削除しました' },
+      statusCode: StatusCodes.OK,
+    }
   }
 }
 

@@ -1,9 +1,9 @@
-import { errorMiddleware } from '../middleware/error.middleware'
-import { validateBody, validateParams } from '../middleware/validate.middleware'
 import { Router } from 'express'
 import { userController } from '../controllers/user.controller'
 import { adminMiddleware } from '../middleware/admin.middleware'
 import { authMiddleware } from '../middleware/auth.middleware'
+import { errorMiddleware } from '../middleware/error.middleware'
+import { validateBody, validateParams } from '../middleware/validate.middleware'
 import { createUserSchema, userIdSchema } from '../validators/user.validator'
 
 const router = Router()
