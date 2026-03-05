@@ -1,51 +1,68 @@
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
+import { ApiError } from '../utils/utils'
 
 export class ReviewService {
   async findAll() {
-    const reviews = await prisma.review.findMany()
-    return {
-      success: true,
-      data: reviews,
-      statusCode: StatusCodes.OK,
+    try {
+      const reviews = await prisma.review.findMany()
+      return {
+        success: true,
+        data: reviews,
+        statusCode: StatusCodes.OK,
+      }
+    } catch (err) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'レビューが見つかりません')
     }
   }
 
   async findById(id: string) {
-    const review = await prisma.review.findUnique({
-      where: { id },
-    })
-    if (!review) {
-      return {
-        success: false,
-        error: { code: 'NOT_FOUND', message: 'レビューが見つかりません' },
-        statusCode: StatusCodes.NOT_FOUND,
+    try {
+      const review = await prisma.review.findUnique({
+        where: { id },
+      })
+      if (!review) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'レビューが見つかりません')
       }
+      return { success: true, data: review, statusCode: StatusCodes.OK }
+    } catch (err) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'レビューが見つかりません')
     }
-    return { success: true, data: review, statusCode: StatusCodes.OK }
   }
 
   async create(reviewData: any) {
-    const review = await prisma.review.create({
-      data: reviewData,
-    })
-    return { success: true, data: review, statusCode: StatusCodes.CREATED }
+    try {
+      const review = await prisma.review.create({
+        data: reviewData,
+      })
+      return { success: true, data: review, statusCode: StatusCodes.CREATED }
+    } catch (err) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'レビューの作成に失敗しました')
+    }
   }
 
   async update(id: string, reviewData: Partial<any>) {
-    const review = await prisma.review.update({
-      where: { id },
-      data: reviewData,
-    })
-    return { success: true, data: review, statusCode: StatusCodes.OK }
+    try {
+      const review = await prisma.review.update({
+        where: { id },
+        data: reviewData,
+      })
+      return { success: true, data: review, statusCode: StatusCodes.OK }
+    } catch (err) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'レビューの更新に失敗しました')
+    }
   }
 
   async delete(id: string) {
-    await prisma.review.delete({ where: { id } })
-    return {
-      success: true,
-      data: { message: 'レビューを削除しました' },
-      statusCode: StatusCodes.OK,
+    try {
+      await prisma.review.delete({ where: { id } })
+      return {
+        success: true,
+        data: { message: 'レビューを削除しました' },
+        statusCode: StatusCodes.OK,
+      }
+    } catch (err) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'レビューの削除に失敗しました')
     }
   }
 }

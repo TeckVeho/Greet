@@ -58,7 +58,7 @@ export class RestaurantService {
     } catch (error) {
       return {
         success: false,
-        error: { code: 'UPDATE_FAILED', message: 'Restoran topilmadi yoki yangilashda xato' },
+        error: { code: 'UPDATE_FAILED', message: 'レストランが見つかりません' },
         statusCode: StatusCodes.NOT_FOUND,
       }
     }
