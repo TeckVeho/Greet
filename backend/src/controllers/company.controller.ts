@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { companyService } from '../services/company.service'
+import { companyService } from '../services'
 
 class CompanyController {
   public getCompanies = async (_req: Request, res: Response) => {
@@ -20,4 +20,3 @@ class CompanyController {
 }
 
 export const companyController = new CompanyController()
-

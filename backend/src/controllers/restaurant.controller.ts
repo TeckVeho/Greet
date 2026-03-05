@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { restaurantService } from '../services/restaurant.service'
+import { restaurantService } from '../services'
 
 class RestaurantController {
   public getRestaurants = async (req: Request, res: Response) => {

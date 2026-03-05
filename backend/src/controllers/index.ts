@@ -1,0 +1,6 @@
+export { loginController, logoutController, meController } from './auth.controller'
+export { companyController } from './company.controller'
+export { favoriteController } from './favorite.controller'
+export { restaurantController } from './restaurant.controller'
+export { reviewController } from './review.controller'
+export { userController } from './user.controller'

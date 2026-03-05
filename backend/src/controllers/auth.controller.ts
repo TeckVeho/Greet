@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { login, getCurrentUser } from '../services/auth.service'
+import { getCurrentUser, login } from '../services'
 
 export async function loginController(req: Request, res: Response): Promise<void> {
   const { email, password } = req.body as { email?: string; password?: string }
@@ -72,4 +72,3 @@ export async function logoutController(req: Request, res: Response): Promise<voi
     data: { message: 'ログアウトしました' },
   })
 }
-

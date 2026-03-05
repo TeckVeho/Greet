@@ -1,0 +1,6 @@
+export { getCurrentUser, login } from './auth.service'
+export { companyService } from './company.service'
+export { favoriteService } from './favorite.service'
+export { restaurantService } from './restaurant.service'
+export { reviewService } from './review.service'
+export { userService } from './user.service'

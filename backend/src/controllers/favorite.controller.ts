@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { favoriteService } from '../services/favorite.service'
+import { favoriteService } from '../services'
 
 class FavoriteController {
   public listFavorites = async (req: Request, res: Response) => {
@@ -56,4 +56,3 @@ class FavoriteController {
 }
 
 export const favoriteController = new FavoriteController()
-
