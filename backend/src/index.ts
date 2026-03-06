@@ -1,11 +1,16 @@
+import cors from 'cors'
 import 'dotenv/config'
 import express from 'express'
 import { authRouter, companyRouter, favoriteRouter, reviewRouter, userRouter } from './routes'
-
+var corsOptions = {
+  origin: process.env.CORS_ORIGIN ?? '*',
+  optionsSuccessStatus: 200,
+}
 const app = express()
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000
 
 app.use(express.json())
+app.use(cors(corsOptions))
 
 app.use('/api/auth', authRouter)
 app.use('/api/users', userRouter)

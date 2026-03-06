@@ -1,163 +1,149 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { useRouter } from "next/navigation"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { mockRestaurants } from "@/lib/mock-data"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { mockRestaurants } from '@/lib/mock-data'
+import { useRouter } from 'next/navigation'
+import * as React from 'react'
 
 interface GlobalSearchDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+	open: boolean
+	onOpenChange: (open: boolean) => void
 }
 
 export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogProps) {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = React.useState("")
-  const [filteredResults, setFilteredResults] = React.useState(mockRestaurants)
+	const router = useRouter()
+	const [searchQuery, setSearchQuery] = React.useState('')
+	const [filteredResults, setFilteredResults] = React.useState(mockRestaurants)
 
-  // 検索クエリが変更されたときに結果をフィルタリング
-  React.useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredResults(mockRestaurants)
-      return
-    }
+	// 検索クエリが変更されたときに結果をフィルタリング
+	React.useEffect(() => {
+		if (!searchQuery.trim()) {
+			setFilteredResults(mockRestaurants)
+			return
+		}
 
-    const query = searchQuery.toLowerCase()
-    const filtered = mockRestaurants.filter(
-      (restaurant) =>
-        restaurant.name.toLowerCase().includes(query) ||
-        restaurant.area.toLowerCase().includes(query) ||
-        restaurant.genres.some((genre) => genre.toLowerCase().includes(query)) ||
-        restaurant.address?.toLowerCase().includes(query)
-    )
-    setFilteredResults(filtered)
-  }, [searchQuery])
+		const query = searchQuery.toLowerCase()
+		const filtered = mockRestaurants.filter(
+			restaurant =>
+				restaurant.name.toLowerCase().includes(query) ||
+				restaurant.area.toLowerCase().includes(query) ||
+				restaurant.genres.some(genre => genre.toLowerCase().includes(query)) ||
+				restaurant.address?.toLowerCase().includes(query),
+		)
+		setFilteredResults(filtered)
+	}, [searchQuery])
 
-  // ダイアログが閉じられたら検索クエリをリセット
-  React.useEffect(() => {
-    if (!open) {
-      setSearchQuery("")
-    }
-  }, [open])
+	// ダイアログが閉じられたら検索クエリをリセット
+	React.useEffect(() => {
+		if (!open) {
+			setSearchQuery('')
+		}
+	}, [open])
 
-  const handleResultClick = (restaurantId: string) => {
-    router.push(`/restaurant/${restaurantId}`)
-    onOpenChange(false)
-  }
+	const handleResultClick = (restaurantId: string) => {
+		router.push(`/restaurant/${restaurantId}`)
+		onOpenChange(false)
+	}
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] md:max-w-2xl max-h-[80vh] p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-zinc-200">
-          <DialogTitle className="sr-only">レストラン検索</DialogTitle>
-          <div className="relative">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <Input
-              type="text"
-              placeholder="店名、エリア、ジャンル、住所で検索..."
-              className="pl-10 h-12 text-base border-0 focus-visible:ring-0"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              autoFocus
-            />
-          </div>
-        </DialogHeader>
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className='max-w-[95vw] md:max-w-2xl max-h-[80vh] p-0'>
+				<DialogHeader className='px-6 pt-6 pb-4 border-b border-zinc-200'>
+					<DialogTitle className='sr-only'>レストラン検索</DialogTitle>
+					<div className='relative'>
+						<svg
+							xmlns='http://www.w3.org/2000/svg'
+							width='20'
+							height='20'
+							viewBox='0 0 24 24'
+							fill='none'
+							stroke='currentColor'
+							strokeWidth='2'
+							strokeLinecap='round'
+							strokeLinejoin='round'
+							className='absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400'
+						>
+							<circle cx='11' cy='11' r='8' />
+							<path d='m21 21-4.3-4.3' />
+						</svg>
+						<Input
+							type='text'
+							placeholder='店名、エリア、ジャンル、住所で検索...'
+							className='pl-10 h-12 text-base border-0 focus-visible:ring-0'
+							value={searchQuery}
+							onChange={e => setSearchQuery(e.target.value)}
+							autoFocus
+						/>
+					</div>
+				</DialogHeader>
 
-        <div className="overflow-y-auto max-h-[calc(80vh-8rem)] px-2 py-2">
-          {filteredResults.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mx-auto mb-4 text-zinc-300"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <p className="text-sm">検索結果が見つかりませんでした</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {filteredResults.map((restaurant) => (
-                <button
-                  key={restaurant.id}
-                  onClick={() => handleResultClick(restaurant.id)}
-                  className="w-full text-left px-4 py-3 rounded-lg hover:bg-zinc-50 transition-colors group"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl flex-shrink-0">
-                      {restaurant.icon}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-zinc-900 group-hover:text-blue-600 transition-colors">
-                        {restaurant.name}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1 text-sm text-zinc-500">
-                        <span>{restaurant.area}</span>
-                        <span>•</span>
-                        <span>{restaurant.priceRange}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                        {restaurant.genres.map((genre, index) => (
-                          <Badge
-                            key={index}
-                            variant="secondary"
-                            className="text-xs"
-                          >
-                            {genre}
-                          </Badge>
-                        ))}
-                        {restaurant.hasPrivateRoom && (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs bg-green-100 text-green-700"
-                          >
-                            個室あり
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+				<div className='overflow-y-auto max-h-[calc(80vh-8rem)] px-2 py-2'>
+					{filteredResults.length === 0 ? (
+						<div className='text-center py-12 text-zinc-500'>
+							<svg
+								xmlns='http://www.w3.org/2000/svg'
+								width='48'
+								height='48'
+								viewBox='0 0 24 24'
+								fill='none'
+								stroke='currentColor'
+								strokeWidth='2'
+								strokeLinecap='round'
+								strokeLinejoin='round'
+								className='mx-auto mb-4 text-zinc-300'
+							>
+								<circle cx='11' cy='11' r='8' />
+								<path d='m21 21-4.3-4.3' />
+							</svg>
+							<p className='text-sm'>検索結果が見つかりませんでした</p>
+						</div>
+					) : (
+						<div className='space-y-1'>
+							{filteredResults.map(restaurant => (
+								<button
+									key={restaurant.id}
+									onClick={() => handleResultClick(restaurant.id)}
+									className='w-full text-left px-4 py-3 rounded-lg hover:bg-zinc-50 transition-colors group'
+								>
+									<div className='flex items-start gap-3'>
+										<span className='text-2xl shrink-0'>{restaurant.icon}</span>
+										<div className='flex-1 min-w-0'>
+											<div className='font-medium text-zinc-900 group-hover:text-blue-600 transition-colors'>
+												{restaurant.name}
+											</div>
+											<div className='flex items-center gap-2 mt-1 text-sm text-zinc-500'>
+												<span>{restaurant.area}</span>
+												<span>•</span>
+												<span>{restaurant.priceRange}</span>
+											</div>
+											<div className='flex items-center gap-1.5 mt-2 flex-wrap'>
+												{restaurant.genres.map((genre, index) => (
+													<Badge key={index} variant='area' className='text-xs'>
+														{genre}
+													</Badge>
+												))}
+												{restaurant.hasPrivateRoom && (
+													<Badge variant='yakiniku' className='text-xs bg-green-100 text-green-700'>
+														個室あり
+													</Badge>
+												)}
+											</div>
+										</div>
+									</div>
+								</button>
+							))}
+						</div>
+					)}
+				</div>
 
-        {filteredResults.length > 0 && (
-          <div className="px-6 py-3 border-t border-zinc-200 text-xs text-zinc-500">
-            {filteredResults.length} 件の飲食店が見つかりました
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
+				{filteredResults.length > 0 && (
+					<div className='px-6 py-3 border-t border-zinc-200 text-xs text-zinc-500'>
+						{filteredResults.length} 件の飲食店が見つかりました
+					</div>
+				)}
+			</DialogContent>
+		</Dialog>
+	)
 }
