@@ -11,13 +11,14 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "prisma db seed",
+    "seed": "prisma db seed",
     "lint": "ESLINT_USE_FLAT_CONFIG=false eslint \"src/**/*.{ts,tsx}\"",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+  "type": "commonjs",
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.0.0",
     "@prisma/client": "^7.0.0",
