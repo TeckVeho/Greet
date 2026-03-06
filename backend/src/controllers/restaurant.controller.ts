@@ -1,16 +1,17 @@
 import { NextFunction, Request, Response } from 'express'
-import { restaurantService } from '../services'
+import { restaurantService } from '../services/restaurant.service'
 
 class RestaurantController {
   public getRestaurants = async (req: Request, res: Response) => {
-    const result = await restaurantService.findAll()
+    const result = await restaurantService.findAll(req.query as any)
     res.status(result.statusCode).json(result)
   }
 
   public getRestaurantById = async (req: Request, res: Response) => {
     const rawRestaurantId = req.params.restaurantId
     const restaurantId = Array.isArray(rawRestaurantId) ? rawRestaurantId[0] : rawRestaurantId
-    const result = await restaurantService.findById(restaurantId)
+    const userId = req.user?.userId
+    const result = await restaurantService.findById(restaurantId, userId)
     res.status(result.statusCode).json(result)
   }
 

@@ -1,10 +1,15 @@
 import z from 'zod'
 
 export const createReviewSchema = z.object({
-  rating: z.number().min(1).max(5),
-  occasion: z.string().max(200).optional(),
-  result: z.string(),
-  restaurantId: z.string().uuid({ message: '有効なレストランIDを指定してください' }),
+  occasion: z
+    .string()
+    .min(1, { message: '利用シーンを入力してください' })
+    .max(200, { message: '利用シーンは200文字以内で入力してください' }),
+  result: z
+    .string()
+    .min(1, { message: '結果を入力してください' })
+    .max(2000, { message: '結果は2000文字以内で入力してください' }),
+  rating: z.number().int().min(1).max(5).optional(),
 })
 
 export const restaurantIdSchema = z.object({

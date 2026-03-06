@@ -1,46 +1,199 @@
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
-import {
+import type {
   createRestaurantBodySchema,
+  listRestaurantsQueryBodySchema,
   updateRestaurantBodySchema,
 } from '../validators/restaurant.validator'
 
+type CreateRestaurantInput = createRestaurantBodySchema
+type UpdateRestaurantInput = updateRestaurantBodySchema
+type ListQuery = listRestaurantsQueryBodySchema
+
 export class RestaurantService {
-  async findAll() {
-    const restaurants = await prisma.restaurant.findMany({
-      include: {
-        company: {
-          select: { id: true, name: true },
+  async findAll(query: ListQuery) {
+    const page = query.page ?? 1
+    const limit = query.limit ?? 20
+    const skip = (page - 1) * limit
+
+    // TODO: 検索・フィルタリングパラメータは docs に従って今後拡張
+    const where: any = {}
+
+    const [total, restaurants] = await Promise.all([
+      prisma.restaurant.count({ where }),
+      prisma.restaurant.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
         },
+        include: {
+          genres: true,
+          reviews: {
+            select: {
+              rating: true,
+            },
+          },
+          createdBy: {
+            select: { id: true, name: true, icon: true },
+          },
+        },
+      }),
+    ])
+
+    const data = restaurants.map(r => {
+      const reviewCount = r.reviews.length
+      const averageRating =
+        reviewCount === 0
+          ? null
+          : Number(
+              (
+                r.reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) /
+                reviewCount
+              ).toFixed(1),
+            )
+
+      return {
+        id: r.id,
+        name: r.name,
+        area: r.area,
+        genres: r.genres.map(g => g.genre),
+        hasPrivateRoom: r.hasPrivateRoom,
+        priceRange: r.priceRange,
+        address: r.address ?? undefined,
+        phone: r.phone ?? undefined,
+        url: r.url ?? undefined,
+        smokingAllowed: r.smokingAllowed,
+        coverImage: r.coverImage ?? undefined,
+        icon: r.icon ?? undefined,
+        reviewCount,
+        averageRating,
         createdBy: {
-          select: { id: true, name: true },
+          id: r.createdBy.id,
+          name: r.createdBy.name,
+          icon: r.createdBy.icon ?? undefined,
         },
-      },
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+      }
     })
-    return { success: true, data: restaurants, statusCode: StatusCodes.OK }
+
+    const totalPages = Math.max(1, Math.ceil(total / limit))
+
+    return {
+      success: true,
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+      statusCode: StatusCodes.OK,
+    }
   }
 
-  async findById(id: string) {
+  async findById(id: string, userId?: string) {
     const restaurant = await prisma.restaurant.findUnique({
       where: { id },
       include: {
-        company: true,
         genres: true,
+        reviews: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                icon: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            icon: true,
+          },
+        },
       },
     })
 
     if (!restaurant) {
       return {
         success: false,
-        error: { code: 'NOT_FOUND', message: 'レストランが見つかりません' },
+        error: { code: 'NOT_FOUND', message: '飲食店が見つかりません' },
         statusCode: StatusCodes.NOT_FOUND,
       }
     }
 
-    return { success: true, data: restaurant, statusCode: StatusCodes.OK }
+    const reviewCount = restaurant.reviews.length
+    const averageRating =
+      reviewCount === 0
+        ? null
+        : Number(
+            (
+              restaurant.reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) /
+              reviewCount
+            ).toFixed(1),
+          )
+
+    let isFavorite = false
+    if (userId) {
+      const favorite = await prisma.favorite.findFirst({
+        where: {
+          userId,
+          restaurantId: restaurant.id,
+        },
+      })
+      isFavorite = !!favorite
+    }
+
+    const data = {
+      id: restaurant.id,
+      name: restaurant.name,
+      area: restaurant.area,
+      genres: restaurant.genres.map(g => g.genre),
+      hasPrivateRoom: restaurant.hasPrivateRoom,
+      priceRange: restaurant.priceRange,
+      address: restaurant.address ?? undefined,
+      phone: restaurant.phone ?? undefined,
+      url: restaurant.url ?? undefined,
+      smokingAllowed: restaurant.smokingAllowed,
+      coverImage: restaurant.coverImage ?? undefined,
+      icon: restaurant.icon ?? undefined,
+      createdBy: {
+        id: restaurant.createdBy.id,
+        name: restaurant.createdBy.name,
+        icon: restaurant.createdBy.icon ?? undefined,
+      },
+      reviews: restaurant.reviews.map(r => ({
+        id: r.id,
+        occasion: r.occasion,
+        result: r.result,
+        rating: r.rating,
+        author: {
+          id: r.author.id,
+          name: r.author.name,
+          icon: r.author.icon ?? undefined,
+        },
+        createdAt: r.createdAt,
+      })),
+      isFavorite,
+      reviewCount,
+      averageRating,
+      createdAt: restaurant.createdAt,
+      updatedAt: restaurant.updatedAt,
+    }
+
+    return { success: true, data, statusCode: StatusCodes.OK }
   }
 
-  async create(payload: createRestaurantBodySchema) {
+  async create(payload: CreateRestaurantInput) {
     const restaurant = await prisma.restaurant.create({
       data: payload,
     })
@@ -48,7 +201,7 @@ export class RestaurantService {
     return { success: true, data: restaurant, statusCode: StatusCodes.CREATED }
   }
 
-  async update(id: string, payload: updateRestaurantBodySchema) {
+  async update(id: string, payload: UpdateRestaurantInput) {
     try {
       const restaurant = await prisma.restaurant.update({
         where: { id },
@@ -58,7 +211,7 @@ export class RestaurantService {
     } catch (error) {
       return {
         success: false,
-        error: { code: 'UPDATE_FAILED', message: 'レストランが見つかりません' },
+        error: { code: 'NOT_FOUND', message: '飲食店が見つかりません' },
         statusCode: StatusCodes.NOT_FOUND,
       }
     }
@@ -68,7 +221,7 @@ export class RestaurantService {
     await prisma.restaurant.delete({ where: { id } })
     return {
       success: true,
-      data: { message: 'レストランを削除しました' },
+      data: { message: '飲食店を削除しました' },
       statusCode: StatusCodes.OK,
     }
   }

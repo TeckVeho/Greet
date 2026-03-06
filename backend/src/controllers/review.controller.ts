@@ -2,27 +2,21 @@ import { Request, Response } from 'express'
 import { reviewService } from '../services/review.service'
 
 class ReviewController {
-  public getReviews = async (req: Request, res: Response) => {
-    const result = await reviewService.findAll()
-    res.status(result.statusCode).json(result)
-  }
-
-  public getReviewById = async (req: Request, res: Response) => {
-    const rawReviewId = req.params.reviewId
-    const reviewId = Array.isArray(rawReviewId) ? rawReviewId[0] : rawReviewId
-    const result = await reviewService.findById(reviewId)
-    res.status(result.statusCode).json(result)
-  }
-
   public createReview = async (req: Request, res: Response) => {
-    const result = await reviewService.create(req.body)
-    res.status(result.statusCode).json(result)
-  }
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: '認証が必要です',
+        },
+      })
+      return
+    }
 
-  public updateReview = async (req: Request, res: Response) => {
-    const rawReviewId = req.params.reviewId
-    const reviewId = Array.isArray(rawReviewId) ? rawReviewId[0] : rawReviewId
-    const result = await reviewService.update(reviewId, req.body)
+    const rawRestaurantId = req.params.restaurantId
+    const restaurantId = Array.isArray(rawRestaurantId) ? rawRestaurantId[0] : rawRestaurantId
+    const result = await reviewService.create(restaurantId, req.user.userId, req.body)
     res.status(result.statusCode).json(result)
   }
 

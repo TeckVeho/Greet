@@ -2,6 +2,7 @@
 
 import { apiClient } from "./client"
 import type { User } from "../types"
+import type { ApiResponse } from "./types"
 
 interface LoginRequest {
   email: string
@@ -12,29 +13,6 @@ interface LoginResponse {
   token: string
   user: User
 }
-
-interface ApiSuccess<T> {
-  success: true
-  data: T
-}
-
-interface ApiErrorDetail {
-  field?: string
-  message: string
-}
-
-interface ApiErrorBody {
-  code: string
-  message: string
-  details?: ApiErrorDetail[]
-}
-
-interface ApiErrorResponse {
-  success: false
-  error: ApiErrorBody
-}
-
-type ApiResponse<T> = ApiSuccess<T> | ApiErrorResponse
 
 export async function loginApi(
   payload: LoginRequest,

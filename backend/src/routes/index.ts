@@ -1,5 +1,6 @@
 export { authRouter } from './auth'
 export { companyRouter } from './companies'
 export { favoriteRouter } from './favorites'
+export { restaurantRouter } from './restaurant'
 export { reviewRouter } from './review'
 export { userRouter } from './user'
