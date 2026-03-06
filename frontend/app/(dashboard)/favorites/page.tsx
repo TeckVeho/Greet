@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { AppLayout } from "@/components/app-layout"
 import { RestaurantTable } from "@/components/restaurant-table"
 import { RestaurantCards } from "@/components/restaurant-cards"
 import { mockRestaurants } from "@/lib/mock-data"
@@ -35,8 +34,7 @@ export default function FavoritesPage() {
   }
 
   return (
-    <AppLayout>
-      <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
         {/* ページヘッダー */}
         <div className="mb-8">
           <div className="mb-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -134,6 +132,5 @@ export default function FavoritesPage() {
           </>
         )}
       </div>
-    </AppLayout>
   )
 }

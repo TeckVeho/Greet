@@ -3,7 +3,6 @@
 import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
-import { AppLayout } from "@/components/app-layout"
 import { Badge } from "@/components/ui/badge"
 import { Callout } from "@/components/ui/callout"
 import { Button } from "@/components/ui/button"
@@ -62,22 +61,20 @@ export default function RestaurantDetailPage() {
 
   if (!restaurant) {
     return (
-      <AppLayout>
-        <div className="flex h-[60vh] items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-zinc-900">
-              飲食店が見つかりません
-            </h2>
-            <Button
-              variant="secondary"
-              className="mt-4"
-              onClick={() => router.push("/")}
-            >
-              一覧に戻る
-            </Button>
-          </div>
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-zinc-900">
+            飲食店が見つかりません
+          </h2>
+          <Button
+            variant="secondary"
+            className="mt-4"
+            onClick={() => router.push("/")}
+          >
+            一覧に戻る
+          </Button>
         </div>
-      </AppLayout>
+      </div>
     )
   }
 
@@ -103,7 +100,7 @@ export default function RestaurantDetailPage() {
   }
 
   return (
-    <AppLayout>
+    <>
       {/* カバー画像 */}
       <div className="relative h-40 md:h-60 w-full bg-gradient-to-br from-zinc-100 to-zinc-200 overflow-hidden">
         {restaurant.coverImage ? (
@@ -358,6 +355,6 @@ export default function RestaurantDetailPage() {
           onSubmit={handleReviewSubmit}
         />
       )}
-    </AppLayout>
+    </>
   )
 }
