@@ -1,7 +1,9 @@
 import { AuthProvider } from '@/lib/auth-context'
 import { FavoritesProvider } from '@/lib/favorites-context'
+import { Providers } from '@/providers/providers'
 import type { Metadata } from 'next'
 import { Cormorant_Garamond, Geist, Geist_Mono } from 'next/font/google'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const geistSans = Geist({
@@ -34,10 +36,14 @@ export default function RootLayout({
 		<html lang='ja' suppressHydrationWarning>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} antialiased`}
+				suppressHydrationWarning
 			>
-				<AuthProvider>
-					<FavoritesProvider>{children}</FavoritesProvider>
-				</AuthProvider>
+				<Toaster richColors position='top-center' />
+				<Providers>
+					<AuthProvider>
+						<FavoritesProvider>{children}</FavoritesProvider>
+					</AuthProvider>
+				</Providers>
 			</body>
 		</html>
 	)
