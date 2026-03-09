@@ -1,6 +1,5 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { Restaurant } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -16,6 +15,15 @@ export type SortOption =
   | "reviews_desc"
   | "rating_desc"
 
+type SortableRestaurant = {
+  name: string
+  priceRange: string
+  createdAt: Date | string
+  reviews?: { rating?: number | null }[]
+  reviewCount?: number
+  averageRating?: number | null
+}
+
 /** priceRange から先頭の数値（円）を抽出。例: "¥10,000~¥20,000" -> 10000 */
 function parsePriceLow(priceRange: string): number {
   const match = priceRange.match(/¥?([\d,]+)/)
@@ -23,29 +31,32 @@ function parsePriceLow(priceRange: string): number {
   return parseInt(match[1].replace(/,/g, ""), 10) || 0
 }
 
-/** レビューの平均評価（rating があるもののみ）。なしなら 0 */
-function averageRating(restaurant: Restaurant): number {
-  const withRating = restaurant.reviews.filter((r) => r.rating != null)
+/** レビューの平均評価。事前計算された averageRating があればそれを使用し、なければ reviews から算出。 */
+function getAverageRating(item: SortableRestaurant): number {
+  if (typeof item.averageRating === "number") {
+    return item.averageRating
+  }
+  const withRating = item.reviews?.filter(r => r.rating != null) ?? []
   if (withRating.length === 0) return 0
   const sum = withRating.reduce((acc, r) => acc + (r.rating ?? 0), 0)
   return sum / withRating.length
 }
 
-export function sortRestaurants(
-  restaurants: Restaurant[],
-  sort: SortOption
-): Restaurant[] {
+export function sortRestaurants<T extends SortableRestaurant>(
+  restaurants: T[],
+  sort: SortOption,
+): T[] {
   const arr = [...restaurants]
   switch (sort) {
     case "createdAt_desc":
       return arr.sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
     case "createdAt_asc":
       return arr.sort(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       )
     case "name_asc":
       return arr.sort((a, b) => a.name.localeCompare(b.name, "ja"))
@@ -53,20 +64,20 @@ export function sortRestaurants(
       return arr.sort((a, b) => b.name.localeCompare(a.name, "ja"))
     case "price_asc":
       return arr.sort(
-        (a, b) => parsePriceLow(a.priceRange) - parsePriceLow(b.priceRange)
+        (a, b) => parsePriceLow(a.priceRange) - parsePriceLow(b.priceRange),
       )
     case "price_desc":
       return arr.sort(
-        (a, b) => parsePriceLow(b.priceRange) - parsePriceLow(a.priceRange)
+        (a, b) => parsePriceLow(b.priceRange) - parsePriceLow(a.priceRange),
       )
     case "reviews_desc":
       return arr.sort(
-        (a, b) => (b.reviews?.length ?? 0) - (a.reviews?.length ?? 0)
+        (a, b) =>
+          (b.reviewCount ?? b.reviews?.length ?? 0) -
+          (a.reviewCount ?? a.reviews?.length ?? 0),
       )
     case "rating_desc":
-      return arr.sort(
-        (a, b) => averageRating(b) - averageRating(a)
-      )
+      return arr.sort((a, b) => getAverageRating(b) - getAverageRating(a))
     default:
       return arr
   }

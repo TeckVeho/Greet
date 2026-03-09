@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { User } from "@/lib/types"
-import { mockCompanies } from "@/lib/mock-companies"
+import { type CompanyListItem } from "@/lib/api/companies"
 import {
   Dialog,
   DialogContent,
@@ -27,7 +27,9 @@ interface UserFormDialogProps {
   onOpenChange: (open: boolean) => void
   mode: "create" | "edit"
   user?: User
-  onSave: (user: Partial<User>) => void
+  onSave: (user: Partial<User> & { password?: string }) => void
+  companies?: CompanyListItem[]
+  isSaving?: boolean
 }
 
 export function UserFormDialog({
@@ -36,10 +38,13 @@ export function UserFormDialog({
   mode,
   user,
   onSave,
+  companies = [],
+  isSaving = false,
 }: UserFormDialogProps) {
-  const [formData, setFormData] = React.useState<Partial<User>>({
+  const [formData, setFormData] = React.useState<Partial<User> & { password?: string }>({
     name: "",
     email: "",
+    password: "",
     role: "user",
     companyId: "",
     department: "",
@@ -50,6 +55,7 @@ export function UserFormDialog({
       setFormData({
         name: user.name,
         email: user.email,
+        password: "",
         role: user.role,
         companyId: user.companyId,
         department: user.department,
@@ -58,6 +64,7 @@ export function UserFormDialog({
       setFormData({
         name: "",
         email: "",
+        password: "",
         role: "user",
         companyId: "",
         department: "",
@@ -68,14 +75,16 @@ export function UserFormDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // 必須項目のバリデーション
     if (!formData.name || !formData.email || !formData.companyId || !formData.role) {
       alert("必須項目を全て入力してください")
       return
     }
+    if (mode === "create" && !formData.password) {
+      alert("パスワードを入力してください")
+      return
+    }
     
     onSave(formData)
-    onOpenChange(false)
   }
 
   return (
@@ -119,6 +128,23 @@ export function UserFormDialog({
                 />
               </div>
 
+              {/* パスワード（新規作成時のみ） */}
+              {mode === "create" && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">パスワード *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    placeholder="8文字以上"
+                    required
+                  />
+                </div>
+              )}
+
               {/* 会社と部署 */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -133,7 +159,7 @@ export function UserFormDialog({
                       <SelectValue placeholder="会社を選択" />
                     </SelectTrigger>
                     <SelectContent>
-                      {mockCompanies.map((company) => (
+                      {companies.map((company) => (
                         <SelectItem key={company.id} value={company.id}>
                           {company.icon} {company.name}
                         </SelectItem>
@@ -181,11 +207,12 @@ export function UserFormDialog({
               type="button"
               variant="secondary"
               onClick={() => onOpenChange(false)}
+              disabled={isSaving}
             >
               キャンセル
             </Button>
-            <Button type="submit">
-              {mode === "create" ? "登録" : "更新"}
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? "保存中..." : mode === "create" ? "登録" : "更新"}
             </Button>
           </DialogFooter>
         </form>

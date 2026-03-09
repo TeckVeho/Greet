@@ -15,7 +15,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 	const [isSearchOpen, setIsSearchOpen] = React.useState(false)
 
 	return (
-		<div className='relative min-h-screen '>
+		<div className='relative min-h-screen bg-white'>
 			<Sidebar
 				isCollapsed={isCollapsed}
 				isMobileMenuOpen={isMobileMenuOpen}

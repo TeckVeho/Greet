@@ -75,18 +75,48 @@ export async function listRestaurants(
     throw new Error(res.data.error.message)
   }
 
-  // meta は今後バックエンド実装時に利用予定
-  const meta = (res as any).data.meta as RestaurantListMeta | undefined
+  // backend 側のページネーション実装が入るまではクライアント側で meta を組み立てる
+  const meta: RestaurantListMeta = {
+    total: res.data.data.length,
+    page: 1,
+    limit: res.data.data.length,
+    totalPages: 1,
+  }
 
   return {
     data: res.data.data,
-    meta: meta ?? {
-      total: res.data.data.length,
-      page: 1,
-      limit: res.data.data.length,
-      totalPages: 1,
-    },
+    meta,
   }
+}
+
+export interface CreateRestaurantPayload {
+  name: string
+  area: string
+  hasPrivateRoom: boolean
+  smokingAllowed: boolean
+  priceRange: string
+  address?: string
+  phone?: string
+  url?: string
+  icon?: string
+  genres?: string[]
+  createdById: string
+  companyId: string
+}
+
+export async function createRestaurant(
+  payload: CreateRestaurantPayload,
+): Promise<RestaurantListItem> {
+  const res = await apiClient.post<ApiResponse<RestaurantListItem>>(
+    "/restaurants",
+    payload,
+  )
+
+  if (!res.data.success) {
+    throw new Error(res.data.error.message)
+  }
+
+  return res.data.data
 }
 
 export async function getRestaurant(

@@ -1,6 +1,12 @@
 "use client"
 
 import * as React from "react"
+import { useAuth } from "./auth-context"
+import {
+  addFavorite as addFavoriteApi,
+  listFavorites as listFavoritesApi,
+  removeFavorite as removeFavoriteApi,
+} from "./api/favorites"
 
 interface FavoritesContextType {
   favorites: string[] // Restaurant IDs
@@ -13,45 +19,61 @@ interface FavoritesContextType {
 const FavoritesContext = React.createContext<FavoritesContextType | undefined>(undefined)
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
   const [favorites, setFavorites] = React.useState<string[]>([])
-  const [isInitialized, setIsInitialized] = React.useState(false)
 
-  // LocalStorageから初期値を読み込み
+  // ログインユーザーのお気に入り一覧をAPIから取得
   React.useEffect(() => {
-    const stored = localStorage.getItem("favorites")
-    if (stored) {
+    const loadFavorites = async () => {
+      if (!user) {
+        setFavorites([])
+        return
+      }
+
       try {
-        setFavorites(JSON.parse(stored))
+        const items = await listFavoritesApi()
+        setFavorites(items.map((item) => item.restaurant.id))
       } catch (e) {
-        console.error("Failed to parse favorites from localStorage", e)
+        console.error("Failed to load favorites from API", e)
       }
     }
-    setIsInitialized(true)
-  }, [])
 
-  // お気に入りが変更されたらLocalStorageに保存
-  React.useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem("favorites", JSON.stringify(favorites))
-    }
-  }, [favorites, isInitialized])
+    void loadFavorites()
+  }, [user])
 
   const addFavorite = React.useCallback((id: string) => {
+    // 楽観的更新
     setFavorites((prev) => {
       if (prev.includes(id)) return prev
       return [...prev, id]
     })
+
+    void addFavoriteApi(id).catch((e) => {
+      console.error("Failed to add favorite", e)
+      // ロールバック
+      setFavorites((prev) => prev.filter((fav) => fav !== id))
+    })
   }, [])
 
   const removeFavorite = React.useCallback((id: string) => {
+    // 楽観的更新
     setFavorites((prev) => prev.filter((fav) => fav !== id))
+
+    void removeFavoriteApi(id).catch((e) => {
+      console.error("Failed to remove favorite", e)
+      // ロールバック（IDを戻す）
+      setFavorites((prev) => {
+        if (prev.includes(id)) return prev
+        return [...prev, id]
+      })
+    })
   }, [])
 
   const isFavorite = React.useCallback(
     (id: string) => {
       return favorites.includes(id)
     },
-    [favorites]
+    [favorites],
   )
 
   const toggleFavorite = React.useCallback(
@@ -62,7 +84,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         addFavorite(id)
       }
     },
-    [isFavorite, addFavorite, removeFavorite]
+    [isFavorite, addFavorite, removeFavorite],
   )
 
   return (

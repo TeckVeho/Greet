@@ -12,24 +12,48 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { UserColumns } from '@/components/users/columns'
 import { DataTable } from '@/components/users/data-table'
+import { UserFormDialog } from '@/components/user-form-dialog'
 import { useUsers } from '@/hooks/use-users'
+import { listCompanies, type CompanyListItem } from '@/lib/api/companies'
+import { createUser } from '@/lib/api/users'
 import { useAuth } from '@/lib/auth-context'
-import { mockCompanies } from '@/lib/mock-companies'
-import { mockUsers } from '@/lib/mock-users'
-import { User } from '@/lib/types'
+import type { User } from '@/lib/types'
 import { useRouter } from 'next/navigation'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 
 export default function UsersPage() {
 	const router = useRouter()
 	const { user: currentUser } = useAuth()
-	const { data: users, isPending: isPendingUsers, error: errorUsers } = useUsers()
-	const [filteredUsers, setFilteredUsers] = React.useState<User[]>(mockUsers)
+	const { data: usersData, isPending: isPendingUsers } = useUsers()
+	const { data: companiesData } = useQuery<{ companies: CompanyListItem[] }>({
+		queryKey: ['companies'],
+		queryFn: listCompanies,
+	})
+	const queryClient = useQueryClient()
 	const [searchQuery, setSearchQuery] = React.useState('')
 	const [companyFilter, setCompanyFilter] = React.useState<string>('all')
 	const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-	const [editingUser, setEditingUser] = React.useState<User | undefined>()
-	const [dialogMode, setDialogMode] = React.useState<'create' | 'edit'>('create')
+	const [isSaving, setIsSaving] = React.useState(false)
+	const allUsers = usersData?.users ?? []
+	const companies = companiesData?.companies ?? []
+
+	const filteredUsers = React.useMemo(() => {
+		let result = allUsers
+		if (companyFilter !== 'all') {
+			result = result.filter(u => u.companyId === companyFilter)
+		}
+		if (searchQuery) {
+			const q = searchQuery.toLowerCase()
+			result = result.filter(
+				u =>
+					u.name.toLowerCase().includes(q) ||
+					u.email.toLowerCase().includes(q) ||
+					u.department?.toLowerCase().includes(q),
+			)
+		}
+		return result
+	}, [allUsers, companyFilter, searchQuery])
 
 	// 管理者権限チェック
 	React.useEffect(() => {
@@ -42,79 +66,38 @@ export default function UsersPage() {
 		return <Spinner type='page-loading' />
 	}
 
-	// 検索・会社フィルター
-	// React.useEffect(() => {
-	// 	let filtered = users
-
-	// 	// 会社フィルター
-	// 	if (companyFilter !== 'all') {
-	// 		filtered = filtered.filter(user => user.companyId === companyFilter)
-	// 	}
-
-	// 	// 検索クエリフィルター
-	// 	if (searchQuery) {
-	// 		const query = searchQuery.toLowerCase()
-	// 		filtered = filtered.filter(
-	// 			user =>
-	// 				user.name.toLowerCase().includes(query) ||
-	// 				user.email.toLowerCase().includes(query) ||
-	// 				user.department?.toLowerCase().includes(query) ||
-	// 				user.company?.name.toLowerCase().includes(query),
-	// 		)
-	// 	}
-
-	// 	setFilteredUsers(filtered)
-	// }, [searchQuery, companyFilter, users])
-
-	// const handleNewUser = () => {
-	// 	setDialogMode('create')
-	// 	setEditingUser(undefined)
-	// 	setIsDialogOpen(true)
-	// }
-
-	// const handleEditUser = (user: User) => {
-	// 	setDialogMode('edit')
-	// 	setEditingUser(user)
-	// 	setIsDialogOpen(true)
-	// }
-
-	// const handleDeleteUser = (userId: string) => {
-	// 	if (window.confirm('このユーザーを削除してもよろしいですか？')) {
-	// 		setUsers(users?.data.filter(u => u.id !== userId))
-	// 	}
-	// }
-
-	// const handleSaveUser = (userData: Partial<User>) => {
-	// 	if (dialogMode === 'create') {
-	// 		const newUser: User = {
-	// 			id: Math.random().toString(36).substring(7),
-	// 			name: userData.name!,
-	// 			email: userData.email!,
-	// 			role: userData.role || 'user',
-	// 			companyId: userData.companyId!,
-	// 			company: getCompanyById(userData.companyId!),
-	// 			department: userData.department,
-	// 			createdAt: new Date(),
-	// 		}
-	// 		setUsers([...users?.data, newUser])
-	// 	} else if (editingUser) {
-	// 		setUsers(
-	// 			users?.data.map(u =>
-	// 				u.id === editingUser.id
-	// 					? {
-	// 							...u,
-	// 							...userData,
-	// 							company: userData.companyId ? getCompanyById(userData.companyId) : u.company,
-	// 						}
-	// 					: u,
-	// 			),
-	// 		)
-	// 	}
-	// }
-
 	// 管理者以外は表示しない
 	if (!currentUser || currentUser.role !== 'admin') {
 		return null
+	}
+
+	const handleSaveUser = async (userData: Partial<User> & { password?: string }) => {
+		if (
+			!userData.name ||
+			!userData.email ||
+			!userData.companyId ||
+			!userData.role ||
+			!userData.password
+		) {
+			return
+		}
+		setIsSaving(true)
+		try {
+			await createUser({
+				name: userData.name,
+				email: userData.email,
+				password: userData.password,
+				role: userData.role,
+				companyId: userData.companyId,
+				department: userData.department,
+			})
+			await queryClient.invalidateQueries({ queryKey: ['users'] })
+			setIsDialogOpen(false)
+		} catch (e) {
+			console.error('Failed to create user', e)
+		} finally {
+			setIsSaving(false)
+		}
 	}
 
 	return (
@@ -124,14 +107,9 @@ export default function UsersPage() {
 				<div className='mb-8'>
 					<div className='mb-2 flex items-center gap-2'>
 						<span className='text-2xl md:text-3xl'>👥</span>
-						<h1
-							className='text-2xl md:text-3xl font-bold text-zinc-900'
-							onClick={() => {
-								console.log(users)
-							}}
-						>
-							ユーザー管理
-						</h1>
+					<h1 className='text-2xl md:text-3xl font-bold text-zinc-900'>
+						ユーザー管理
+					</h1>
 					</div>
 					<p className='text-sm text-zinc-500'>システムを利用するユーザーの管理</p>
 				</div>
@@ -167,14 +145,14 @@ export default function UsersPage() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value='all'>全ての会社</SelectItem>
-								{mockCompanies.map(company => (
+								{companies.map(company => (
 									<SelectItem key={company.id} value={company.id}>
 										{company.icon} {company.name}
 									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
-						<Button>
+						<Button onClick={() => setIsDialogOpen(true)}>
 							<svg
 								className='mr-2 h-4 w-4'
 								fill='none'
@@ -191,22 +169,21 @@ export default function UsersPage() {
 
 				{/* テーブル */}
 				<div className='rounded-lg'>
-					<DataTable columns={UserColumns} data={users?.data ?? []} />
-					{/* <UserTable users={filteredUsers} onEdit={handleEditUser} onDelete={handleDeleteUser} /> */}
+					<DataTable columns={UserColumns} data={filteredUsers} />
 				</div>
 
 				{/* 件数表示 */}
 				<div className='mt-4 text-sm text-zinc-500'>{filteredUsers.length} 件のユーザー</div>
 			</div>
 
-			{/* ユーザー登録・編集モーダル */}
-			{/* <UserFormDialog
+			<UserFormDialog
 				open={isDialogOpen}
 				onOpenChange={setIsDialogOpen}
-				mode={dialogMode}
-				user={editingUser}
+				mode='create'
+				companies={companies}
 				onSave={handleSaveUser}
-			/> */}
+				isSaving={isSaving}
+			/>
 		</>
 	)
 }

@@ -10,7 +10,7 @@ interface AppLayoutProps {
 	children: React.ReactNode
 }
 
-export default function layout({ children }: AppLayoutProps) {
+export default function Layout({ children }: AppLayoutProps) {
 	const [isCollapsed, setIsCollapsed] = React.useState(false)
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
 	const [isSearchOpen, setIsSearchOpen] = React.useState(false)

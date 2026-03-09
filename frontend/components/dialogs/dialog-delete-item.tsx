@@ -35,7 +35,9 @@ export const DialogDeleteItem: React.FC<DialogDeleteItemProps> = ({
 	const [isOpen, setIsOpen] = useState<boolean>(false)
 	return (
 		<Dialog onOpenChange={setIsOpen} open={isOpen}>
-			<DialogTrigger className={className}>{trigger}</DialogTrigger>
+			<DialogTrigger asChild className={className}>
+				{trigger}
+			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>

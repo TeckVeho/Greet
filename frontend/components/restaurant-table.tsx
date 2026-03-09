@@ -2,31 +2,31 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Restaurant } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useFavorites } from "@/lib/favorites-context"
-import { mockUsers } from "@/lib/mock-users"
+import type { RestaurantListItem } from "@/lib/api/restaurants"
+import { areaLabel, genreLabel, priceRangeLabel } from "@/lib/constants"
 
 interface RestaurantTableProps {
-  restaurants: Restaurant[]
+  restaurants: RestaurantListItem[]
 }
 
-const getGenreVariant = (genre: string): "sushi" | "french" | "italian" | "yakiniku" | "japanese" | "chinese" | "genre" => {
-  switch (genre) {
-    case "寿司":
+const getGenreVariant = (genreKey: string): "sushi" | "french" | "italian" | "yakiniku" | "japanese" | "chinese" | "genre" => {
+  switch (genreKey) {
+    case "SUSHI":
       return "sushi"
-    case "フレンチ":
+    case "FRENCH":
       return "french"
-    case "イタリアン":
+    case "ITALIAN":
       return "italian"
-    case "焼肉":
+    case "YAKINIKU":
       return "yakiniku"
-    case "和食":
-    case "天ぷら":
-    case "割烹":
+    case "WASHOKU":
+    case "TEMPURA":
+    case "KAPPO":
       return "japanese"
-    case "中華":
+    case "CHINESE":
       return "chinese"
     default:
       return "genre"
@@ -64,7 +64,7 @@ export function RestaurantTable({ restaurants }: RestaurantTableProps) {
               喫煙
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500">
-              利用者
+              レビュー
             </th>
           </tr>
         </thead>
@@ -106,13 +106,13 @@ export function RestaurantTable({ restaurants }: RestaurantTableProps) {
                   </Link>
                 </td>
               <td className="px-4 py-3">
-                <Badge variant="area">{restaurant.area}</Badge>
+                <Badge variant="area">{areaLabel(restaurant.area)}</Badge>
               </td>
               <td className="px-4 py-3">
                 <div className="flex flex-wrap gap-1">
                   {restaurant.genres.map((genre, idx) => (
                     <Badge key={idx} variant={getGenreVariant(genre)}>
-                      {genre}
+                      {genreLabel(genre)}
                     </Badge>
                   ))}
                 </div>
@@ -154,7 +154,7 @@ export function RestaurantTable({ restaurants }: RestaurantTableProps) {
                 </div>
               </td>
               <td className="px-4 py-3 text-sm text-zinc-700">
-                {restaurant.priceRange}
+                {priceRangeLabel(restaurant.priceRange)}
               </td>
               <td className="px-4 py-3 text-center">
                 <div className="flex justify-center">
@@ -166,30 +166,14 @@ export function RestaurantTable({ restaurants }: RestaurantTableProps) {
                 </div>
               </td>
               <td className="px-4 py-3">
-                {restaurant.reviews && restaurant.reviews.length > 0 && (
-                  <div className="flex -space-x-2">
-                    {Array.from(new Set(restaurant.reviews.map(r => r.authorId))).slice(0, 5).map((authorId, idx) => {
-                      const user = mockUsers.find(u => u.id === authorId)
-                      if (!user) return null
-                      return (
-                        <div
-                          key={idx}
-                          className="relative inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 border-2 border-white ring-1 ring-zinc-200 text-xs font-medium text-zinc-700"
-                          title={user.name}
-                        >
-                          {user.name.charAt(0)}
-                        </div>
-                      )
-                    })}
-                    {Array.from(new Set(restaurant.reviews.map(r => r.authorId))).length > 5 && (
-                      <div
-                        className="relative inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 border-2 border-white ring-1 ring-zinc-200 text-xs text-zinc-600"
-                      >
-                        +{Array.from(new Set(restaurant.reviews.map(r => r.authorId))).length - 5}
-                      </div>
-                    )}
-                  </div>
-                )}
+                <div className="text-xs text-zinc-600">
+                  レビュー {restaurant.reviewCount} 件
+                  {restaurant.averageRating != null && (
+                    <span className="ml-2">
+                      / 平均 {restaurant.averageRating.toFixed(1)}
+                    </span>
+                  )}
+                </div>
               </td>
               </tr>
             )

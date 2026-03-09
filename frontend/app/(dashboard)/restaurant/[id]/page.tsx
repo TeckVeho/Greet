@@ -2,25 +2,40 @@
 
 import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useQuery } from "@tanstack/react-query"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Callout } from "@/components/ui/callout"
 import { Button } from "@/components/ui/button"
 import { ReviewFormDialog } from "@/components/review-form-dialog"
-import { mockRestaurants, addReview } from "@/lib/mock-data"
-import { mockUsers } from "@/lib/mock-users"
 import { cn } from "@/lib/utils"
 import { useFavorites } from "@/lib/favorites-context"
 import { useAuth } from "@/lib/auth-context"
 import type { Review } from "@/lib/types"
+import { getRestaurant } from "@/lib/api/restaurants"
+import { createReview } from "@/lib/api/reviews"
+import { areaLabel, genreLabel, priceRangeLabel } from "@/lib/constants"
 
 export default function RestaurantDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { user, isLoading } = useAuth()
-  const [restaurant, setRestaurant] = React.useState(
-    mockRestaurants.find((r) => r.id === params.id)
-  )
+  const restaurantId = React.useMemo(() => {
+    const raw = (params as { id?: string | string[] }).id
+    if (!raw) return ""
+    return Array.isArray(raw) ? raw[0] : raw
+  }, [params])
+
+  const {
+    data: restaurant,
+    isPending: isRestaurantPending,
+    refetch,
+  } = useQuery({
+    queryKey: ["restaurant", restaurantId],
+    queryFn: () => getRestaurant(restaurantId),
+    enabled: !!user && !!restaurantId,
+  })
+
   const { isFavorite, toggleFavorite } = useFavorites()
   const [isReviewDialogOpen, setIsReviewDialogOpen] = React.useState(false)
 
@@ -32,30 +47,25 @@ export default function RestaurantDetailPage() {
   }, [user, isLoading, router])
 
   // レビュー投稿処理
-  const handleReviewSubmit = (reviewData: Omit<Review, "id" | "createdAt">) => {
+  const handleReviewSubmit = async (
+    reviewData: Omit<Review, "id" | "createdAt">,
+  ) => {
     if (!restaurant) return
 
-    const newReview: Review = {
-      id: `r${Date.now()}`,
-      ...reviewData,
-      createdAt: new Date(),
-    }
-
-    // mock-dataに追加
-    const success = addReview(restaurant.id, newReview)
-    
-    if (success) {
-      // ローカル状態を更新してUIを即座に反映
-      setRestaurant({
-        ...restaurant,
-        reviews: [...restaurant.reviews, newReview],
-        updatedAt: new Date(),
+    try {
+      await createReview(restaurant.id, {
+        occasion: reviewData.occasion,
+        result: reviewData.result,
+        rating: reviewData.rating,
       })
+      await refetch()
       setIsReviewDialogOpen(false)
+    } catch (e) {
+      console.error("Failed to create review", e)
     }
   }
 
-  if (isLoading || !user) {
+  if (isLoading || !user || isRestaurantPending) {
     return null
   }
 
@@ -78,21 +88,21 @@ export default function RestaurantDetailPage() {
     )
   }
 
-  const getGenreVariant = (genre: string): "sushi" | "french" | "italian" | "yakiniku" | "japanese" | "chinese" | "genre" => {
-    switch (genre) {
-      case "寿司":
+  const getGenreVariant = (genreKey: string): "sushi" | "french" | "italian" | "yakiniku" | "japanese" | "chinese" | "genre" => {
+    switch (genreKey) {
+      case "SUSHI":
         return "sushi"
-      case "フレンチ":
+      case "FRENCH":
         return "french"
-      case "イタリアン":
+      case "ITALIAN":
         return "italian"
-      case "焼肉":
+      case "YAKINIKU":
         return "yakiniku"
-      case "和食":
-      case "天ぷら":
-      case "割烹":
+      case "WASHOKU":
+      case "TEMPURA":
+      case "KAPPO":
         return "japanese"
-      case "中華":
+      case "CHINESE":
         return "chinese"
       default:
         return "genre"
@@ -141,10 +151,10 @@ export default function RestaurantDetailPage() {
             </button>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="area">{restaurant.area}</Badge>
+            <Badge variant="area">{areaLabel(restaurant.area)}</Badge>
             {restaurant.genres.map((genre, idx) => (
               <Badge key={idx} variant={getGenreVariant(genre)}>
-                {genre}
+                {genreLabel(genre)}
               </Badge>
             ))}
           </div>
@@ -175,7 +185,7 @@ export default function RestaurantDetailPage() {
               価格帯
             </div>
             <div className="flex-1 text-sm font-semibold text-zinc-900">
-              {restaurant.priceRange}
+              {priceRangeLabel(restaurant.priceRange)}
             </div>
           </div>
 
@@ -256,33 +266,22 @@ export default function RestaurantDetailPage() {
           ) : (
             <div className="space-y-4">
               {restaurant.reviews.map((review) => {
-                const reviewUser = mockUsers.find((u) => u.id === review.authorId)
                 const nameIcon = (
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-700">
-                    {review.author.charAt(0)}
+                    {review.author.icon ?? review.author.name.charAt(0)}
                   </div>
                 )
                 return (
                   <Callout key={review.id} icon={nameIcon}>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex flex-wrap items-center gap-2">
                           <div className="font-semibold text-zinc-900">
-                            {review.author}
+                            {review.author.name}
                           </div>
-                          {reviewUser?.company && (
-                            <span className="text-xs text-zinc-500">
-                              {reviewUser.company.name}
-                            </span>
-                          )}
-                          {reviewUser?.department && (
-                            <span className="text-xs text-zinc-400">
-                              {reviewUser.department}
-                            </span>
-                          )}
                         </div>
                         <div className="text-xs text-zinc-500">
-                          {review.createdAt.toLocaleDateString("ja-JP")}
+                          {new Date(review.createdAt).toLocaleDateString("ja-JP")}
                         </div>
                       </div>
                       <div className="text-sm text-zinc-700">
@@ -299,23 +298,25 @@ export default function RestaurantDetailPage() {
                           {review.result}
                         </div>
                       </div>
-                      {review.rating && (
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <span
-                              key={i}
-                              className={cn(
-                                "text-sm",
-                                i < review.rating!
-                                  ? "text-yellow-400"
-                                  : "text-zinc-300"
-                              )}
-                            >
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      {(() => {
+                        const rating = review.rating ?? 0
+                        if (rating <= 0) return null
+                        return (
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <span
+                                key={i}
+                                className={cn(
+                                  "text-sm",
+                                  i < rating ? "text-yellow-400" : "text-zinc-300",
+                                )}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </div>
                   </Callout>
                 )

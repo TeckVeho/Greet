@@ -3,7 +3,8 @@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { mockRestaurants } from '@/lib/mock-data'
+import { listRestaurants, type RestaurantListItem } from '@/lib/api/restaurants'
+import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
@@ -15,25 +16,27 @@ interface GlobalSearchDialogProps {
 export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogProps) {
 	const router = useRouter()
 	const [searchQuery, setSearchQuery] = React.useState('')
-	const [filteredResults, setFilteredResults] = React.useState(mockRestaurants)
 
-	// 検索クエリが変更されたときに結果をフィルタリング
-	React.useEffect(() => {
+	const { data: restaurants = [], isPending } = useQuery({
+		queryKey: ['restaurants', { scope: 'global-search' }],
+		queryFn: () => listRestaurants().then(res => res.data),
+		enabled: open,
+	})
+
+	const filteredResults = React.useMemo<RestaurantListItem[]>(() => {
 		if (!searchQuery.trim()) {
-			setFilteredResults(mockRestaurants)
-			return
+			return restaurants
 		}
 
 		const query = searchQuery.toLowerCase()
-		const filtered = mockRestaurants.filter(
+		return restaurants.filter(
 			restaurant =>
 				restaurant.name.toLowerCase().includes(query) ||
 				restaurant.area.toLowerCase().includes(query) ||
 				restaurant.genres.some(genre => genre.toLowerCase().includes(query)) ||
 				restaurant.address?.toLowerCase().includes(query),
 		)
-		setFilteredResults(filtered)
-	}, [searchQuery])
+	}, [restaurants, searchQuery])
 
 	// ダイアログが閉じられたら検索クエリをリセット
 	React.useEffect(() => {
@@ -80,7 +83,11 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 				</DialogHeader>
 
 				<div className='overflow-y-auto max-h-[calc(80vh-8rem)] px-2 py-2'>
-					{filteredResults.length === 0 ? (
+					{isPending ? (
+						<div className='text-center py-12 text-zinc-500'>
+							<p className='text-sm'>飲食店を読み込み中です...</p>
+						</div>
+					) : filteredResults.length === 0 ? (
 						<div className='text-center py-12 text-zinc-500'>
 							<svg
 								xmlns='http://www.w3.org/2000/svg'
@@ -138,7 +145,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 					)}
 				</div>
 
-				{filteredResults.length > 0 && (
+				{!isPending && filteredResults.length > 0 && (
 					<div className='px-6 py-3 border-t border-zinc-200 text-xs text-zinc-500'>
 						{filteredResults.length} 件の飲食店が見つかりました
 					</div>

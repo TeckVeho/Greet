@@ -1,4 +1,4 @@
-import { Area, PriceRange } from '@prisma/client'
+import { Area, Genre, PriceRange } from '@prisma/client'
 import z from 'zod'
 
 export const createRestaurantSchema = z.object({
@@ -15,6 +15,7 @@ export const createRestaurantSchema = z.object({
   url: z.string().optional(),
   coverImage: z.string().optional(),
   icon: z.string().optional(),
+  genres: z.array(z.nativeEnum(Genre)).optional(),
   createdById: z.string().uuid({ message: '有効なユーザーIDを指定してください' }),
   companyId: z.string().uuid({ message: '有効な会社IDを指定してください' }),
 })

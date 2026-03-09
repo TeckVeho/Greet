@@ -1,3 +1,4 @@
+import { Genre } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
 import type {
@@ -193,20 +194,37 @@ export class RestaurantService {
     return { success: true, data, statusCode: StatusCodes.OK }
   }
 
-  async create(payload: CreateRestaurantInput) {
+  async create(payload: CreateRestaurantInput & { genres?: Genre[] }) {
+    const { genres, ...restaurantData } = payload
     const restaurant = await prisma.restaurant.create({
-      data: payload,
+      data: restaurantData,
     })
+
+    if (genres && genres.length > 0) {
+      await prisma.restaurantGenre.createMany({
+        data: genres.map(genre => ({ restaurantId: restaurant.id, genre })),
+        skipDuplicates: true,
+      })
+    }
 
     return { success: true, data: restaurant, statusCode: StatusCodes.CREATED }
   }
 
-  async update(id: string, payload: UpdateRestaurantInput) {
+  async update(id: string, payload: UpdateRestaurantInput & { genres?: Genre[] }) {
     try {
+      const { genres, ...restaurantData } = payload
       const restaurant = await prisma.restaurant.update({
         where: { id },
-        data: payload,
+        data: restaurantData,
       })
+
+      if (genres && genres.length > 0) {
+        await prisma.restaurantGenre.deleteMany({ where: { restaurantId: id } })
+        await prisma.restaurantGenre.createMany({
+          data: genres.map(genre => ({ restaurantId: id, genre })),
+          skipDuplicates: true,
+        })
+      }
       return { success: true, data: restaurant, statusCode: StatusCodes.OK }
     } catch (error) {
       return {

@@ -2,19 +2,11 @@
 
 import { apiClient } from "./client"
 import type { ApiResponse } from "./types"
+import type { RestaurantListItem } from "./restaurants"
 
 export interface FavoriteItem {
   id: string
-  restaurant: {
-    id: string
-    name: string
-    area: string
-    genres: string[]
-    priceRange: string
-    icon?: string
-    reviewCount: number
-    averageRating: number | null
-  }
+  restaurant: RestaurantListItem
   createdAt: string
 }
 

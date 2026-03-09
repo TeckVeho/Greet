@@ -3,35 +3,34 @@
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Restaurant } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
 import { useFavorites } from "@/lib/favorites-context"
-import { mockUsers } from "@/lib/mock-users"
+import type { RestaurantListItem } from "@/lib/api/restaurants"
+import { areaLabel, genreLabel, priceRangeLabel } from "@/lib/constants"
 
-interface RestaurantCardsProps {
-  restaurants: Restaurant[]
-}
-
-const getGenreVariant = (genre: string): "sushi" | "french" | "italian" | "yakiniku" | "japanese" | "chinese" | "genre" => {
-  switch (genre) {
-    case "寿司":
+const getGenreVariant = (genreKey: string): "sushi" | "french" | "italian" | "yakiniku" | "japanese" | "chinese" | "genre" => {
+  switch (genreKey) {
+    case "SUSHI":
       return "sushi"
-    case "フレンチ":
+    case "FRENCH":
       return "french"
-    case "イタリアン":
+    case "ITALIAN":
       return "italian"
-    case "焼肉":
+    case "YAKINIKU":
       return "yakiniku"
-    case "和食":
-    case "天ぷら":
-    case "割烹":
+    case "WASHOKU":
+    case "TEMPURA":
+    case "KAPPO":
       return "japanese"
-    case "中華":
+    case "CHINESE":
       return "chinese"
     default:
       return "genre"
   }
+}
+
+interface RestaurantCardsProps {
+  restaurants: RestaurantListItem[]
 }
 
 export function RestaurantCards({ restaurants }: RestaurantCardsProps) {
@@ -94,21 +93,21 @@ export function RestaurantCards({ restaurants }: RestaurantCardsProps) {
 
                 {/* エリア */}
                 <div className="mb-3">
-                  <Badge variant="area">{restaurant.area}</Badge>
+                  <Badge variant="area">{areaLabel(restaurant.area)}</Badge>
                 </div>
 
                 {/* ジャンル */}
                 <div className="flex flex-wrap gap-1 mb-3">
                   {restaurant.genres.map((genre, idx) => (
                     <Badge key={idx} variant={getGenreVariant(genre)}>
-                      {genre}
+                      {genreLabel(genre)}
                     </Badge>
                   ))}
                 </div>
 
                 {/* 価格帯 */}
                 <div className="mb-3 text-sm text-zinc-700">
-                  <span className="font-medium">価格帯:</span> {restaurant.priceRange}
+                  <span className="font-medium">価格帯:</span> {priceRangeLabel(restaurant.priceRange)}
                 </div>
 
                 {/* 個室・喫煙情報 */}
@@ -162,36 +161,17 @@ export function RestaurantCards({ restaurants }: RestaurantCardsProps) {
                   </div>
                 </div>
 
-                {/* 利用ユーザーアイコン */}
-                {restaurant.reviews && restaurant.reviews.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-zinc-100">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-zinc-500">利用者:</span>
-                      <div className="flex -space-x-2">
-                        {Array.from(new Set(restaurant.reviews.map(r => r.authorId))).slice(0, 5).map((authorId, idx) => {
-                          const user = mockUsers.find(u => u.id === authorId)
-                          if (!user) return null
-                          return (
-                            <div
-                              key={idx}
-                              className="relative inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 border-2 border-white ring-1 ring-zinc-200 text-xs font-medium text-zinc-700"
-                              title={user.name}
-                            >
-                              {user.name.charAt(0)}
-                            </div>
-                          )
-                        })}
-                        {Array.from(new Set(restaurant.reviews.map(r => r.authorId))).length > 5 && (
-                          <div
-                            className="relative inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 border-2 border-white ring-1 ring-zinc-200 text-xs text-zinc-600"
-                          >
-                            +{Array.from(new Set(restaurant.reviews.map(r => r.authorId))).length - 5}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* レビュー情報 */}
+                <div className="mt-3 border-t border-zinc-100 pt-3 text-xs text-zinc-500">
+                  <span>
+                    レビュー {restaurant.reviewCount} 件
+                  </span>
+                  {restaurant.averageRating != null && (
+                    <span className="ml-3">
+                      平均評価 {restaurant.averageRating.toFixed(1)} / 5
+                    </span>
+                  )}
+                </div>
               </div>
             </Link>
           </div>

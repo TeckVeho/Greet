@@ -51,29 +51,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: 20 25% 12%;
-    --foreground: 25 15% 92%;
-    --card: 20 22% 14%;
-    --card-foreground: 25 15% 92%;
-    --popover: 20 22% 14%;
-    --popover-foreground: 25 15% 92%;
-    --primary: 15 40% 65%;
-    --primary-foreground: 20 25% 12%;
-    --secondary: 20 20% 20%;
-    --secondary-foreground: 25 15% 92%;
-    --muted: 20 20% 20%;
-    --muted-foreground: 25 10% 60%;
-    --accent: 10 30% 25%;
-    --accent-foreground: 15 40% 85%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 20 18% 22%;
-    --input: 20 18% 22%;
-    --ring: 15 40% 65%;
-  }
-}
 
 body {
   background: hsl(var(--background));

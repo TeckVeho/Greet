@@ -2,19 +2,21 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { useQuery } from "@tanstack/react-query"
 import { AppLayout } from "@/components/app-layout"
 import { RestaurantTable } from "@/components/restaurant-table"
 import { RestaurantCards } from "@/components/restaurant-cards"
 import { SearchFilterBar } from "@/components/search-filter-bar"
 import { RestaurantFormDialog } from "@/components/restaurant-form-dialog"
 import { FilterDialog, FilterState } from "@/components/filter-dialog"
-import { mockRestaurants } from "@/lib/mock-data"
 import { useAuth } from "@/lib/auth-context"
 import { sortRestaurants, type SortOption } from "@/lib/utils"
+import { listRestaurants } from "@/lib/api/restaurants"
+import { areaLabel, genreLabel } from "@/lib/constants"
 
 export default function Home() {
   const router = useRouter()
-  const { user, isLoading } = useAuth()
+  const { user, isLoading: isAuthLoading } = useAuth()
   const [searchQuery, setSearchQuery] = React.useState("")
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [isFilterOpen, setIsFilterOpen] = React.useState(false)
@@ -31,21 +33,35 @@ export default function Home() {
 
   // 認証チェック
   React.useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isAuthLoading && !user) {
       router.push("/login")
     }
-  }, [user, isLoading, router])
+  }, [user, isAuthLoading, router])
+
+  const {
+    data: restaurantList,
+    isPending: isRestaurantsPending,
+  } = useQuery({
+    queryKey: ["restaurants", { scope: "all" }],
+    queryFn: () => listRestaurants().then((res) => res.data),
+    enabled: !!user,
+  })
+
+  const restaurants = React.useMemo(
+    () => restaurantList ?? [],
+    [restaurantList],
+  )
 
   // フィルタリング・並び替え
   const filteredRestaurants = React.useMemo(() => {
-    const filtered = mockRestaurants.filter((restaurant) => {
+    const filtered = restaurants.filter((restaurant) => {
       // 検索クエリでフィルタリング
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
         const matchesSearch =
           restaurant.name.toLowerCase().includes(query) ||
-          restaurant.area.toLowerCase().includes(query) ||
-          restaurant.genres.some((genre) => genre.toLowerCase().includes(query))
+          areaLabel(restaurant.area).toLowerCase().includes(query) ||
+          restaurant.genres.some((genre) => genreLabel(genre).toLowerCase().includes(query))
         if (!matchesSearch) return false
       }
 
@@ -77,7 +93,7 @@ export default function Home() {
       return true
     })
     return sortRestaurants(filtered, sortOption)
-  }, [searchQuery, filterState, sortOption])
+  }, [restaurants, searchQuery, filterState, sortOption])
 
   // アクティブフィルター数の計算
   const activeFilterCount = React.useMemo(() => {
@@ -98,8 +114,18 @@ export default function Home() {
     setIsDialogOpen(true)
   }
 
-  if (isLoading || !user) {
+  if (isAuthLoading || !user) {
     return null
+  }
+
+  if (isRestaurantsPending) {
+    return (
+      <AppLayout>
+        <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+          <p className="text-sm text-muted-foreground">飲食店を読み込み中です...</p>
+        </div>
+      </AppLayout>
+    )
   }
 
   return (

@@ -118,11 +118,11 @@ export default function LoginPage() {
 								'ログイン'
 							)}
 						</Button>
-						<div className='text-sm text-muted-foreground'>
+						{/* <div className='text-sm text-muted-foreground'>
 							<p className='mb-1 font-medium text-foreground'>テストアカウント:</p>
 							<p>管理者: admin@example.com / admin123</p>
 							<p>一般: user@example.com / user123</p>
-						</div>
+						</div> */}
 					</CardFooter>
 				</form>
 			</Card>

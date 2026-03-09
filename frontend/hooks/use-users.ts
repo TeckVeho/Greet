@@ -1,17 +1,11 @@
 'use client'
-import { apiClient } from '@/lib/api/client'
-import { User } from '@/lib/types'
+
 import { useQuery } from '@tanstack/react-query'
+import { listUsers, type UsersListResponse } from '@/lib/api/users'
 
 export const useUsers = () => {
-	return useQuery({
+	return useQuery<UsersListResponse>({
 		queryKey: ['users'],
-		queryFn: async () => {
-			const response = (
-				await apiClient.get<{ data: User[]; statusCode: number; success: boolean }>('users')
-			).data
-
-			return response
-		},
+		queryFn: () => listUsers(),
 	})
 }

@@ -2,56 +2,70 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { useQuery } from "@tanstack/react-query"
 import { RestaurantTable } from "@/components/restaurant-table"
 import { RestaurantCards } from "@/components/restaurant-cards"
-import { mockRestaurants } from "@/lib/mock-data"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth-context"
 import { sortRestaurants, type SortOption } from "@/lib/utils"
-import type { Genre } from "@/lib/types"
+import { listRestaurants, type RestaurantListItem } from "@/lib/api/restaurants"
+import { genreLabel } from "@/lib/constants"
 
-// ジャンルごとのカラー定義
-const genreColors: Record<Genre, string> = {
-  "寿司": "bg-red-100 text-red-700 hover:bg-red-200",
-  "フレンチ": "bg-purple-100 text-purple-700 hover:bg-purple-200",
-  "イタリアン": "bg-green-100 text-green-700 hover:bg-green-200",
-  "和食": "bg-amber-100 text-amber-700 hover:bg-amber-200",
-  "中華": "bg-yellow-100 text-yellow-700 hover:bg-yellow-200",
-  "鉄板焼き": "bg-orange-100 text-orange-700 hover:bg-orange-200",
-  "焼肉": "bg-rose-100 text-rose-700 hover:bg-rose-200",
-  "天ぷら": "bg-cyan-100 text-cyan-700 hover:bg-cyan-200",
-  "割烹": "bg-indigo-100 text-indigo-700 hover:bg-indigo-200",
-  "その他": "bg-zinc-100 text-zinc-700 hover:bg-zinc-200",
+// ジャンルごとのカラー定義（Prisma enum キーで管理）
+const genreColors: Record<string, string> = {
+  SUSHI: "bg-red-100 text-red-700 hover:bg-red-200",
+  FRENCH: "bg-purple-100 text-purple-700 hover:bg-purple-200",
+  ITALIAN: "bg-green-100 text-green-700 hover:bg-green-200",
+  WASHOKU: "bg-amber-100 text-amber-700 hover:bg-amber-200",
+  CHINESE: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200",
+  TEPPANYAKI: "bg-orange-100 text-orange-700 hover:bg-orange-200",
+  YAKINIKU: "bg-rose-100 text-rose-700 hover:bg-rose-200",
+  TEMPURA: "bg-cyan-100 text-cyan-700 hover:bg-cyan-200",
+  KAPPO: "bg-indigo-100 text-indigo-700 hover:bg-indigo-200",
+  OTHER: "bg-zinc-100 text-zinc-700 hover:bg-zinc-200",
 }
 
 export default function GenrePage() {
   const router = useRouter()
-  const { user, isLoading } = useAuth()
-  const [selectedGenre, setSelectedGenre] = React.useState<Genre | "all">("all")
+  const { user, isLoading: isAuthLoading } = useAuth()
+  const [selectedGenre, setSelectedGenre] = React.useState<string>("all")
   const [viewMode, setViewMode] = React.useState<"table" | "cards">("cards")
   const [sortOption, setSortOption] = React.useState<SortOption>("createdAt_desc")
 
   // 認証チェック
   React.useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isAuthLoading && !user) {
       router.push("/login")
     }
-  }, [user, isLoading, router])
+  }, [user, isAuthLoading, router])
+
+  const {
+    data: restaurantList,
+    isPending: isRestaurantsPending,
+  } = useQuery({
+    queryKey: ["restaurants", { scope: "genre" }],
+    queryFn: () => listRestaurants().then((res) => res.data),
+    enabled: !!user,
+  })
+
+  const restaurants = React.useMemo<RestaurantListItem[]>(
+    () => restaurantList ?? [],
+    [restaurantList],
+  )
 
   // ジャンルごとにグループ化（1つのレストランが複数ジャンルに属する可能性あり）
   const restaurantsByGenre = React.useMemo(() => {
-    const grouped = new Map<Genre, typeof mockRestaurants>()
-    mockRestaurants.forEach((restaurant) => {
+    const grouped = new Map<string, typeof restaurants>()
+    restaurants.forEach((restaurant) => {
       restaurant.genres.forEach((genre) => {
-        const g = genre as Genre
-        if (!grouped.has(g)) {
-          grouped.set(g, [])
+        if (!grouped.has(genre)) {
+          grouped.set(genre, [])
         }
-        grouped.get(g)?.push(restaurant)
+        grouped.get(genre)?.push(restaurant)
       })
     })
     return grouped
-  }, [])
+  }, [restaurants])
 
   // ジャンルの一覧を取得（件数が多い順）
   const genres = React.useMemo(() => {
@@ -63,16 +77,24 @@ export default function GenrePage() {
   }, [restaurantsByGenre])
 
   // フィルタリング・並び替えされたレストラン
-  const displayedRestaurants = React.useMemo(() => {
+  const displayedRestaurants = React.useMemo<RestaurantListItem[]>(() => {
     const list =
       selectedGenre === "all"
-        ? mockRestaurants
-        : restaurantsByGenre.get(selectedGenre) || []
-    return sortRestaurants(list, sortOption)
-  }, [selectedGenre, restaurantsByGenre, sortOption])
+        ? restaurants
+        : restaurantsByGenre.get(selectedGenre) ?? []
+    return sortRestaurants<RestaurantListItem>(list, sortOption)
+  }, [selectedGenre, restaurantsByGenre, sortOption, restaurants])
 
-  if (isLoading || !user) {
+  if (isAuthLoading || !user) {
     return null
+  }
+
+  if (isRestaurantsPending) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+        <p className="text-sm text-zinc-500">ジャンル別の飲食店を読み込み中です...</p>
+      </div>
+    )
   }
 
   return (
@@ -103,13 +125,10 @@ export default function GenrePage() {
               }`}
             >
               すべて
-              <span className="ml-1.5 text-xs opacity-70">
-                ({mockRestaurants.length})
-              </span>
             </button>
             {genres.map((genre) => {
               const count = restaurantsByGenre.get(genre)?.length || 0
-              const colorClass = genreColors[genre] || genreColors["その他"]
+              const colorClass = genreColors[genre] ?? genreColors["OTHER"]
               return (
                 <button
                   key={genre}
@@ -120,7 +139,7 @@ export default function GenrePage() {
                       : colorClass
                   }`}
                 >
-                  {genre}
+                  {genreLabel(genre)}
                   <span className="ml-1.5 text-xs opacity-70">
                     ({count})
                   </span>
@@ -207,26 +226,26 @@ export default function GenrePage() {
         {selectedGenre === "all" ? (
           <div className="space-y-8">
             {genres.map((genre) => {
-              const restaurants = sortRestaurants(
-                restaurantsByGenre.get(genre) || [],
+              const genreRestaurants = sortRestaurants<RestaurantListItem>(
+                restaurantsByGenre.get(genre) ?? [],
                 sortOption
               )
               return (
                 <div key={genre}>
                   <div className="mb-4 flex items-center gap-3">
                     <h2 className="text-xl font-semibold text-zinc-900">
-                      {genre}
+                      {genreLabel(genre)}
                     </h2>
                     <Badge variant="default">
-                      {restaurants.length}件
+                      {genreRestaurants.length}件
                     </Badge>
                   </div>
                   {/* モバイルは常にカード表示 */}
                   {viewMode === "cards" || typeof window !== 'undefined' && window.innerWidth < 768 ? (
-                    <RestaurantCards restaurants={restaurants} />
+                    <RestaurantCards restaurants={genreRestaurants} />
                   ) : (
                     <div className="rounded-lg border border-zinc-200 bg-white">
-                      <RestaurantTable restaurants={restaurants} />
+                      <RestaurantTable restaurants={genreRestaurants} />
                     </div>
                   )}
                 </div>

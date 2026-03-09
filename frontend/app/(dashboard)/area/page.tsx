@@ -2,32 +2,48 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { useQuery } from "@tanstack/react-query"
 import { RestaurantTable } from "@/components/restaurant-table"
 import { RestaurantCards } from "@/components/restaurant-cards"
-import { mockRestaurants } from "@/lib/mock-data"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth-context"
 import { sortRestaurants, type SortOption } from "@/lib/utils"
 import type { Area } from "@/lib/types"
+import { listRestaurants } from "@/lib/api/restaurants"
+import { areaLabel } from "@/lib/constants"
 
 export default function AreaPage() {
   const router = useRouter()
-  const { user, isLoading } = useAuth()
+  const { user, isLoading: isAuthLoading } = useAuth()
   const [selectedArea, setSelectedArea] = React.useState<Area | "all">("all")
   const [viewMode, setViewMode] = React.useState<"table" | "cards">("cards")
   const [sortOption, setSortOption] = React.useState<SortOption>("createdAt_desc")
 
   // 認証チェック
   React.useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isAuthLoading && !user) {
       router.push("/login")
     }
-  }, [user, isLoading, router])
+  }, [user, isAuthLoading, router])
+
+  const {
+    data: restaurantList,
+    isPending: isRestaurantsPending,
+  } = useQuery({
+    queryKey: ["restaurants", { scope: "area" }],
+    queryFn: () => listRestaurants().then((res) => res.data),
+    enabled: !!user,
+  })
+
+  const restaurants = React.useMemo(
+    () => restaurantList ?? [],
+    [restaurantList],
+  )
 
   // エリアごとにグループ化
   const restaurantsByArea = React.useMemo(() => {
-    const grouped = new Map<Area, typeof mockRestaurants>()
-    mockRestaurants.forEach((restaurant) => {
+    const grouped = new Map<Area, typeof restaurants>()
+    restaurants.forEach((restaurant) => {
       const area = restaurant.area as Area
       if (!grouped.has(area)) {
         grouped.set(area, [])
@@ -35,7 +51,7 @@ export default function AreaPage() {
       grouped.get(area)?.push(restaurant)
     })
     return grouped
-  }, [])
+  }, [restaurants])
 
   // エリアの一覧を取得（件数が多い順）
   const areas = React.useMemo(() => {
@@ -50,13 +66,21 @@ export default function AreaPage() {
   const displayedRestaurants = React.useMemo(() => {
     const list =
       selectedArea === "all"
-        ? mockRestaurants
+        ? restaurants
         : restaurantsByArea.get(selectedArea) || []
     return sortRestaurants(list, sortOption)
-  }, [selectedArea, restaurantsByArea, sortOption])
+  }, [selectedArea, restaurantsByArea, sortOption, restaurants])
 
-  if (isLoading || !user) {
+  if (isAuthLoading || !user) {
     return null
+  }
+
+  if (isRestaurantsPending) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+        <p className="text-sm text-zinc-500">エリア別の飲食店を読み込み中です...</p>
+      </div>
+    )
   }
 
   return (
@@ -87,9 +111,6 @@ export default function AreaPage() {
               }`}
             >
               すべて
-              <span className="ml-1.5 text-xs opacity-70">
-                ({mockRestaurants.length})
-              </span>
             </button>
             {areas.map((area) => {
               const count = restaurantsByArea.get(area)?.length || 0
@@ -103,7 +124,7 @@ export default function AreaPage() {
                       : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
                   }`}
                 >
-                  {area}
+                  {areaLabel(area)}
                   <span className="ml-1.5 text-xs opacity-70">
                     ({count})
                   </span>
@@ -198,7 +219,7 @@ export default function AreaPage() {
                 <div key={area}>
                   <div className="mb-4 flex items-center gap-3">
                     <h2 className="text-xl font-semibold text-zinc-900">
-                      {area}
+                      {areaLabel(area)}
                     </h2>
                     <Badge variant="default">
                       {restaurants.length}件

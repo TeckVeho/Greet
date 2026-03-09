@@ -9,12 +9,12 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Area, Genre } from '@/lib/types'
+import { AREA_OPTIONS, GENRE_OPTIONS, PRICE_RANGE_OPTIONS } from '@/lib/constants'
 import * as React from 'react'
 
 export interface FilterState {
-	areas: Area[]
-	genres: Genre[]
+	areas: string[]
+	genres: string[]
 	hasPrivateRoom?: boolean
 	smokingAllowed?: boolean
 	priceRanges: string[]
@@ -27,28 +27,6 @@ interface FilterDialogProps {
 	onFiltersChange: (filters: FilterState) => void
 }
 
-const AREAS: Area[] = ['銀座', '赤坂', '六本木', '新橋', '麻布', '恵比寿', '表参道', 'その他']
-const GENRES: Genre[] = [
-	'寿司',
-	'フレンチ',
-	'イタリアン',
-	'和食',
-	'中華',
-	'鉄板焼き',
-	'焼肉',
-	'天ぷら',
-	'割烹',
-	'その他',
-]
-const PRICE_RANGES = [
-	'¥5,000~¥10,000',
-	'¥10,000~¥20,000',
-	'¥15,000~¥30,000',
-	'¥20,000~¥35,000',
-	'¥25,000~¥40,000',
-	'¥30,000~¥50,000',
-]
-
 export function FilterDialog({ open, onOpenChange, filters, onFiltersChange }: FilterDialogProps) {
 	const [localFilters, setLocalFilters] = React.useState<FilterState>(filters)
 
@@ -56,28 +34,28 @@ export function FilterDialog({ open, onOpenChange, filters, onFiltersChange }: F
 		setLocalFilters(filters)
 	}, [filters])
 
-	const handleAreaToggle = (area: Area) => {
+	const handleAreaToggle = (value: string) => {
 		setLocalFilters(prev => ({
 			...prev,
-			areas: prev.areas.includes(area) ? prev.areas.filter(a => a !== area) : [...prev.areas, area],
+			areas: prev.areas.includes(value) ? prev.areas.filter(a => a !== value) : [...prev.areas, value],
 		}))
 	}
 
-	const handleGenreToggle = (genre: Genre) => {
+	const handleGenreToggle = (value: string) => {
 		setLocalFilters(prev => ({
 			...prev,
-			genres: prev.genres.includes(genre)
-				? prev.genres.filter(g => g !== genre)
-				: [...prev.genres, genre],
+			genres: prev.genres.includes(value)
+				? prev.genres.filter(g => g !== value)
+				: [...prev.genres, value],
 		}))
 	}
 
-	const handlePriceRangeToggle = (range: string) => {
+	const handlePriceRangeToggle = (value: string) => {
 		setLocalFilters(prev => ({
 			...prev,
-			priceRanges: prev.priceRanges.includes(range)
-				? prev.priceRanges.filter(r => r !== range)
-				: [...prev.priceRanges, range],
+			priceRanges: prev.priceRanges.includes(value)
+				? prev.priceRanges.filter(r => r !== value)
+				: [...prev.priceRanges, value],
 		}))
 	}
 
@@ -118,65 +96,65 @@ export function FilterDialog({ open, onOpenChange, filters, onFiltersChange }: F
 				</DialogHeader>
 
 				<div className='space-y-6'>
-					{/* エリア */}
-					<div>
-						<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>エリア</Label>
-						<div className='flex flex-wrap gap-2'>
-							{AREAS.map(area => (
-								<button
-									key={area}
-									onClick={() => handleAreaToggle(area)}
-									className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-										localFilters.areas.includes(area)
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
-								>
-									{area}
-								</button>
-							))}
-						</div>
+				{/* エリア */}
+				<div>
+					<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>エリア</Label>
+					<div className='flex flex-wrap gap-2'>
+						{AREA_OPTIONS.map(opt => (
+							<button
+								key={opt.value}
+								onClick={() => handleAreaToggle(opt.value)}
+								className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+									localFilters.areas.includes(opt.value)
+										? 'bg-zinc-900 text-white'
+										: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+								}`}
+							>
+								{opt.label}
+							</button>
+						))}
 					</div>
+				</div>
 
-					{/* ジャンル */}
-					<div>
-						<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>ジャンル</Label>
-						<div className='flex flex-wrap gap-2'>
-							{GENRES.map(genre => (
-								<button
-									key={genre}
-									onClick={() => handleGenreToggle(genre)}
-									className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-										localFilters.genres.includes(genre)
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
-								>
-									{genre}
-								</button>
-							))}
-						</div>
+				{/* ジャンル */}
+				<div>
+					<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>ジャンル</Label>
+					<div className='flex flex-wrap gap-2'>
+						{GENRE_OPTIONS.map(opt => (
+							<button
+								key={opt.value}
+								onClick={() => handleGenreToggle(opt.value)}
+								className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+									localFilters.genres.includes(opt.value)
+										? 'bg-zinc-900 text-white'
+										: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+								}`}
+							>
+								{opt.label}
+							</button>
+						))}
 					</div>
+				</div>
 
-					{/* 価格帯 */}
-					<div>
-						<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>価格帯</Label>
-						<div className='flex flex-wrap gap-2'>
-							{PRICE_RANGES.map(range => (
-								<button
-									key={range}
-									onClick={() => handlePriceRangeToggle(range)}
-									className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-										localFilters.priceRanges.includes(range)
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
-								>
-									{range}
-								</button>
-							))}
-						</div>
+				{/* 価格帯 */}
+				<div>
+					<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>価格帯</Label>
+					<div className='flex flex-wrap gap-2'>
+						{PRICE_RANGE_OPTIONS.map(opt => (
+							<button
+								key={opt.value}
+								onClick={() => handlePriceRangeToggle(opt.value)}
+								className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+									localFilters.priceRanges.includes(opt.value)
+										? 'bg-zinc-900 text-white'
+										: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+								}`}
+							>
+								{opt.label}
+							</button>
+						))}
 					</div>
+				</div>
 
 					{/* 個室・喫煙 */}
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
