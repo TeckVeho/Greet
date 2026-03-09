@@ -98,10 +98,9 @@ export interface CreateRestaurantPayload {
   address?: string
   phone?: string
   url?: string
+  coverImage?: string
   icon?: string
   genres?: string[]
-  createdById: string
-  companyId: string
 }
 
 export async function createRestaurant(
@@ -124,6 +123,52 @@ export async function getRestaurant(
 ): Promise<RestaurantDetail> {
   const res = await apiClient.get<ApiResponse<RestaurantDetail>>(
     `/restaurants/${id}`,
+  )
+
+  if (!res.data.success) {
+    throw new Error(res.data.error.message)
+  }
+
+  return res.data.data
+}
+
+export async function uploadRestaurantImage(
+  file: File,
+): Promise<string> {
+  const formData = new FormData()
+  formData.append("image", file)
+
+  const res = await apiClient.post<ApiResponse<{ url: string }>>(
+    "/restaurants/upload-image",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  )
+
+  if (!res.data.success) {
+    throw new Error(res.data.error.message)
+  }
+
+  return res.data.data.url
+}
+
+export async function deleteRestaurantImage(url: string): Promise<void> {
+  const res = await apiClient.post<ApiResponse<{ message: string }>>(
+    "/restaurants/delete-image",
+    { url },
+  )
+
+  if (!res.data.success) {
+    throw new Error(res.data.error.message)
+  }
+}
+
+export async function updateRestaurant(
+  id: string,
+  payload: Partial<CreateRestaurantPayload>,
+): Promise<RestaurantListItem> {
+  const res = await apiClient.put<ApiResponse<RestaurantListItem>>(
+    `/restaurants/${id}`,
+    payload,
   )
 
   if (!res.data.success) {

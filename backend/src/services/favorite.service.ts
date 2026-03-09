@@ -78,7 +78,19 @@ export class FavoriteService {
     }
   }
 
-  async add(userId: string, restaurantId: string) {
+  async add(userId: string, restaurantId: string, userCompanyId: string) {
+    // Verify the restaurant belongs to the user's company
+    const restaurant = await prisma.restaurant.findFirst({
+      where: { id: restaurantId, companyId: userCompanyId },
+    })
+    if (!restaurant) {
+      return {
+        success: false,
+        error: { code: 'NOT_FOUND', message: '飲食店が見つかりません' },
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+    }
+
     try {
       const favorite = await prisma.favorite.create({
         data: {
@@ -130,4 +142,3 @@ export class FavoriteService {
 }
 
 export const favoriteService = new FavoriteService()
-

@@ -47,11 +47,12 @@ export class UserService {
       const { passwordHash, ...safeUser } = user
       return { success: true, data: safeUser, statusCode: StatusCodes.OK }
     } catch (err) {
+      if (err instanceof ApiError) throw err
       throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
     }
   }
 
-  async create(userData: createUserBody) {
+  async create(userData: createUserBody & { companyId: string }) {
     try {
       const { password, ...rest } = userData
       const hashedPassword = await bcrypt.hash(password, 12)

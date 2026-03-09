@@ -16,14 +16,35 @@ class ReviewController {
 
     const rawRestaurantId = req.params.restaurantId
     const restaurantId = Array.isArray(rawRestaurantId) ? rawRestaurantId[0] : rawRestaurantId
-    const result = await reviewService.create(restaurantId, req.user.userId, req.body)
+    const result = await reviewService.create(
+      restaurantId,
+      req.user.userId,
+      req.user.companyId,
+      req.body,
+    )
     res.status(result.statusCode).json(result)
   }
 
   public deleteReview = async (req: Request, res: Response) => {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: '認証が必要です',
+        },
+      })
+      return
+    }
+
     const rawReviewId = req.params.reviewId
     const reviewId = Array.isArray(rawReviewId) ? rawReviewId[0] : rawReviewId
-    const result = await reviewService.delete(reviewId)
+    const result = await reviewService.delete(
+      reviewId,
+      req.user.userId,
+      req.user.role,
+      req.user.companyId,
+    )
     res.status(result.statusCode).json(result)
   }
 }

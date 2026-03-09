@@ -42,7 +42,6 @@ export interface CreateUserPayload {
   name: string
   role?: "admin" | "user"
   department?: string
-  companyId: string
   icon?: string
 }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { loginApi } from './api/auth'
 import { User } from './types'
 
@@ -16,6 +17,7 @@ const AuthContext = React.createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [user, setUser] = React.useState<User | null>(null)
 	const [isLoading, setIsLoading] = React.useState(true)
+	const queryClient = useQueryClient()
 
 	React.useEffect(() => {
 		// ローカルストレージから認証情報を復元
@@ -32,6 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			const loginedUser = await loginApi({ email: email, password: password })
 
 			if (loginedUser.user) {
+				// 別ユーザーのキャッシュが残らないよう古いクエリキャッシュを全消去
+				queryClient.clear()
 				setUser(loginedUser.user)
 				localStorage.setItem('user', JSON.stringify(loginedUser.user))
 				return true
@@ -45,6 +49,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const logout = () => {
 		setUser(null)
 		localStorage.removeItem('user')
+		// JWT トークンを必ず削除してリクエストが旧ユーザーの権限で送られないようにする
+		localStorage.removeItem('token')
+		// 別ユーザーのデータが次のログインに漏れないようキャッシュを全消去
+		queryClient.clear()
 	}
 
 	return (

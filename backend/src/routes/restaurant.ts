@@ -4,6 +4,8 @@ import { reviewController } from '../controllers/review.controller'
 import { adminMiddleware } from '../middleware/admin.middleware'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { errorMiddleware } from '../middleware/error.middleware'
+import { tenantMiddleware } from '../middleware/tenant.middleware'
+import { upload } from '../middleware/upload.middleware'
 import { validateBody, validateParams } from '../middleware/validate.middleware'
 import {
   createRestaurantSchema,
@@ -14,16 +16,22 @@ import { createReviewSchema } from '../validators/review.validator'
 
 const router = Router()
 
-router.use(authMiddleware)
+router.use(authMiddleware, tenantMiddleware)
 
 // GET /api/restaurants
 router.get('/', restaurantController.getRestaurants)
 
-// GET /api/restaurants/:id
-router.get('/:restaurantId', validateParams(restaurantIdSchema), restaurantController.getRestaurantById)
-
 // POST /api/restaurants
 router.post('/', validateBody(createRestaurantSchema), restaurantController.createRestaurant)
+
+// POST /api/restaurants/upload-image
+router.post('/upload-image', upload.single('image'), restaurantController.uploadImage)
+
+// POST /api/restaurants/delete-image
+router.post('/delete-image', restaurantController.deleteImage)
+
+// GET /api/restaurants/:id
+router.get('/:restaurantId', validateParams(restaurantIdSchema), restaurantController.getRestaurantById)
 
 // PUT /api/restaurants/:id
 router.put(

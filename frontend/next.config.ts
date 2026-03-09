@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 's3-greet.s3.ap-northeast-1.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

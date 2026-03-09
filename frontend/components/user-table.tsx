@@ -82,7 +82,7 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
                 </td>
                 <td className="px-4 py-3">
                   <Badge
-                    variant={user.role === "admin" ? "default" : "secondary"}
+                    variant={user.role === "admin" ? "default" : undefined}
                   >
                     {user.role === "admin" ? "管理者" : "一般"}
                   </Badge>

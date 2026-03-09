@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { listRestaurants, type RestaurantListItem } from '@/lib/api/restaurants'
+import { areaLabel, genreLabel, priceRangeLabel } from '@/lib/constants'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
@@ -32,8 +33,8 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 		return restaurants.filter(
 			restaurant =>
 				restaurant.name.toLowerCase().includes(query) ||
-				restaurant.area.toLowerCase().includes(query) ||
-				restaurant.genres.some(genre => genre.toLowerCase().includes(query)) ||
+				areaLabel(restaurant.area).toLowerCase().includes(query) ||
+				restaurant.genres.some(genre => genreLabel(genre).toLowerCase().includes(query)) ||
 				restaurant.address?.toLowerCase().includes(query),
 		)
 	}, [restaurants, searchQuery])
@@ -120,17 +121,17 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 											<div className='font-medium text-zinc-900 group-hover:text-blue-600 transition-colors'>
 												{restaurant.name}
 											</div>
-											<div className='flex items-center gap-2 mt-1 text-sm text-zinc-500'>
-												<span>{restaurant.area}</span>
-												<span>•</span>
-												<span>{restaurant.priceRange}</span>
-											</div>
-											<div className='flex items-center gap-1.5 mt-2 flex-wrap'>
-												{restaurant.genres.map((genre, index) => (
-													<Badge key={index} variant='area' className='text-xs'>
-														{genre}
-													</Badge>
-												))}
+										<div className='flex items-center gap-2 mt-1 text-sm text-zinc-500'>
+											<span>{areaLabel(restaurant.area)}</span>
+											<span>•</span>
+											<span>{priceRangeLabel(restaurant.priceRange)}</span>
+										</div>
+										<div className='flex items-center gap-1.5 mt-2 flex-wrap'>
+											{restaurant.genres.map((genre, index) => (
+												<Badge key={index} variant='area' className='text-xs'>
+													{genreLabel(genre)}
+												</Badge>
+											))}
 												{restaurant.hasPrivateRoom && (
 													<Badge variant='yakiniku' className='text-xs bg-green-100 text-green-700'>
 														個室あり

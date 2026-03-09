@@ -1,5 +1,6 @@
 import z from 'zod'
 
+// companyId is injected server-side from the admin's JWT — never accepted from the client body
 export const createUserSchema = z.object({
   name: z
     .string()
@@ -14,7 +15,6 @@ export const createUserSchema = z.object({
     .optional(),
   avatar: z.string().optional(),
   icon: z.string().max(10, { message: 'アイコンは10文字以内である必要があります' }).optional(),
-  companyId: z.string().uuid({ message: '有効な会社IDを指定してください' }),
 })
 const updateUserSchema = createUserSchema.partial()
 

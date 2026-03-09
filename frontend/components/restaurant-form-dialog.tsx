@@ -17,7 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select'
-import { createRestaurant } from '@/lib/api/restaurants'
+import { createRestaurant, deleteRestaurantImage, uploadRestaurantImage } from '@/lib/api/restaurants'
 import {
 	AREA_OPTIONS,
 	GENRE_OPTIONS,
@@ -25,6 +25,7 @@ import {
 } from '@/lib/constants'
 import { useAuth } from '@/lib/auth-context'
 import * as React from 'react'
+import Image from 'next/image'
 import { useQueryClient } from '@tanstack/react-query'
 
 interface RestaurantFormDialogProps {
@@ -43,7 +44,9 @@ export function RestaurantFormDialog({
 	const { user } = useAuth()
 	const queryClient = useQueryClient()
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
+	const [isUploading, setIsUploading] = React.useState(false)
 	const [error, setError] = React.useState<string | null>(null)
+	const fileInputRef = React.useRef<HTMLInputElement>(null)
 
 	const [formData, setFormData] = React.useState({
 		name: '',
@@ -56,7 +59,11 @@ export function RestaurantFormDialog({
 		url: '',
 		smokingAllowed: false,
 		icon: '🍽️',
+		coverImage: '',
 	})
+
+	// Local preview before upload completes
+	const [imagePreview, setImagePreview] = React.useState<string | null>(null)
 
 	React.useEffect(() => {
 		if (open) {
@@ -71,10 +78,56 @@ export function RestaurantFormDialog({
 				url: '',
 				smokingAllowed: false,
 				icon: '🍽️',
+				coverImage: '',
 			})
+			setImagePreview(null)
 			setError(null)
 		}
 	}, [open])
+
+	const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file) return
+
+		// Show local preview immediately
+		const localUrl = URL.createObjectURL(file)
+		setImagePreview(localUrl)
+		setIsUploading(true)
+		setError(null)
+
+		try {
+			// Delete old image from S3 if replacing
+			if (formData.coverImage) {
+				await deleteRestaurantImage(formData.coverImage).catch(() => {})
+			}
+
+			const uploadedUrl = await uploadRestaurantImage(file)
+			setFormData(prev => ({ ...prev, coverImage: uploadedUrl }))
+			setImagePreview(null) // Clear local preview, use uploaded URL
+		} catch (err) {
+			setError(err instanceof Error ? err.message : '画像のアップロードに失敗しました')
+			setImagePreview(null)
+		} finally {
+			setIsUploading(false)
+			// Reset input so the same file can be re-selected
+			if (fileInputRef.current) fileInputRef.current.value = ''
+		}
+	}
+
+	const handleImageRemove = async () => {
+		if (formData.coverImage) {
+			try {
+				await deleteRestaurantImage(formData.coverImage)
+			} catch {
+				// Best effort — don't block the user
+			}
+		}
+		setFormData(prev => ({ ...prev, coverImage: '' }))
+		setImagePreview(null)
+		if (fileInputRef.current) fileInputRef.current.value = ''
+	}
+
+	const displayImage = imagePreview || formData.coverImage || null
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -93,10 +146,9 @@ export function RestaurantFormDialog({
 				address: formData.address || undefined,
 				phone: formData.phone || undefined,
 				url: formData.url || undefined,
+				coverImage: formData.coverImage || undefined,
 				icon: formData.icon || undefined,
 				genres: [formData.genre],
-				createdById: user.id,
-				companyId: user.companyId,
 			})
 
 			await queryClient.invalidateQueries({ queryKey: ['restaurants'] })
@@ -133,6 +185,71 @@ export function RestaurantFormDialog({
 				<form onSubmit={handleSubmit}>
 					<div>
 						<div className='space-y-4'>
+							{/* カバー画像 */}
+							<div className='space-y-2'>
+								<Label>カバー画像</Label>
+								{displayImage ? (
+									<div className='relative w-full h-48 rounded-lg overflow-hidden bg-zinc-100'>
+										<Image
+											src={displayImage}
+											alt='カバー画像プレビュー'
+											fill
+											className='object-cover'
+											unoptimized
+										/>
+										{isUploading && (
+											<div className='absolute inset-0 bg-black/40 flex items-center justify-center'>
+												<div className='text-white text-sm font-medium'>アップロード中...</div>
+											</div>
+										)}
+										<div className='absolute top-2 right-2 flex gap-2'>
+											<button
+												type='button'
+												onClick={() => fileInputRef.current?.click()}
+												disabled={isUploading}
+												className='inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 hover:bg-white shadow-sm transition-colors text-sm'
+												title='画像を変更'
+											>
+												✏️
+											</button>
+											<button
+												type='button'
+												onClick={handleImageRemove}
+												disabled={isUploading}
+												className='inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 hover:bg-white shadow-sm transition-colors text-sm'
+												title='画像を削除'
+											>
+												🗑️
+											</button>
+										</div>
+									</div>
+								) : (
+									<button
+										type='button'
+										onClick={() => fileInputRef.current?.click()}
+										disabled={isUploading}
+										className='flex w-full h-32 items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer'
+									>
+										<div className='text-center'>
+											<div className='text-2xl mb-1'>📷</div>
+											<div className='text-sm text-zinc-500'>
+												クリックして画像をアップロード
+											</div>
+											<div className='text-xs text-zinc-400 mt-1'>
+												JPEG, PNG, WebP, GIF（最大10MB）
+											</div>
+										</div>
+									</button>
+								)}
+								<input
+									ref={fileInputRef}
+									type='file'
+									accept='image/jpeg,image/png,image/webp,image/gif'
+									onChange={handleImageSelect}
+									className='hidden'
+								/>
+							</div>
+
 							{/* 店名 */}
 							<div className='space-y-2'>
 								<Label htmlFor='name'>店名 *</Label>

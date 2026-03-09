@@ -5,7 +5,24 @@ import type { TcreateReviewBodySchema } from '../validators/review.validator'
 type CreateReviewInput = TcreateReviewBodySchema
 
 export class ReviewService {
-  async create(restaurantId: string, authorId: string, payload: CreateReviewInput) {
+  async create(
+    restaurantId: string,
+    authorId: string,
+    authorCompanyId: string,
+    payload: CreateReviewInput,
+  ) {
+    // Verify the target restaurant belongs to the author's company
+    const restaurant = await prisma.restaurant.findFirst({
+      where: { id: restaurantId, companyId: authorCompanyId },
+    })
+    if (!restaurant) {
+      return {
+        success: false,
+        error: { code: 'NOT_FOUND', message: '飲食店が見つかりません' },
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+    }
+
     const review = await prisma.review.create({
       data: {
         restaurantId,
@@ -46,7 +63,37 @@ export class ReviewService {
     }
   }
 
-  async delete(id: string) {
+  async delete(
+    id: string,
+    callerId: string,
+    callerRole: string,
+    callerCompanyId: string,
+  ) {
+    // Fetch the review and its restaurant to verify tenancy
+    const review = await prisma.review.findUnique({
+      where: { id },
+      include: {
+        restaurant: { select: { companyId: true } },
+      },
+    })
+
+    if (!review || review.restaurant.companyId !== callerCompanyId) {
+      return {
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'レビューが見つかりません' },
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+    }
+
+    // Only the review author or an admin may delete
+    if (review.authorId !== callerId && callerRole !== 'admin') {
+      return {
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'このレビューを削除する権限がありません' },
+        statusCode: StatusCodes.FORBIDDEN,
+      }
+    }
+
     await prisma.review.delete({ where: { id } })
     return {
       success: true,

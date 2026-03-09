@@ -1,24 +1,24 @@
 import { Genre } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
+import { deleteFile } from './file.service'
 import type {
   createRestaurantBodySchema,
   listRestaurantsQueryBodySchema,
   updateRestaurantBodySchema,
 } from '../validators/restaurant.validator'
 
-type CreateRestaurantInput = createRestaurantBodySchema
+type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; createdById: string }
 type UpdateRestaurantInput = updateRestaurantBodySchema
 type ListQuery = listRestaurantsQueryBodySchema
 
 export class RestaurantService {
-  async findAll(query: ListQuery) {
+  async findAll(query: ListQuery, companyId: string) {
     const page = query.page ?? 1
     const limit = query.limit ?? 20
     const skip = (page - 1) * limit
 
-    // TODO: 検索・フィルタリングパラメータは docs に従って今後拡張
-    const where: any = {}
+    const where = { companyId }
 
     const [total, restaurants] = await Promise.all([
       prisma.restaurant.count({ where }),
@@ -95,9 +95,9 @@ export class RestaurantService {
     }
   }
 
-  async findById(id: string, userId?: string) {
-    const restaurant = await prisma.restaurant.findUnique({
-      where: { id },
+  async findById(id: string, companyId: string, userId?: string) {
+    const restaurant = await prisma.restaurant.findFirst({
+      where: { id, companyId },
       include: {
         genres: true,
         reviews: {
@@ -210,9 +210,29 @@ export class RestaurantService {
     return { success: true, data: restaurant, statusCode: StatusCodes.CREATED }
   }
 
-  async update(id: string, payload: UpdateRestaurantInput & { genres?: Genre[] }) {
+  async update(id: string, companyId: string, payload: UpdateRestaurantInput & { genres?: Genre[] }) {
+    // Verify the restaurant belongs to the caller's company before updating
+    const existing = await prisma.restaurant.findFirst({ where: { id, companyId } })
+    if (!existing) {
+      return {
+        success: false,
+        error: { code: 'NOT_FOUND', message: '飲食店が見つかりません' },
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+    }
+
     try {
       const { genres, ...restaurantData } = payload
+
+      // If coverImage is being changed, delete the old one from S3
+      if (
+        restaurantData.coverImage !== undefined &&
+        existing.coverImage &&
+        existing.coverImage !== restaurantData.coverImage
+      ) {
+        await deleteFile(existing.coverImage).catch(() => {})
+      }
+
       const restaurant = await prisma.restaurant.update({
         where: { id },
         data: restaurantData,
@@ -235,8 +255,24 @@ export class RestaurantService {
     }
   }
 
-  async delete(id: string) {
-    await prisma.restaurant.delete({ where: { id } })
+  async delete(id: string, companyId: string) {
+    // Fetch the restaurant first to get the cover image URL
+    const existing = await prisma.restaurant.findFirst({ where: { id, companyId } })
+    if (!existing) {
+      return {
+        success: false,
+        error: { code: 'NOT_FOUND', message: '飲食店が見つかりません' },
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+    }
+
+    await prisma.restaurant.deleteMany({ where: { id, companyId } })
+
+    // Delete cover image from S3 if it exists
+    if (existing.coverImage) {
+      await deleteFile(existing.coverImage).catch(() => {})
+    }
+
     return {
       success: true,
       data: { message: '飲食店を削除しました' },

@@ -1,6 +1,7 @@
 import { Area, Genre, PriceRange } from '@prisma/client'
 import z from 'zod'
 
+// createdById / companyId are injected server-side from JWT — never accepted from the client body
 export const createRestaurantSchema = z.object({
   name: z
     .string()
@@ -16,9 +17,9 @@ export const createRestaurantSchema = z.object({
   coverImage: z.string().optional(),
   icon: z.string().optional(),
   genres: z.array(z.nativeEnum(Genre)).optional(),
-  createdById: z.string().uuid({ message: '有効なユーザーIDを指定してください' }),
-  companyId: z.string().uuid({ message: '有効な会社IDを指定してください' }),
 })
+
+// companyId and createdById are never updatable by the client
 export const updateRestaurantSchema = createRestaurantSchema.partial()
 
 export const listRestaurantsQuerySchema = z.object({
@@ -27,7 +28,7 @@ export const listRestaurantsQuerySchema = z.object({
 })
 
 export const restaurantIdSchema = z.object({
-  restaurantId: z.string().uuid({ message: '有効なレストランIDを指定してください' }),
+  restaurantId: z.string().min(1, { message: '有効なレストランIDを指定してください' }),
 })
 
 export type createRestaurantBodySchema = z.infer<typeof createRestaurantSchema>

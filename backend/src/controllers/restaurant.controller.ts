@@ -1,23 +1,31 @@
 import { NextFunction, Request, Response } from 'express'
+import { StatusCodes } from 'http-status-codes'
+import { deleteFile, uploadFile } from '../services/file.service'
 import { restaurantService } from '../services/restaurant.service'
 
 class RestaurantController {
   public getRestaurants = async (req: Request, res: Response) => {
-    const result = await restaurantService.findAll(req.query as any)
+    const companyId = req.user!.companyId
+    const result = await restaurantService.findAll(req.query as any, companyId)
     res.status(result.statusCode).json(result)
   }
 
   public getRestaurantById = async (req: Request, res: Response) => {
     const rawRestaurantId = req.params.restaurantId
     const restaurantId = Array.isArray(rawRestaurantId) ? rawRestaurantId[0] : rawRestaurantId
+    const companyId = req.user!.companyId
     const userId = req.user?.userId
-    const result = await restaurantService.findById(restaurantId, userId)
+    const result = await restaurantService.findById(restaurantId, companyId, userId)
     res.status(result.statusCode).json(result)
   }
 
   public createRestaurant = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await restaurantService.create(req.body)
+      const result = await restaurantService.create({
+        ...req.body,
+        companyId: req.user!.companyId,
+        createdById: req.user!.userId,
+      })
       res.status(result.statusCode).json(result)
     } catch (error) {
       next(error)
@@ -29,7 +37,8 @@ class RestaurantController {
       const restaurantId = Array.isArray(req.params.restaurantId)
         ? req.params.restaurantId[0]
         : req.params.restaurantId
-      const result = await restaurantService.update(restaurantId, req.body)
+      const companyId = req.user!.companyId
+      const result = await restaurantService.update(restaurantId, companyId, req.body)
       res.status(result.statusCode).json(result)
     } catch (error) {
       next(error)
@@ -39,8 +48,44 @@ class RestaurantController {
   public deleteRestaurant = async (req: Request, res: Response) => {
     const rawRestaurantId = req.params.restaurantId
     const restaurantId = Array.isArray(rawRestaurantId) ? rawRestaurantId[0] : rawRestaurantId
-    const result = await restaurantService.delete(restaurantId)
+    const companyId = req.user!.companyId
+    const result = await restaurantService.delete(restaurantId, companyId)
     res.status(result.statusCode).json(result)
+  }
+
+  public uploadImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          error: { code: 'NO_FILE', message: 'ファイルが添付されていません' },
+        })
+        return
+      }
+
+      const url = await uploadFile(req.file)
+      res.status(StatusCodes.OK).json({ success: true, data: { url } })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  public deleteImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { url } = req.body
+      if (!url || typeof url !== 'string') {
+        res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          error: { code: 'INVALID_URL', message: '削除するファイルのURLが必要です' },
+        })
+        return
+      }
+
+      await deleteFile(url)
+      res.status(StatusCodes.OK).json({ success: true, data: { message: '画像を削除しました' } })
+    } catch (error) {
+      next(error)
+    }
   }
 }
 

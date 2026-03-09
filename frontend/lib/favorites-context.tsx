@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "./auth-context"
 import {
   addFavorite as addFavoriteApi,
@@ -20,6 +21,7 @@ const FavoritesContext = React.createContext<FavoritesContextType | undefined>(u
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [favorites, setFavorites] = React.useState<string[]>([])
 
   // ログインユーザーのお気に入り一覧をAPIから取得
@@ -48,26 +50,35 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       return [...prev, id]
     })
 
-    void addFavoriteApi(id).catch((e) => {
-      console.error("Failed to add favorite", e)
-      // ロールバック
-      setFavorites((prev) => prev.filter((fav) => fav !== id))
-    })
-  }, [])
+    void addFavoriteApi(id)
+      .then(() => {
+        // お気に入りページのクエリキャッシュを無効化して最新データを取得
+        void queryClient.invalidateQueries({ queryKey: ["favorites"] })
+      })
+      .catch((e) => {
+        console.error("Failed to add favorite", e)
+        // ロールバック
+        setFavorites((prev) => prev.filter((fav) => fav !== id))
+      })
+  }, [queryClient])
 
   const removeFavorite = React.useCallback((id: string) => {
     // 楽観的更新
     setFavorites((prev) => prev.filter((fav) => fav !== id))
 
-    void removeFavoriteApi(id).catch((e) => {
-      console.error("Failed to remove favorite", e)
-      // ロールバック（IDを戻す）
-      setFavorites((prev) => {
-        if (prev.includes(id)) return prev
-        return [...prev, id]
+    void removeFavoriteApi(id)
+      .then(() => {
+        void queryClient.invalidateQueries({ queryKey: ["favorites"] })
       })
-    })
-  }, [])
+      .catch((e) => {
+        console.error("Failed to remove favorite", e)
+        // ロールバック（IDを戻す）
+        setFavorites((prev) => {
+          if (prev.includes(id)) return prev
+          return [...prev, id]
+        })
+      })
+  }, [queryClient])
 
   const isFavorite = React.useCallback(
     (id: string) => {

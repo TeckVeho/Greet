@@ -46,7 +46,6 @@ export function UserFormDialog({
     email: "",
     password: "",
     role: "user",
-    companyId: "",
     department: "",
   })
 
@@ -57,7 +56,6 @@ export function UserFormDialog({
         email: user.email,
         password: "",
         role: user.role,
-        companyId: user.companyId,
         department: user.department,
       })
     } else {
@@ -66,7 +64,6 @@ export function UserFormDialog({
         email: "",
         password: "",
         role: "user",
-        companyId: "",
         department: "",
       })
     }
@@ -75,7 +72,7 @@ export function UserFormDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name || !formData.email || !formData.companyId || !formData.role) {
+    if (!formData.name || !formData.email || !formData.role) {
       alert("必須項目を全て入力してください")
       return
     }
@@ -145,40 +142,17 @@ export function UserFormDialog({
                 </div>
               )}
 
-              {/* 会社と部署 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="company">所属会社 *</Label>
-                  <Select
-                    value={formData.companyId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, companyId: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="会社を選択" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {companies.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.icon} {company.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="department">部署</Label>
-                  <Input
-                    id="department"
-                    value={formData.department || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, department: e.target.value })
-                    }
-                    placeholder="営業部"
-                  />
-                </div>
+              {/* 部署 */}
+              <div className="space-y-2">
+                <Label htmlFor="department">部署</Label>
+                <Input
+                  id="department"
+                  value={formData.department || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, department: e.target.value })
+                  }
+                  placeholder="営業部"
+                />
               </div>
 
               {/* 権限 */}

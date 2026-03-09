@@ -75,7 +75,6 @@ export default function UsersPage() {
 		if (
 			!userData.name ||
 			!userData.email ||
-			!userData.companyId ||
 			!userData.role ||
 			!userData.password
 		) {
@@ -88,7 +87,6 @@ export default function UsersPage() {
 				email: userData.email,
 				password: userData.password,
 				role: userData.role,
-				companyId: userData.companyId,
 				department: userData.department,
 			})
 			await queryClient.invalidateQueries({ queryKey: ['users'] })

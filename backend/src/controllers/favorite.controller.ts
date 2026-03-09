@@ -31,7 +31,7 @@ class FavoriteController {
     }
 
     const { restaurantId } = req.body as { restaurantId: string }
-    const result = await favoriteService.add(req.user.userId, restaurantId)
+    const result = await favoriteService.add(req.user.userId, restaurantId, req.user.companyId)
     res.status(result.statusCode).json(result)
   }
 
