@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import { DialogDeleteItem } from '../dialogs/dialog-delete-item'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
+
 export const UserColumns: ColumnDef<User>[] = [
 	{
 		accessorKey: 'avatar',
@@ -49,14 +50,24 @@ export const UserColumns: ColumnDef<User>[] = [
 		accessorKey: 'createdAt',
 		header: '作成日',
 		cell: ({ getValue }) => {
-			return <span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
+			return (
+				<div className='flex flex-col'>
+					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
+					<span>{format(getValue<Date>(), 'HH:mm')}</span>
+				</div>
+			)
 		},
 	},
 	{
 		accessorKey: 'lastLoginAt',
 		header: '最終ログイン',
 		cell: ({ getValue }) => {
-			return <span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
+			return (
+				<div className='flex flex-col'>
+					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
+					<span>{format(getValue<Date>(), 'HH:mm')}</span>
+				</div>
+			)
 		},
 	},
 	{
@@ -75,6 +86,7 @@ export const UserColumns: ColumnDef<User>[] = [
 					<DialogDeleteItem
 						deleteAction={() => {}}
 						deleting={false}
+						description='このユーザーを削除してもよろしいですか？この操作は元に戻すことができません。'
 						trigger={
 							<Button
 								variant='secondary'

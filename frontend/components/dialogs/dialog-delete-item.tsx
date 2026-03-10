@@ -25,10 +25,10 @@ interface DialogDeleteItemProps {
 export const DialogDeleteItem: React.FC<DialogDeleteItemProps> = ({
 	className,
 	trigger,
-	title = 'Delete item',
-	description = 'This action cannot be undone. Are you sure you want to continue?',
-	actionButtonText = 'Delete',
-	cancelButtonText = 'Cancel',
+	title = '削除の確認',
+	description = 'この操作は元に戻すことができません。続行してもよろしいですか？',
+	actionButtonText = '削除',
+	cancelButtonText = 'キャンセル',
 	deleteAction,
 	deleting,
 }) => {
