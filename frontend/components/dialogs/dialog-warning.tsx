@@ -51,7 +51,9 @@ export const DialogWarning: React.FC<DialogDeleteItemProps> = ({
 					<Button variant='denger' onClick={() => deleteAction()}>
 						{deleting ? <Spinner text={deletingText} /> : actionButtonText}
 					</Button>
-					<Button>{cancelButtonText}</Button>
+					<DialogClose asChild>
+						<Button>{cancelButtonText}</Button>
+					</DialogClose>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
