@@ -3,7 +3,9 @@
 import { UserFormDialog } from '@/components/dialogs'
 import {
 	Button,
-	Input,
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -19,6 +21,7 @@ import { useAuth } from '@/lib/auth-context'
 import type { User } from '@/lib/types'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { PaginationState } from '@tanstack/react-table'
+import { Plus, SearchIcon, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
@@ -102,28 +105,30 @@ export default function UsersPage() {
 				{/* 検索・フィルター・追加バー */}
 				<div className='mb-6 space-y-3'>
 					<div className='flex flex-col gap-3 md:flex-row md:items-center'>
-						<div className='relative flex-1'>
-							<svg
-								className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400'
-								fill='none'
-								strokeWidth='2'
-								stroke='currentColor'
-								viewBox='0 0 24 24'
-							>
-								<path
-									strokeLinecap='round'
-									strokeLinejoin='round'
-									d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z'
-								/>
-							</svg>
-							<Input
-								type='search'
+						<InputGroup>
+							<InputGroupInput
 								placeholder='名前、メールアドレス、部署、会社名で検索...'
-								value={searchQuery}
 								onChange={e => setSearchQuery(e.target.value)}
-								className='pl-10'
+								value={searchQuery}
 							/>
-						</div>
+							<InputGroupAddon>
+								<SearchIcon />
+							</InputGroupAddon>
+
+							<InputGroupAddon align='inline-end'>
+								{searchQuery ? (
+									<X
+										className='cursor-pointer'
+										onClick={() => {
+											setSearchQuery('')
+										}}
+									/>
+								) : (
+									''
+								)}
+							</InputGroupAddon>
+						</InputGroup>
+
 						<Select value={companyFilter} onValueChange={setCompanyFilter}>
 							<SelectTrigger className='w-full md:w-60'>
 								<SelectValue placeholder='会社で絞り込み' />
@@ -138,15 +143,7 @@ export default function UsersPage() {
 							</SelectContent>
 						</Select>
 						<Button onClick={() => setIsDialogOpen(true)}>
-							<svg
-								className='mr-2 h-4 w-4'
-								fill='none'
-								strokeWidth='2'
-								stroke='currentColor'
-								viewBox='0 0 24 24'
-							>
-								<path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
-							</svg>
+							<Plus />
 							新規ユーザー
 						</Button>
 					</div>
