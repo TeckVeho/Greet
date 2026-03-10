@@ -111,8 +111,7 @@ export default function LoginPage() {
 						<Button type='submit' className='w-full' disabled={isLoading}>
 							{isLoading ? (
 								<span className='flex items-center justify-center gap-2'>
-									<Spinner />
-									ログイン中...
+									<Spinner text='ログイン中...' />
 								</span>
 							) : (
 								'ログイン'

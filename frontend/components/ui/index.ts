@@ -16,6 +16,15 @@ export {
 	DialogTitle,
 	DialogTrigger,
 } from './dialog'
+export {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from './form'
 export { Input } from './input'
 export {
 	InputGroup,
