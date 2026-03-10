@@ -1,7 +1,7 @@
-import 'dotenv/config'
-import { PrismaClient, Area, PriceRange, Genre, Role } from '@prisma/client'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
+import { Area, Genre, PriceRange, PrismaClient, Role } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
+import 'dotenv/config'
 
 const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
 const prisma = new PrismaClient({ adapter })
@@ -131,6 +131,164 @@ async function main() {
       companyId: companyGreet.id,
     },
   })
+  const seedUsers = [
+    {
+      email: 'user10@example.com',
+      name: '佐藤 健太',
+      dept: 'IT部',
+      icon: '💻',
+      comp: companyGreet.id,
+    },
+    {
+      email: 'user11@example.com',
+      name: '渡辺 陽子',
+      dept: '広報部',
+      icon: '📣',
+      comp: companyYamada.id,
+    },
+    {
+      email: 'user12@example.com',
+      name: '小林 直樹',
+      dept: '法務部',
+      icon: '⚖️',
+      comp: companySuzuki.id,
+    },
+    {
+      email: 'user13@example.com',
+      name: '加藤 沙織',
+      dept: '企画部',
+      icon: '📝',
+      comp: companyGreet.id,
+    },
+    {
+      email: 'user14@example.com',
+      name: '吉田 拓也',
+      dept: '物流部',
+      icon: '🚚',
+      comp: companyYamada.id,
+    },
+    {
+      email: 'user15@example.com',
+      name: '佐々木 舞',
+      dept: 'カスタマーサポート',
+      icon: '🎧',
+      comp: companySuzuki.id,
+    },
+    {
+      email: 'user16@example.com',
+      name: '山口 俊一',
+      dept: '戦略室',
+      icon: '♟️',
+      comp: companyGreet.id,
+    },
+    {
+      email: 'user17@example.com',
+      name: '松本 恵',
+      dept: 'デザイン部',
+      icon: '🎨',
+      comp: companyYamada.id,
+    },
+    {
+      email: 'user18@example.com',
+      name: '井上 隆',
+      dept: '購買部',
+      icon: '🛒',
+      comp: companySuzuki.id,
+    },
+    {
+      email: 'user19@example.com',
+      name: '木村 結衣',
+      dept: '秘書室',
+      icon: '📅',
+      comp: companyGreet.id,
+    },
+    {
+      email: 'user20@example.com',
+      name: '林 大輔',
+      dept: '情報セキュリティ',
+      icon: '🛡️',
+      comp: companyYamada.id,
+    },
+    {
+      email: 'user21@example.com',
+      name: '清水 亮',
+      dept: '研究開発',
+      icon: '🧪',
+      comp: companySuzuki.id,
+    },
+    {
+      email: 'user22@example.com',
+      name: '山崎 奈々',
+      dept: '海外事業部',
+      icon: '✈️',
+      comp: companyGreet.id,
+    },
+    {
+      email: 'user23@example.com',
+      name: '池田 剛',
+      dept: '施設管理',
+      icon: '🏗️',
+      comp: companyYamada.id,
+    },
+    {
+      email: 'user24@example.com',
+      name: '橋本 芽衣',
+      dept: '福利厚生',
+      icon: '🍎',
+      comp: companySuzuki.id,
+    },
+    {
+      email: 'user25@example.com',
+      name: '阿部 健一',
+      dept: '品質管理',
+      icon: '🔍',
+      comp: companyGreet.id,
+    },
+    {
+      email: 'user26@example.com',
+      name: '森 智子',
+      dept: 'トレーニング',
+      icon: '📚',
+      comp: companyYamada.id,
+    },
+    {
+      email: 'user27@example.com',
+      name: '中島 裕太',
+      dept: 'インフラ部',
+      icon: '☁️',
+      comp: companySuzuki.id,
+    },
+    {
+      email: 'user28@example.com',
+      name: '前田 瑞希',
+      dept: 'イベント企画',
+      icon: '🎈',
+      comp: companyGreet.id,
+    },
+    {
+      email: 'user29@example.com',
+      name: '岡田 慎吾',
+      dept: '広告宣伝',
+      icon: '📺',
+      comp: companyYamada.id,
+    },
+  ]
+
+  for (const u of seedUsers) {
+    await prisma.user.upsert({
+      where: { email: u.email },
+      update: {},
+      create: {
+        email: u.email,
+        passwordHash,
+        name: u.name,
+        role: Role.user,
+        department: u.dept,
+        icon: u.icon,
+        companyId: u.comp,
+      },
+    })
+  }
 
   const restaurantGinza = await prisma.restaurant.upsert({
     where: { id: 'seed-rest-ginza' },
@@ -345,7 +503,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error(e)
     process.exit(1)
   })

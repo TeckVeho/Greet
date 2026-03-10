@@ -24,4 +24,5 @@ export {
 	PaginationPrevious,
 } from './pagination'
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
+export { Skeleton } from './skeleton'
 export { Spinner } from './spinner'

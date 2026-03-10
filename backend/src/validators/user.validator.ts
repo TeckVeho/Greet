@@ -21,6 +21,10 @@ const updateUserSchema = createUserSchema.partial()
 export const listUserQuerySchema = z.object({
   limit: z.number().int().positive().max(100).optional(),
   page: z.number().int().positive().optional(),
+  search: z
+    .string()
+    .max(100, { message: '検索クエリは100文字以内である必要があります' })
+    .optional(),
 })
 
 export const userIdSchema = z.object({

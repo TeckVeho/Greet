@@ -1,30 +1,55 @@
+import { Prisma } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
 import { ApiError } from '../utils/utils'
-import { createUserBody } from '../validators/user.validator'
-
+import { createUserBody, listUserQuery } from '../validators/user.validator'
 export class UserService {
-  async findAll() {
+  async findAll(query: listUserQuery) {
+    const search = query.search?.trim()
+    const page = Math.max(1, Number(query.page) || 1)
+    const limit = Math.max(1, Number(query.limit) || 10)
+    const skip = (page - 1) * limit
+    const whereCondition: Prisma.UserWhereInput = search
+      ? {
+          OR: [
+            { name: { contains: search } },
+            { email: { contains: search } },
+            { department: { contains: search } },
+          ],
+        }
+      : {}
+
     try {
-      const users = await prisma.user.findMany({
-        include: {
-          company: {
-            select: {
-              id: true,
-              name: true,
-            },
+      const [users, totalCount] = await Promise.all([
+        prisma.user.findMany({
+          where: whereCondition,
+          skip: skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            company: { select: { id: true, name: true } },
           },
-        },
-      })
+        }),
+        prisma.user.count({ where: whereCondition }),
+      ])
+
       const safeData = users.map(({ passwordHash, ...user }) => user)
+
       return {
         success: true,
         data: safeData,
+        meta: {
+          total: totalCount,
+          page,
+          limit,
+          total_pages: Math.ceil(totalCount / limit),
+        },
         statusCode: StatusCodes.OK,
       }
     } catch (err) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+      console.error('Prisma Error:', err)
+      throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Internal Server Error')
     }
   }
 

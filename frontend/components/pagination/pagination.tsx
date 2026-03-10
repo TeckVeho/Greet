@@ -6,33 +6,137 @@ import {
 	PaginationLink,
 	PaginationNext,
 	PaginationPrevious,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
-export const Pagination: React.FC<{ className?: string }> = ({ className }) => {
+import { List } from 'lucide-react'
+import { SelectGroup } from '../ui/select'
+interface PaginationProps {
+	className?: string
+	pageIndex: number
+	pageSize: number
+	totalPages: number
+	onPageChange: (pageIndex: number) => void
+	onPageSizeChange: (size: number) => void
+}
+export const Pagination: React.FC<PaginationProps> = ({
+	className,
+	pageIndex,
+	pageSize,
+	totalPages,
+	onPageChange,
+	onPageSizeChange,
+}) => {
+	const currentPage = pageIndex + 1
+	const getPageNumbers = () => {
+		const pages: (number | string)[] = []
+		const siblingCount = 1
+
+		if (totalPages <= 5) {
+			return Array.from({ length: totalPages }, (_, i) => i + 1)
+		}
+
+		const leftSiblingIndex = Math.max(currentPage - siblingCount, 1)
+		const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages)
+
+		const shouldShowLeftDots = leftSiblingIndex > 2
+		const shouldShowRightDots = rightSiblingIndex < totalPages - 1
+
+		pages.push(1)
+
+		if (shouldShowLeftDots) {
+			pages.push('ellipsis-left')
+		} else if (leftSiblingIndex > 1) {
+			for (let i = 2; i < leftSiblingIndex; i++) {}
+		}
+
+		let start = Math.max(2, currentPage - 1)
+		let end = Math.min(totalPages - 1, currentPage + 1)
+
+		if (currentPage <= 2) end = 4
+		if (currentPage >= totalPages - 1) start = totalPages - 3
+
+		for (let i = start; i <= end; i++) {
+			if (i > 1 && i < totalPages) {
+				pages.push(i)
+			}
+		}
+
+		if (shouldShowRightDots) {
+			pages.push('ellipsis-right')
+		}
+
+		if (totalPages > 1) {
+			pages.push(totalPages)
+		}
+
+		return pages
+	}
+
+	const allPages = getPageNumbers()
 	return (
-		<PaginationComponent className={cn('', className)}>
-			<PaginationContent>
-				<PaginationItem>
-					<PaginationPrevious href='#' />
-				</PaginationItem>
-				<PaginationItem>
-					<PaginationLink href='#'>1</PaginationLink>
-				</PaginationItem>
-				<PaginationItem>
-					<PaginationLink href='#' isActive>
-						2
-					</PaginationLink>
-				</PaginationItem>
-				<PaginationItem>
-					<PaginationLink href='#'>3</PaginationLink>
-				</PaginationItem>
-				<PaginationItem>
-					<PaginationEllipsis />
-				</PaginationItem>
-				<PaginationItem>
-					<PaginationNext href='#' />
-				</PaginationItem>
-			</PaginationContent>
-		</PaginationComponent>
+		<div className='flex items-center gap-5'>
+			<PaginationComponent className={cn('justify-end', className)}>
+				<PaginationContent>
+					<PaginationItem>
+						<PaginationPrevious
+							href='#'
+							onClick={e => {
+								e.preventDefault()
+								onPageChange(Math.max(0, pageIndex - 1))
+							}}
+						/>
+					</PaginationItem>
+					<div className='flex items-center gap-3 mx-3'>
+						{allPages.map((page, index) => (
+							<PaginationItem key={index}>
+								{typeof page === 'number' ? (
+									<PaginationLink
+										isActive={page === currentPage}
+										href='#'
+										onClick={e => {
+											e.preventDefault()
+											onPageChange(page - 1)
+										}}
+									>
+										{page}
+									</PaginationLink>
+								) : (
+									<PaginationEllipsis />
+								)}
+							</PaginationItem>
+						))}
+					</div>
+
+					<PaginationItem>
+						<PaginationNext
+							href='#'
+							onClick={e => {
+								e.preventDefault()
+								onPageChange(Math.min(totalPages - 1, pageIndex + 1))
+							}}
+						/>
+					</PaginationItem>
+				</PaginationContent>
+			</PaginationComponent>
+			<Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
+				<SelectTrigger className='hidden  gap-3 md:flex'>
+					<List className='text-brand-primary' />
+					{pageSize} ページごとの
+				</SelectTrigger>
+				<SelectContent>
+					<SelectGroup>
+						{[5, 10, 20, 30, 50].map(v => (
+							<SelectItem key={v} value={String(v)}>
+								{v} ページごとの
+							</SelectItem>
+						))}
+					</SelectGroup>
+				</SelectContent>
+			</Select>
+		</div>
 	)
 }

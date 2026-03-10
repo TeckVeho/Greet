@@ -1,9 +1,10 @@
 import { Request, Response } from 'express'
 import { userService } from '../services'
+import { listUserQuery } from '../validators/user.validator'
 
 class UserController {
   public getUsers = async (req: Request, res: Response) => {
-    const result = await userService.findAll()
+    const result = await userService.findAll(req.query as listUserQuery)
     res.status(result.statusCode).json(result)
   }
 

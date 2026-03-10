@@ -1,7 +1,6 @@
 'use client'
 
 import { UserFormDialog } from '@/components/dialogs'
-import { Pagination } from '@/components/pagination'
 import {
 	Button,
 	Input,
@@ -19,41 +18,36 @@ import { createUser } from '@/lib/api/users'
 import { useAuth } from '@/lib/auth-context'
 import type { User } from '@/lib/types'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { PaginationState } from '@tanstack/react-table'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
 export default function UsersPage() {
 	const router = useRouter()
+	const [pagination, setPagination] = React.useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	})
 	const { user: currentUser } = useAuth()
-	const { data: usersData, isPending: isPendingUsers } = useUsers()
+	const [searchQuery, setSearchQuery] = React.useState('')
+	const {
+		data: usersData,
+		isLoading: isLoadingUsers,
+		isFetching: isFetchingUsers,
+	} = useUsers({
+		limit: pagination.pageSize,
+		page: pagination.pageIndex + 1,
+		search: searchQuery,
+	})
 	const { data: companiesData } = useQuery<{ companies: CompanyListItem[] }>({
 		queryKey: ['companies'],
 		queryFn: listCompanies,
 	})
 	const queryClient = useQueryClient()
-	const [searchQuery, setSearchQuery] = React.useState('')
 	const [companyFilter, setCompanyFilter] = React.useState<string>('all')
 	const [isDialogOpen, setIsDialogOpen] = React.useState(false)
 	const [isSaving, setIsSaving] = React.useState(false)
-	const allUsers = usersData?.users ?? []
 	const companies = companiesData?.companies ?? []
-
-	const filteredUsers = React.useMemo(() => {
-		let result = allUsers
-		if (companyFilter !== 'all') {
-			result = result.filter(u => u.companyId === companyFilter)
-		}
-		if (searchQuery) {
-			const q = searchQuery.toLowerCase()
-			result = result.filter(
-				u =>
-					u.name.toLowerCase().includes(q) ||
-					u.email.toLowerCase().includes(q) ||
-					u.department?.toLowerCase().includes(q),
-			)
-		}
-		return result
-	}, [allUsers, companyFilter, searchQuery])
 
 	// 管理者権限チェック
 	React.useEffect(() => {
@@ -62,7 +56,7 @@ export default function UsersPage() {
 		}
 	}, [currentUser, router])
 
-	if (isPendingUsers) {
+	if (isLoadingUsers) {
 		return <Spinner type='page-loading' />
 	}
 
@@ -159,13 +153,14 @@ export default function UsersPage() {
 				</div>
 
 				{/* テーブル */}
-				<div className='rounded-lg'>
-					<DataTable columns={UserColumns} data={filteredUsers} />
-				</div>
-				<Pagination />
-
-				{/* 件数表示 */}
-				<div className='mt-4 text-sm text-zinc-500'>{filteredUsers.length} 件のユーザー</div>
+				<DataTable
+					columns={UserColumns}
+					data={usersData?.users!}
+					pagination={pagination}
+					setPagination={setPagination}
+					total={usersData?.meta.total}
+					isLoading={isFetchingUsers}
+				/>
 			</div>
 
 			<UserFormDialog

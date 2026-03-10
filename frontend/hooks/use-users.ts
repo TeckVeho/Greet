@@ -1,11 +1,20 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
 import { listUsers, type UsersListResponse } from '@/lib/api/users'
+import { useQuery } from '@tanstack/react-query'
 
-export const useUsers = () => {
+export const useUsers = ({
+	page,
+	limit,
+	search,
+}: {
+	page: number
+	limit: number
+	search: string
+}) => {
 	return useQuery<UsersListResponse>({
-		queryKey: ['users'],
-		queryFn: () => listUsers(),
+		queryKey: ['users', page, limit, search],
+		queryFn: () => listUsers({ page, limit, search }),
+		placeholderData: data => data,
 	})
 }
