@@ -14,12 +14,12 @@ import {
 	Spinner,
 } from '@/components/ui'
 import { DataTable, UserColumns } from '@/components/users'
+import { useCompanies } from '@/hooks/use-companies'
 import { useUsers } from '@/hooks/use-users'
-import { listCompanies, type CompanyListItem } from '@/lib/api/companies'
 import { createUser } from '@/lib/api/users'
 import { useAuth } from '@/lib/auth-context'
 import type { User } from '@/lib/types'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { PaginationState } from '@tanstack/react-table'
 import { Plus, SearchIcon, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -33,6 +33,7 @@ export default function UsersPage() {
 	})
 	const { user: currentUser } = useAuth()
 	const [searchQuery, setSearchQuery] = React.useState('')
+	const [companyIdQuery, setCompanyIdQuery] = React.useState<string | 'all'>('all')
 	const {
 		data: usersData,
 		isLoading: isLoadingUsers,
@@ -41,13 +42,10 @@ export default function UsersPage() {
 		limit: pagination.pageSize,
 		page: pagination.pageIndex + 1,
 		search: searchQuery,
+		companyId: companyIdQuery === 'all' ? undefined : companyIdQuery,
 	})
-	const { data: companiesData } = useQuery<{ companies: CompanyListItem[] }>({
-		queryKey: ['companies'],
-		queryFn: listCompanies,
-	})
+	const { data: companiesData, isPending: isPendingCompanies } = useCompanies()
 	const queryClient = useQueryClient()
-	const [companyFilter, setCompanyFilter] = React.useState<string>('all')
 	const [isDialogOpen, setIsDialogOpen] = React.useState(false)
 	const [isSaving, setIsSaving] = React.useState(false)
 	const companies = companiesData?.companies ?? []
@@ -129,9 +127,15 @@ export default function UsersPage() {
 							</InputGroupAddon>
 						</InputGroup>
 
-						<Select value={companyFilter} onValueChange={setCompanyFilter}>
+						<Select
+							value={companyIdQuery}
+							onValueChange={setCompanyIdQuery}
+							disabled={isPendingCompanies}
+						>
 							<SelectTrigger className='w-full md:w-60'>
-								<SelectValue placeholder='会社で絞り込み' />
+								<SelectValue
+									placeholder={isPendingCompanies ? '読み込み中...' : '会社で絞り込み'}
+								/>
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value='all'>全ての会社</SelectItem>

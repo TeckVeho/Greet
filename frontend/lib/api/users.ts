@@ -20,13 +20,15 @@ export async function listUsers({
 	limit,
 	page,
 	search,
+	companyId,
 }: {
 	limit: number
 	page: number
 	search: string
+	companyId?: string
 }): Promise<UsersListResponse> {
 	const res = await apiClient.get<ApiResponse<User[]>>('/users', {
-		params: { page, limit, search: search.trim() },
+		params: { page, limit, search: search.trim(), companyId },
 	})
 
 	if (!res.data.success) {

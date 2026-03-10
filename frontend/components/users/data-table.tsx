@@ -99,7 +99,9 @@ export function DataTable<TData, TValue>({
 									colSpan={columns.length}
 									className='h-24 text-center text-muted-foreground'
 								>
-									No results.
+									データが見つかりませんでした。
+									<br />
+									検索条件を変更してみてください。
 								</TableCell>
 							</TableRow>
 						)}

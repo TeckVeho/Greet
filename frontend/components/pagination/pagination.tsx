@@ -1,18 +1,17 @@
 import {
+	Button,
 	Pagination as PaginationComponent,
 	PaginationContent,
 	PaginationEllipsis,
 	PaginationItem,
 	PaginationLink,
-	PaginationNext,
-	PaginationPrevious,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
-import { List } from 'lucide-react'
+import { ChevronLeft, ChevronRight, List } from 'lucide-react'
 import { SelectGroup } from '../ui/select'
 interface PaginationProps {
 	className?: string
@@ -82,13 +81,17 @@ export const Pagination: React.FC<PaginationProps> = ({
 			<PaginationComponent className={cn('justify-end', className)}>
 				<PaginationContent>
 					<PaginationItem>
-						<PaginationPrevious
-							href='#'
+						<Button
+							variant='secondary'
+							className='cursor-pointer'
+							disabled={pageIndex === 0}
 							onClick={e => {
 								e.preventDefault()
 								onPageChange(Math.max(0, pageIndex - 1))
 							}}
-						/>
+						>
+							<ChevronLeft className={'size-5 text-muted-foreground'} />前
+						</Button>
 					</PaginationItem>
 					<div className='flex items-center gap-3 mx-3'>
 						{allPages.map((page, index) => (
@@ -112,19 +115,24 @@ export const Pagination: React.FC<PaginationProps> = ({
 					</div>
 
 					<PaginationItem>
-						<PaginationNext
-							href='#'
+						<Button
+							variant='secondary'
+							className='cursor-pointer'
+							disabled={pageIndex === totalPages - 1}
 							onClick={e => {
 								e.preventDefault()
 								onPageChange(Math.min(totalPages - 1, pageIndex + 1))
 							}}
-						/>
+						>
+							次
+							<ChevronRight className={'size-5 text-muted-foreground'} />
+						</Button>
 					</PaginationItem>
 				</PaginationContent>
 			</PaginationComponent>
 			<Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
-				<SelectTrigger className='hidden  gap-3 md:flex'>
-					<List className='text-brand-primary' />
+				<SelectTrigger className='hidden gap-3 md:flex whitespace-nowrap'>
+					<List className='text-brand-primary size-5' />
 					{pageSize} ページごとの
 				</SelectTrigger>
 				<SelectContent>

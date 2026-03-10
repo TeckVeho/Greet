@@ -25,6 +25,7 @@ export const listUserQuerySchema = z.object({
     .string()
     .max(100, { message: '検索クエリは100文字以内である必要があります' })
     .optional(),
+  companyId: z.string().uuid({ message: '有効な会社IDを指定してください' }).optional(),
 })
 
 export const userIdSchema = z.object({

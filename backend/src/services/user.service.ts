@@ -4,22 +4,31 @@ import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
 import { ApiError } from '../utils/utils'
 import { createUserBody, listUserQuery } from '../validators/user.validator'
+
 export class UserService {
   async findAll(query: listUserQuery) {
+    const companyId = query.companyId?.trim()
     const search = query.search?.trim()
     const page = Math.max(1, Number(query.page) || 1)
     const limit = Math.max(1, Number(query.limit) || 10)
     const skip = (page - 1) * limit
-    const whereCondition: Prisma.UserWhereInput = search
-      ? {
-          OR: [
-            { name: { contains: search } },
-            { email: { contains: search } },
-            { department: { contains: search } },
-          ],
-        }
-      : {}
 
+    const whereCondition: Prisma.UserWhereInput = {
+      AND: [
+        companyId ? { companyId: companyId } : {},
+
+        search
+          ? {
+              OR: [
+                { name: { contains: search } },
+                { email: { contains: search } },
+                { department: { contains: search } },
+                { company: { name: { contains: search } } },
+              ],
+            }
+          : {},
+      ],
+    }
     try {
       const [users, totalCount] = await Promise.all([
         prisma.user.findMany({
