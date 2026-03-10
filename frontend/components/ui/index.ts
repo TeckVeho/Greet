@@ -3,7 +3,19 @@ export { Badge } from './badge'
 export { Button } from './button'
 export { Callout } from './callout'
 export { Card, CardContent, CardHeader, CardTitle } from './card'
-export { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './dialog'
+export {
+	Dialog,
+	DialogBody,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogOverlay,
+	DialogPortal,
+	DialogTitle,
+	DialogTrigger,
+} from './dialog'
 export { Input } from './input'
 export {
 	InputGroup,
@@ -23,7 +35,14 @@ export {
 	PaginationNext,
 	PaginationPrevious,
 } from './pagination'
-export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
+export {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from './select'
 export { Separator } from './separator'
 export {
 	Sheet,

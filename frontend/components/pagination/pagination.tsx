@@ -7,12 +7,12 @@ import {
 	PaginationLink,
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { ChevronLeft, ChevronRight, List } from 'lucide-react'
-import { SelectGroup } from '../ui/select'
 interface PaginationProps {
 	className?: string
 	pageIndex: number

@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react'
 
-import { Button } from '../ui/button'
 import {
+	Button,
 	Dialog,
 	DialogClose,
 	DialogContent,
@@ -10,8 +10,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from '../ui/dialog'
-import { Spinner } from '../ui/spinner'
+	Spinner,
+} from '../ui'
+
 interface DialogDeleteItemProps {
 	className?: string
 	trigger: ReactNode
