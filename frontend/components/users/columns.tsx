@@ -10,7 +10,7 @@ import { Button } from '../ui/button'
 export const UserColumns: ColumnDef<User>[] = [
 	{
 		accessorKey: 'avatar',
-		header: 'Avatar',
+		header: 'アバター',
 		cell: ({ getValue, row }) => {
 			const avatarUrl = getValue<string>()
 			return (
@@ -23,19 +23,19 @@ export const UserColumns: ColumnDef<User>[] = [
 	},
 	{
 		accessorKey: 'name',
-		header: 'Name',
+		header: '名前',
 	},
 	{
 		accessorKey: 'email',
-		header: 'Email',
+		header: 'メールアドレス',
 	},
 	{
 		accessorKey: 'department',
-		header: 'Department',
+		header: '部署',
 	},
 	{
 		accessorKey: 'role',
-		header: 'Role',
+		header: 'ロール',
 		cell: ({ getValue }) => {
 			const role = getValue<string>()
 			return <Badge variant={role === 'admin' ? 'chinese' : 'genre'}>{role.toUpperCase()}</Badge>
@@ -43,33 +43,33 @@ export const UserColumns: ColumnDef<User>[] = [
 	},
 	{
 		accessorKey: 'icon',
-		header: 'Icon',
+		header: 'アイコン',
 	},
 	{
 		accessorKey: 'createdAt',
-		header: 'Joined in',
+		header: '作成日',
 		cell: ({ getValue }) => {
-			return <span>{format(getValue<Date>(), 'MM-dd-yyyy')}</span>
+			return <span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
 		},
 	},
 	{
 		accessorKey: 'lastLoginAt',
-		header: 'Last Login',
+		header: '最終ログイン',
 		cell: ({ getValue }) => {
-			return <span>{format(getValue<Date>(), 'MM-dd-yyyy')}</span>
+			return <span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
 		},
 	},
 	{
 		accessorKey: 'company.name',
-		header: 'Company name',
+		header: '会社名',
 	},
 	{
 		accessorKey: 'actions',
-		header: 'Actions',
+		header: 'アクション',
 		cell: () => {
 			return (
-				<div>
-					<Button variant='ghost' size='sm'>
+				<div className='flex items-center gap-3'>
+					<Button variant='secondary' size='sm'>
 						編集
 					</Button>
 					<DialogDeleteItem
@@ -77,7 +77,7 @@ export const UserColumns: ColumnDef<User>[] = [
 						deleting={false}
 						trigger={
 							<Button
-								variant='ghost'
+								variant='secondary'
 								size='sm'
 								className='text-red-600 hover:bg-red-50 hover:text-red-700'
 							>
