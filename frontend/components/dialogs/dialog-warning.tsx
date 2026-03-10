@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react'
 
-import { Button } from '../ui/button'
 import {
+	Button,
 	Dialog,
 	DialogClose,
 	DialogContent,
@@ -10,8 +10,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from '../ui/dialog'
-import { Spinner } from '../ui/spinner'
+	Spinner,
+} from '../ui'
+
 interface DialogDeleteItemProps {
 	className?: string
 	trigger: ReactNode
@@ -51,7 +52,9 @@ export const DialogWarning: React.FC<DialogDeleteItemProps> = ({
 					<Button variant='denger' onClick={() => deleteAction()}>
 						{deleting ? <Spinner text={deletingText} /> : actionButtonText}
 					</Button>
-					<Button>{cancelButtonText}</Button>
+					<DialogClose asChild>
+						<Button>{cancelButtonText}</Button>
+					</DialogClose>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

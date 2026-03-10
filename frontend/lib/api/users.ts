@@ -79,7 +79,9 @@ export async function updateUser(id: string, payload: UpdateUserPayload): Promis
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
 	}
-
+	toast.success('ユーザー情報を更新しました。')
+	document.getElementById('dialog-update-user-close-button')?.click()
+	queryClient.invalidateQueries({ queryKey: ['users'] })
 	return res.data.data
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { DialogWarning } from '@/components/dialogs'
+import { DialogUpdateUser, DialogWarning } from '@/components/dialogs'
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui'
 import { deleteUser } from '@/lib/api/users'
 import { User } from '@/lib/types'
@@ -105,9 +105,14 @@ export const UserColumns: ColumnDef<User>[] = [
 			}
 			return (
 				<div className='flex items-center gap-3'>
-					<Button variant='secondary' size='sm'>
-						編集
-					</Button>
+					<DialogUpdateUser
+						trigger={
+							<Button variant='secondary' size='sm'>
+								編集
+							</Button>
+						}
+						user_data={row.original}
+					/>
 
 					<DialogWarning
 						deleteAction={handleDelete}

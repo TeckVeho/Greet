@@ -1,23 +1,22 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import {
+	Button,
 	Dialog,
 	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
+	Input,
+	Label,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from '@/components/ui/select'
+} from '@/components/ui'
+
 import { type CompanyListItem } from '@/lib/api/companies'
 import { User } from '@/lib/types'
 import * as React from 'react'
