@@ -1,5 +1,7 @@
 'use client'
 
+import { toast } from 'sonner'
+import { queryClient } from '../query-client'
 import type { User } from '../types'
 import { apiClient } from './client'
 import type { ApiResponse } from './types'
@@ -82,9 +84,14 @@ export async function updateUser(id: string, payload: UpdateUserPayload): Promis
 }
 
 export async function deleteUser(id: string): Promise<void> {
-	const res = await apiClient.delete<ApiResponse<{ message: string }>>(`/users/${id}`)
+	const res = await apiClient.delete<ApiResponse<{ message: string; success: boolean }>>(
+		`/users/${id}`,
+	)
 
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
 	}
+	toast.success('ユーザーを削除しました。')
+	document.getElementById('dialog-warning-close-button')?.click()
+	queryClient.invalidateQueries({ queryKey: ['users'] })
 }

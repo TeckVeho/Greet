@@ -1,10 +1,13 @@
 'use client'
 
-import { DialogDeleteItem } from '@/components/dialogs'
+import { DialogWarning } from '@/components/dialogs'
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui'
+import { deleteUser } from '@/lib/api/users'
 import { User } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { SheetCompanyView } from '../sheets/sheet-company-view'
 
 export const UserColumns: ColumnDef<User>[] = [
@@ -84,17 +87,31 @@ export const UserColumns: ColumnDef<User>[] = [
 	},
 
 	{
-		accessorKey: 'actions',
+		id: 'actions',
 		header: 'アクション',
-		cell: () => {
+		cell: ({ row }) => {
+			const [isLoading, setIsloading] = useState<boolean>(false)
+			const user_id = row.original.id
+			const handleDelete = async () => {
+				try {
+					setIsloading(true)
+					await deleteUser(user_id)
+				} catch (err) {
+					console.log(err)
+					toast.error('ユーザーの削除に失敗しました。')
+				} finally {
+					setIsloading(false)
+				}
+			}
 			return (
 				<div className='flex items-center gap-3'>
 					<Button variant='secondary' size='sm'>
 						編集
 					</Button>
-					<DialogDeleteItem
-						deleteAction={() => {}}
-						deleting={false}
+
+					<DialogWarning
+						deleteAction={handleDelete}
+						deleting={isLoading}
 						description='このユーザーを削除してもよろしいですか？この操作は元に戻すことができません。'
 						trigger={
 							<Button
@@ -105,6 +122,8 @@ export const UserColumns: ColumnDef<User>[] = [
 								削除
 							</Button>
 						}
+						actionButtonText={'削除'}
+						deletingText='削除中...'
 					/>
 				</div>
 			)

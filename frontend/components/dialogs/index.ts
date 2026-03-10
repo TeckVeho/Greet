@@ -1,2 +1,2 @@
-export { DialogDeleteItem } from './dialog-delete-item'
-export { UserFormDialog } from './dialog-user-create'
+export { DialogUserCreate } from './dialog-user-create'
+export { DialogWarning } from './dialog-warning'

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 function Spinner({
 	className,
 	type = 'spinner',
-	text = 'Loading...',
+	text = '...',
 	...props
 }: React.ComponentProps<'svg'> & { type?: 'page-loading' | 'spinner'; text?: string }) {
 	if (type === 'page-loading') {

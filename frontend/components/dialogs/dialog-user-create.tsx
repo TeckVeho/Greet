@@ -32,7 +32,7 @@ interface UserFormDialogProps {
 	isSaving?: boolean
 }
 
-export function UserFormDialog({
+export function DialogUserCreate({
 	open,
 	onOpenChange,
 	mode,

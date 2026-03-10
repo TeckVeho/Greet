@@ -3,6 +3,7 @@ import { ReactNode, useState } from 'react'
 import { Button } from '../ui/button'
 import {
 	Dialog,
+	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -20,9 +21,10 @@ interface DialogDeleteItemProps {
 	cancelButtonText?: string
 	deleteAction: () => void
 	deleting: boolean
+	deletingText?: string
 }
 
-export const DialogDeleteItem: React.FC<DialogDeleteItemProps> = ({
+export const DialogWarning: React.FC<DialogDeleteItemProps> = ({
 	className,
 	trigger,
 	title = '削除の確認',
@@ -31,6 +33,7 @@ export const DialogDeleteItem: React.FC<DialogDeleteItemProps> = ({
 	cancelButtonText = 'キャンセル',
 	deleteAction,
 	deleting,
+	deletingText = '...',
 }) => {
 	const [isOpen, setIsOpen] = useState<boolean>(false)
 	return (
@@ -39,13 +42,14 @@ export const DialogDeleteItem: React.FC<DialogDeleteItemProps> = ({
 				{trigger}
 			</DialogTrigger>
 			<DialogContent>
+				<DialogClose id='dialog-warning-close-button'></DialogClose>
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
 					<DialogDescription>{description}</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
 					<Button variant='denger' onClick={() => deleteAction()}>
-						{deleting ? <Spinner /> : actionButtonText}
+						{deleting ? <Spinner text={deletingText} /> : actionButtonText}
 					</Button>
 					<Button>{cancelButtonText}</Button>
 				</DialogFooter>

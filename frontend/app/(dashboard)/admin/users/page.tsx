@@ -1,6 +1,6 @@
 'use client'
 
-import { UserFormDialog } from '@/components/dialogs'
+import { DialogUserCreate } from '@/components/dialogs'
 import {
 	Button,
 	InputGroup,
@@ -164,7 +164,7 @@ export default function UsersPage() {
 				/>
 			</div>
 
-			<UserFormDialog
+			<DialogUserCreate
 				open={isDialogOpen}
 				onOpenChange={setIsDialogOpen}
 				mode='create'
