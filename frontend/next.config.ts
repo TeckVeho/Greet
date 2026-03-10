@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 's3-greet.s3.ap-northeast-1.amazonaws.com',
+        hostname: `${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_REGION ?? 'ap-northeast-1'}.amazonaws.com`,
         port: '',
         pathname: '/**',
       },

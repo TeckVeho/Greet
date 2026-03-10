@@ -1,57 +1,116 @@
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import crypto from 'crypto'
+import fs from 'fs'
 import path from 'path'
 
-const BUCKET_NAME = process.env.S3_BUCKET_NAME ?? 's3-greet'
-const REGION = process.env.AWS_REGION ?? 'ap-northeast-1'
+const isProduction = () => process.env.NODE_ENV === 'production'
 
-const s3 = new S3Client({ region: REGION })
+// ── S3 helpers (production) ──
 
-function generateKey(originalName: string): string {
+let s3: S3Client
+
+function getS3(): S3Client {
+  if (!s3) {
+    const region = process.env.AWS_REGION ?? 'ap-northeast-1'
+    s3 = new S3Client({ region })
+  }
+  return s3
+}
+
+function getBucket(): string {
+  const bucket = process.env.S3_BUCKET_NAME
+  if (!bucket) throw new Error('S3_BUCKET_NAME is not set')
+  return bucket
+}
+
+// ── Local helpers (development) ──
+
+function getMediaDir(): string {
+  return path.resolve(process.cwd(), 'media', 'restaurants')
+}
+
+function ensureMediaDir(): void {
+  const dir = getMediaDir()
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+}
+
+// ── Shared ──
+
+function generateFilename(originalName: string): string {
   const ext = path.extname(originalName).toLowerCase()
   const hash = crypto.randomBytes(16).toString('hex')
-  return `restaurants/${hash}${ext}`
+  return `${hash}${ext}`
 }
 
-function getPublicUrl(key: string): string {
-  return `https://${BUCKET_NAME}.s3.${REGION}.amazonaws.com/${key}`
+function getS3PublicUrl(key: string): string {
+  const bucket = getBucket()
+  const region = process.env.AWS_REGION ?? 'ap-northeast-1'
+  return `https://${bucket}.s3.${region}.amazonaws.com/${key}`
 }
 
-export function extractKeyFromUrl(url: string): string | null {
+function extractS3Key(url: string): string | null {
   try {
     const parsed = new URL(url)
-    // Remove leading slash
     return parsed.pathname.slice(1)
   } catch {
     return null
   }
 }
 
-export async function uploadFile(
-  file: Express.Multer.File,
-): Promise<string> {
-  const key = generateKey(file.originalname)
+function extractLocalFilename(url: string): string | null {
+  const prefix = '/media/restaurants/'
+  const idx = url.indexOf(prefix)
+  if (idx === -1) return null
+  return url.slice(idx + prefix.length)
+}
 
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: key,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    }),
-  )
+// ── Public API ──
 
-  return getPublicUrl(key)
+export async function uploadFile(file: Express.Multer.File): Promise<string> {
+  const filename = generateFilename(file.originalname)
+
+  if (isProduction()) {
+    const key = `restaurants/${filename}`
+    await getS3().send(
+      new PutObjectCommand({
+        Bucket: getBucket(),
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      }),
+    )
+    return getS3PublicUrl(key)
+  }
+
+  // Local storage
+  ensureMediaDir()
+  const filePath = path.join(getMediaDir(), filename)
+  fs.writeFileSync(filePath, file.buffer)
+
+  const port = process.env.PORT ?? '4000'
+  return `http://localhost:${port}/media/restaurants/${filename}`
 }
 
 export async function deleteFile(fileUrl: string): Promise<void> {
-  const key = extractKeyFromUrl(fileUrl)
-  if (!key) return
+  if (isProduction()) {
+    const key = extractS3Key(fileUrl)
+    if (!key) return
+    await getS3().send(
+      new DeleteObjectCommand({
+        Bucket: getBucket(),
+        Key: key,
+      }),
+    )
+    return
+  }
 
-  await s3.send(
-    new DeleteObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: key,
-    }),
-  )
+  // Local storage
+  const filename = extractLocalFilename(fileUrl)
+  if (!filename) return
+  const filePath = path.join(getMediaDir(), filename)
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath)
+  }
 }
