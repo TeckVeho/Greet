@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components
 import { User } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
+import { SheetCompanyView } from '../sheets/sheet-company-view'
 
 export const UserColumns: ColumnDef<User>[] = [
 	{
@@ -37,12 +38,25 @@ export const UserColumns: ColumnDef<User>[] = [
 		header: 'ロール',
 		cell: ({ getValue }) => {
 			const role = getValue<string>()
-			return <Badge variant={role === 'admin' ? 'chinese' : 'genre'}>{role.toUpperCase()}</Badge>
+			return <Badge variant={role === 'admin' ? 'chinese' : 'french'}>{role.toUpperCase()}</Badge>
 		},
 	},
 	{
 		accessorKey: 'icon',
 		header: 'アイコン',
+	},
+	{
+		accessorKey: 'company.name',
+		header: '会社名',
+		cell: ({ getValue, row }) => {
+			const value = getValue<string>()
+			return (
+				<SheetCompanyView
+					trigger={<span className='text-blue-500 underline cursor-pointer'>{value}</span>}
+					company_data={row.original.company || null}
+				/>
+			)
+		},
 	},
 	{
 		accessorKey: 'createdAt',
@@ -68,10 +82,7 @@ export const UserColumns: ColumnDef<User>[] = [
 			)
 		},
 	},
-	{
-		accessorKey: 'company.name',
-		header: '会社名',
-	},
+
 	{
 		accessorKey: 'actions',
 		header: 'アクション',

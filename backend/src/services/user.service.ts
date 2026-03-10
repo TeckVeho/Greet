@@ -28,7 +28,7 @@ export class UserService {
           take: limit,
           orderBy: { createdAt: 'desc' },
           include: {
-            company: { select: { id: true, name: true } },
+            company: true,
           },
         }),
         prisma.user.count({ where: whereCondition }),

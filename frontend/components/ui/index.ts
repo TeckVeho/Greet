@@ -24,5 +24,18 @@ export {
 	PaginationPrevious,
 } from './pagination'
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
+export { Separator } from './separator'
+export {
+	Sheet,
+	SheetClose,
+	SheetContent,
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetOverlay,
+	SheetPortal,
+	SheetTitle,
+	SheetTrigger,
+} from './sheet'
 export { Skeleton } from './skeleton'
 export { Spinner } from './spinner'

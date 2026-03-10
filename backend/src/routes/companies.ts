@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import { authMiddleware } from '../middleware/auth.middleware'
-import { adminMiddleware } from '../middleware/admin.middleware'
-import { validateBody } from '../middleware/validate.middleware'
-import { errorMiddleware } from '../middleware/error.middleware'
 import { companyController } from '../controllers/company.controller'
+import { adminMiddleware } from '../middleware/admin.middleware'
+import { authMiddleware } from '../middleware/auth.middleware'
+import { errorMiddleware } from '../middleware/error.middleware'
+import { validateBody } from '../middleware/validate.middleware'
 import { companySchema } from '../validators/company.validator'
 
 const router = Router()
@@ -12,15 +12,8 @@ const router = Router()
 router.use(authMiddleware)
 
 router.get('/', adminMiddleware, companyController.getCompanies)
-
-router.post(
-  '/',
-  adminMiddleware,
-  validateBody(companySchema),
-  companyController.createCompany,
-)
+router.post('/', adminMiddleware, validateBody(companySchema), companyController.createCompany)
 
 router.use(errorMiddleware)
 
 export { router as companyRouter }
-
