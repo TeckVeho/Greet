@@ -1,25 +1,25 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { UserFormDialog } from '@/components/dialogs'
+import { Pagination } from '@/components/pagination'
 import {
+	Button,
+	Input,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from '@/components/ui/select'
-import { Spinner } from '@/components/ui/spinner'
-import { UserColumns } from '@/components/users/columns'
-import { DataTable } from '@/components/users/data-table'
-import { UserFormDialog } from '@/components/user-form-dialog'
+	Spinner,
+} from '@/components/ui'
+import { DataTable, UserColumns } from '@/components/users'
 import { useUsers } from '@/hooks/use-users'
 import { listCompanies, type CompanyListItem } from '@/lib/api/companies'
 import { createUser } from '@/lib/api/users'
 import { useAuth } from '@/lib/auth-context'
 import type { User } from '@/lib/types'
-import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
 export default function UsersPage() {
@@ -72,12 +72,7 @@ export default function UsersPage() {
 	}
 
 	const handleSaveUser = async (userData: Partial<User> & { password?: string }) => {
-		if (
-			!userData.name ||
-			!userData.email ||
-			!userData.role ||
-			!userData.password
-		) {
+		if (!userData.name || !userData.email || !userData.role || !userData.password) {
 			return
 		}
 		setIsSaving(true)
@@ -105,9 +100,7 @@ export default function UsersPage() {
 				<div className='mb-8'>
 					<div className='mb-2 flex items-center gap-2'>
 						<span className='text-2xl md:text-3xl'>👥</span>
-					<h1 className='text-2xl md:text-3xl font-bold text-zinc-900'>
-						ユーザー管理
-					</h1>
+						<h1 className='text-2xl md:text-3xl font-bold text-zinc-900'>ユーザー管理</h1>
 					</div>
 					<p className='text-sm text-zinc-500'>システムを利用するユーザーの管理</p>
 				</div>
@@ -169,6 +162,7 @@ export default function UsersPage() {
 				<div className='rounded-lg'>
 					<DataTable columns={UserColumns} data={filteredUsers} />
 				</div>
+				<Pagination />
 
 				{/* 件数表示 */}
 				<div className='mt-4 text-sm text-zinc-500'>{filteredUsers.length} 件のユーザー</div>

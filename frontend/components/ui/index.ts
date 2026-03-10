@@ -14,6 +14,14 @@ export {
 	InputGroupTextarea,
 } from './input-group'
 export { Label } from './label'
-export { Pagination } from './pagination'
+export {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from './pagination'
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
 export { Spinner } from './spinner'

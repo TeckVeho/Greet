@@ -1,12 +1,10 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { DialogDeleteItem } from '@/components/dialogs'
+import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui'
 import { User } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
-import { DialogDeleteItem } from '../dialogs/dialog-delete-item'
-import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
 
 export const UserColumns: ColumnDef<User>[] = [
 	{
