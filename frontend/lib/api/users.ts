@@ -36,7 +36,6 @@ export async function listUsers({
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
 	}
-	console.log(res)
 
 	const users = res.data.data
 	const meta = res.data.meta

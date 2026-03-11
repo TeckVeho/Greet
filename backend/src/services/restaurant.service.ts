@@ -1,12 +1,12 @@
-import { Genre } from '@prisma/client'
+import { Area, Genre, Prisma } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
-import { deleteFile } from './file.service'
 import type {
   createRestaurantBodySchema,
   listRestaurantsQueryBodySchema,
   updateRestaurantBodySchema,
 } from '../validators/restaurant.validator'
+import { deleteFile } from './file.service'
 
 type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; createdById: string }
 type UpdateRestaurantInput = updateRestaurantBodySchema
@@ -14,11 +14,40 @@ type ListQuery = listRestaurantsQueryBodySchema
 
 export class RestaurantService {
   async findAll(query: ListQuery, companyId: string) {
-    const page = query.page ?? 1
-    const limit = query.limit ?? 20
+    const search = query.search?.trim()
+    const page = Math.max(1, Number(query.page) || 1)
+    const limit = Math.max(1, Number(query.limit) || 10)
     const skip = (page - 1) * limit
 
-    const where = { companyId }
+    const matchedAreas = search
+      ? Object.values(Area).filter(area => area.toLowerCase().includes(search.toLowerCase()))
+      : []
+
+    const matchedGenres = search
+      ? Object.values(Genre).filter(genre => genre.toLowerCase().includes(search.toLowerCase()))
+      : []
+
+    const where: Prisma.RestaurantWhereInput = {
+      AND: [
+        companyId ? { companyId: companyId } : {},
+
+        search
+          ? {
+              OR: [
+                { name: { contains: search } },
+                { area: { in: matchedAreas as Area[] } }, // Mos kelgan arealar
+                {
+                  genres: {
+                    some: {
+                      genre: { in: matchedGenres as Genre[] }, // Mos kelgan janrlar
+                    },
+                  },
+                },
+              ],
+            }
+          : {},
+      ],
+    }
 
     const [total, restaurants] = await Promise.all([
       prisma.restaurant.count({ where }),
@@ -31,11 +60,7 @@ export class RestaurantService {
         },
         include: {
           genres: true,
-          reviews: {
-            select: {
-              rating: true,
-            },
-          },
+          reviews: true,
           createdBy: {
             select: { id: true, name: true, icon: true },
           },
@@ -50,8 +75,7 @@ export class RestaurantService {
           ? null
           : Number(
               (
-                r.reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) /
-                reviewCount
+                r.reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) / reviewCount
               ).toFixed(1),
             )
 
@@ -69,6 +93,13 @@ export class RestaurantService {
         coverImage: r.coverImage ?? undefined,
         icon: r.icon ?? undefined,
         reviewCount,
+        reviews: r.reviews.map(review => ({
+          id: review.id,
+          occasion: review.occasion,
+          result: review.result,
+          rating: review.rating,
+          createdAt: review.createdAt,
+        })),
         averageRating,
         createdBy: {
           id: r.createdBy.id,
@@ -210,7 +241,11 @@ export class RestaurantService {
     return { success: true, data: restaurant, statusCode: StatusCodes.CREATED }
   }
 
-  async update(id: string, companyId: string, payload: UpdateRestaurantInput & { genres?: Genre[] }) {
+  async update(
+    id: string,
+    companyId: string,
+    payload: UpdateRestaurantInput & { genres?: Genre[] },
+  ) {
     // Verify the restaurant belongs to the caller's company before updating
     const existing = await prisma.restaurant.findFirst({ where: { id, companyId } })
     if (!existing) {

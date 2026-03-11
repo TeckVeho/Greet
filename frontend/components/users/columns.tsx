@@ -97,7 +97,6 @@ export const UserColumns: ColumnDef<User>[] = [
 					setIsloading(true)
 					await deleteUser(user_id)
 				} catch (err) {
-					console.log(err)
 					toast.error('ユーザーの削除に失敗しました。')
 				} finally {
 					setIsloading(false)

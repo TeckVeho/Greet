@@ -30,7 +30,6 @@ export async function listCompanies(): Promise<CompaniesListResponse> {
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
 	}
-	console.log(res)
 
 	const companies = res.data.data
 

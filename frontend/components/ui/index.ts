@@ -3,6 +3,7 @@ export { Badge } from './badge'
 export { Button } from './button'
 export { Callout } from './callout'
 export { Card, CardContent, CardHeader, CardTitle } from './card'
+export { Checkbox } from './checkbox'
 export {
 	Dialog,
 	DialogBody,
@@ -44,6 +45,7 @@ export {
 	PaginationNext,
 	PaginationPrevious,
 } from './pagination'
+export { ScrollArea, ScrollBar } from './scroll-area'
 export {
 	Select,
 	SelectContent,

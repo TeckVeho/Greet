@@ -25,6 +25,7 @@ export const updateRestaurantSchema = createRestaurantSchema.partial()
 export const listRestaurantsQuerySchema = z.object({
   limit: z.number().int().positive().max(100).optional(),
   page: z.number().int().positive().optional(),
+  search: z.string().optional(),
 })
 
 export const restaurantIdSchema = z.object({
