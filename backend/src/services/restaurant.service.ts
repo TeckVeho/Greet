@@ -60,7 +60,12 @@ export class RestaurantService {
         },
         include: {
           genres: true,
-          reviews: true,
+          reviews: {
+            include: {
+              author: true,
+            },
+          },
+
           createdBy: {
             select: { id: true, name: true, icon: true },
           },
@@ -96,6 +101,11 @@ export class RestaurantService {
         reviews: r.reviews.map(review => ({
           id: review.id,
           occasion: review.occasion,
+          author: {
+            id: review.author.id,
+            name: review.author.name,
+            icon: review.author.icon ?? undefined,
+          },
           result: review.result,
           rating: review.rating,
           createdAt: review.createdAt,

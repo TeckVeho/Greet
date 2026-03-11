@@ -4,6 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui'
 import { Restaurant } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
+import Link from 'next/link'
+import { SheetReviewView } from '../sheets/sheet-review-view'
 
 export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	{
@@ -35,6 +37,17 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	{
 		accessorKey: 'name',
 		header: '店名',
+		cell: ({ getValue, row }) => {
+			const name = getValue<string>()
+			return (
+				<Link
+					href={`/restaurants/${row.original.id}`}
+					className='font-medium underline text-blue-500'
+				>
+					{name}
+				</Link>
+			)
+		},
 	},
 	{
 		accessorKey: 'area',
@@ -87,8 +100,17 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	{
 		accessorKey: 'reviewCount',
 		header: 'レビュー数',
-		cell: ({ getValue }) => {
-			return <span>💬　{getValue<number>()}</span>
+		cell: ({ getValue, row }) => {
+			const reviewCount = getValue<number>()
+			const reviewIsValid = reviewCount > 0
+			return reviewIsValid ? (
+				<SheetReviewView
+					reviews={row.original.reviews}
+					trigger={<span className={'underline text-blue-500 cursor-pointer'}>{reviewCount}</span>}
+				/>
+			) : (
+				0
+			)
 		},
 	},
 	{
