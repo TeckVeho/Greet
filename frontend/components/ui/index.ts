@@ -2,7 +2,7 @@ export { Avatar, AvatarFallback, AvatarImage } from './avatar'
 export { Badge } from './badge'
 export { Button } from './button'
 export { Callout } from './callout'
-export { Card, CardContent, CardHeader, CardTitle } from './card'
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card'
 export { Checkbox } from './checkbox'
 export {
 	Dialog,

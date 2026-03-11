@@ -3,8 +3,9 @@
 import { AppLayout } from '@/components/app-layout'
 import { DialogRestaurantCreate } from '@/components/dialogs'
 import { FilterDialog, FilterState } from '@/components/filter-dialog'
-import { DataTable, RestaurantColumns } from '@/components/restaurants'
+import { DataCards, DataTable, RestaurantColumns } from '@/components/restaurants'
 import { SearchFilterBar } from '@/components/search-filter-bar'
+import { Spinner } from '@/components/ui'
 import { useRestaurants } from '@/hooks/use-restaurants'
 import { useAuth } from '@/lib/auth-context'
 import { type SortOption } from '@/lib/utils'
@@ -132,9 +133,7 @@ export default function Home() {
 	if (isRestaurantsLoading) {
 		return (
 			<AppLayout>
-				<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
-					<p className='text-sm text-muted-foreground'>飲食店を読み込み中です...</p>
-				</div>
+				<Spinner type='page-loading' />
 			</AppLayout>
 		)
 	}
@@ -169,7 +168,13 @@ export default function Home() {
 				{/* テーブル/カード表示（モバイルは常にカード） */}
 				{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
 					// <RestaurantCards restaurants={filteredRestaurants} />
-					<></>
+					<DataCards
+						data={restaurantss?.data!}
+						pagination={pagination}
+						setPagination={setPagination}
+						total={restaurantss?.meta?.total}
+						isLoading={isRestaurantsFetching}
+					/>
 				) : (
 					<DataTable
 						columns={RestaurantColumns}

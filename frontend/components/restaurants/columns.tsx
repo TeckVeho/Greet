@@ -14,7 +14,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 		cell: ({ getValue, row }) => {
 			const avatarUrl = getValue<string>()
 			return (
-				<Avatar>
+				<Avatar className='rounded-none'>
 					<AvatarImage src={avatarUrl} className='object-cover' />
 					<AvatarFallback>{row.original.name.charAt(0)}</AvatarFallback>
 				</Avatar>
