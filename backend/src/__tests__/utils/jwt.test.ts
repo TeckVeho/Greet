@@ -84,5 +84,41 @@ describe('jwt utils', () => {
         jwt.verify(expiredToken, TEST_SECRET)
       }).toThrow(jwt.TokenExpiredError)
     })
+
+    it('改ざんされたトークンの検証が失敗する', () => {
+      const token = signJwt(payload)
+      // Tamper with the payload section (second part of the JWT)
+      const parts = token.split('.')
+      parts[1] = Buffer.from(JSON.stringify({ userId: 'hacked', role: 'admin', companyId: 'x' })).toString('base64url')
+      const tampered = parts.join('.')
+
+      expect(() => {
+        jwt.verify(tampered, TEST_SECRET)
+      }).toThrow(jwt.JsonWebTokenError)
+    })
+
+    it('jwt.decodeで署名検証なしにペイロードをデコードできる', () => {
+      const token = signJwt(payload)
+      const decoded = jwt.decode(token) as jwt.JwtPayload
+
+      expect(decoded).not.toBeNull()
+      expect(decoded.userId).toBe('user-123')
+      expect(decoded.role).toBe('admin')
+      expect(decoded.companyId).toBe('company-456')
+    })
+
+    it('userロールのペイロードでも正しくトークンを生成する', () => {
+      const userPayload: JwtPayloadInput = {
+        userId: 'user-regular',
+        role: 'user' as const,
+        companyId: 'company-abc',
+      }
+      const token = signJwt(userPayload)
+      const decoded = jwt.verify(token, TEST_SECRET) as jwt.JwtPayload
+
+      expect(decoded.userId).toBe('user-regular')
+      expect(decoded.role).toBe('user')
+      expect(decoded.companyId).toBe('company-abc')
+    })
   })
 })
