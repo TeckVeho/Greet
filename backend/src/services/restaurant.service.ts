@@ -1,6 +1,7 @@
 import { Area, Genre, Prisma } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
+import { parseBoolean } from '../utils/utils'
 import type {
   createRestaurantBodySchema,
   listRestaurantsQueryBodySchema,
@@ -14,11 +15,25 @@ type ListQuery = listRestaurantsQueryBodySchema
 
 export class RestaurantService {
   async findAll(query: ListQuery, companyId: string) {
+    const smokingAllowed = parseBoolean(query.smokingAllowed)
+    const hasPrivateRoom = parseBoolean(query.hasPrivateRoom)
+    let genres = query.genres
+    let areas = query.areas
+    let priceRanges = query.priceRanges
     const search = query.search?.trim()
     const page = Math.max(1, Number(query.page) || 1)
     const limit = Math.max(1, Number(query.limit) || 10)
     const skip = (page - 1) * limit
 
+    if (genres && !Array.isArray(genres)) {
+      genres = [genres]
+    }
+    if (areas && !Array.isArray(areas)) {
+      areas = [areas]
+    }
+    if (priceRanges && !Array.isArray(priceRanges)) {
+      priceRanges = [priceRanges]
+    }
     const matchedAreas = search
       ? Object.values(Area).filter(area => area.toLowerCase().includes(search.toLowerCase()))
       : []
@@ -30,16 +45,23 @@ export class RestaurantService {
     const where: Prisma.RestaurantWhereInput = {
       AND: [
         companyId ? { companyId: companyId } : {},
+        smokingAllowed !== undefined ? { smokingAllowed } : {},
+        hasPrivateRoom !== undefined ? { hasPrivateRoom } : {},
+        genres && genres.length > 0
+          ? { genres: { some: { genre: { in: genres as Genre[] } } } }
+          : {},
+        areas && areas.length > 0 ? { area: { in: areas as Area[] } } : {},
+        priceRanges && priceRanges.length > 0 ? { priceRange: { in: priceRanges } } : {},
 
         search
           ? {
               OR: [
                 { name: { contains: search } },
-                { area: { in: matchedAreas as Area[] } }, // Mos kelgan arealar
+                { area: { in: matchedAreas as Area[] } },
                 {
                   genres: {
                     some: {
-                      genre: { in: matchedGenres as Genre[] }, // Mos kelgan janrlar
+                      genre: { in: matchedGenres as Genre[] },
                     },
                   },
                 },

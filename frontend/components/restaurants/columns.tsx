@@ -1,6 +1,7 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui'
+import { AREA_LABELS, GENRE_LABELS, PRICE_RANGE_LABELS } from '@/lib/constants'
 import { Restaurant } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { Check, X } from 'lucide-react'
@@ -38,7 +39,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 		header: 'エリア',
 		cell: ({ getValue }) => {
 			const area = getValue<string>()
-			return <Badge>{area}</Badge>
+			return <Badge className='whitespace-nowrap'>{AREA_LABELS[area]}</Badge>
 		},
 	},
 	{
@@ -49,8 +50,8 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 			return (
 				<div className='flex flex-wrap gap-2'>
 					{genres.map(genre => (
-						<Badge key={genre} variant='genre'>
-							{genre}
+						<Badge key={genre} variant='genre' className='whitespace-nowrap'>
+							{GENRE_LABELS[genre]}
 						</Badge>
 					))}
 				</div>
@@ -93,7 +94,14 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 			return phone ? <span>{phone}</span> : <Badge variant={'danger'}>なし</Badge>
 		},
 	},
-
+	{
+		accessorKey: 'priceRange',
+		header: '価格帯',
+		cell: ({ getValue }) => {
+			const priceRange = getValue<string>()
+			return <span>{PRICE_RANGE_LABELS[priceRange]}</span>
+		},
+	},
 	{
 		accessorKey: 'createdBy.name',
 		header: '登録者',
@@ -127,9 +135,8 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 				<div className='flex -space-x-2 overflow-hidden p-1'>
 					{displayReviews.map((review, index) => (
 						<Avatar className='shadow-sm hover:z-10 ' key={index}>
-							<AvatarImage src={review.author.icon} className='object-cover' />
 							<AvatarFallback className='bg-muted text-[10px]'>
-								{row.original.name.charAt(0)}
+								{review.author.icon ? review.author.icon : row.original.name.charAt(0)}
 							</AvatarFallback>
 						</Avatar>
 					))}

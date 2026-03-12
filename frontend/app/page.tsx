@@ -50,62 +50,12 @@ export default function Home() {
 		limit: pagination.pageSize,
 		page: pagination.pageIndex + 1,
 		search: searchQuery,
+		areas: filterState.areas,
+		genres: filterState.genres,
+		hasPrivateRoom: filterState.hasPrivateRoom,
+		smokingAllowed: filterState.smokingAllowed,
+		priceRanges: filterState.priceRanges,
 	})
-
-	// フィルタリング・並び替え
-	// const filteredRestaurants = React.useMemo(() => {
-	// 	const filtered = restaurants.filter(restaurant => {
-	// 		// 検索クエリでフィルタリング
-	// 		if (searchQuery) {
-	// 			const query = searchQuery.toLowerCase()
-	// 			const matchesSearch =
-	// 				restaurant.name.toLowerCase().includes(query) ||
-	// 				areaLabel(restaurant.area).toLowerCase().includes(query) ||
-	// 				restaurant.genres.some(genre => genreLabel(genre).toLowerCase().includes(query))
-	// 			if (!matchesSearch) return false
-	// 		}
-
-	// 		// エリアでフィルタリング
-	// 		if (filterState.areas.length > 0 && !filterState.areas.includes(restaurant.area)) {
-	// 			return false
-	// 		}
-
-	// 		// ジャンルでフィルタリング
-	// 		if (
-	// 			filterState.genres.length > 0 &&
-	// 			!restaurant.genres.some(g => filterState.genres.includes(g))
-	// 		) {
-	// 			return false
-	// 		}
-
-	// 		// 個室でフィルタリング
-	// 		if (
-	// 			filterState.hasPrivateRoom !== undefined &&
-	// 			restaurant.hasPrivateRoom !== filterState.hasPrivateRoom
-	// 		) {
-	// 			return false
-	// 		}
-
-	// 		// 喫煙でフィルタリング
-	// 		if (
-	// 			filterState.smokingAllowed !== undefined &&
-	// 			restaurant.smokingAllowed !== filterState.smokingAllowed
-	// 		) {
-	// 			return false
-	// 		}
-
-	// 		// 価格帯でフィルタリング
-	// 		if (
-	// 			filterState.priceRanges.length > 0 &&
-	// 			!filterState.priceRanges.includes(restaurant.priceRange)
-	// 		) {
-	// 			return false
-	// 		}
-
-	// 		return true
-	// 	})
-	// 	return sortRestaurants(filtered, sortOption)
-	// }, [restaurants, searchQuery, filterState, sortOption])
 
 	// アクティブフィルター数の計算
 	const activeFilterCount = React.useMemo(() => {
@@ -167,7 +117,6 @@ export default function Home() {
 
 				{/* テーブル/カード表示（モバイルは常にカード） */}
 				{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
-					// <RestaurantCards restaurants={filteredRestaurants} />
 					<DataCards
 						data={restaurantss?.data!}
 						pagination={pagination}

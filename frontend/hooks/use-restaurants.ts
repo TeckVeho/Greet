@@ -7,14 +7,44 @@ export const useRestaurants = ({
 	page,
 	limit,
 	search,
+	areas,
+	genres,
+	hasPrivateRoom,
+	smokingAllowed,
+	priceRanges,
 }: {
 	page: number
 	limit: number
 	search: string
+	areas?: string[]
+	genres?: string[]
+	hasPrivateRoom?: boolean
+	smokingAllowed?: boolean
+	priceRanges?: string[]
 }) => {
 	return useQuery<RestaurantListResponse>({
-		queryKey: ['restaurants', page, limit, search],
-		queryFn: async () => await listRestaurants({ search, page, limit }),
+		queryKey: [
+			'restaurants',
+			page,
+			limit,
+			search,
+			areas,
+			genres,
+			hasPrivateRoom,
+			smokingAllowed,
+			priceRanges,
+		],
+		queryFn: async () =>
+			await listRestaurants({
+				search,
+				page,
+				limit,
+				areas,
+				genres,
+				hasPrivateRoom,
+				smokingAllowed,
+				priceRanges,
+			}),
 		placeholderData: data => data,
 	})
 }

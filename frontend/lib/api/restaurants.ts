@@ -44,11 +44,11 @@ export interface ListRestaurantsParams {
 	page?: number
 	limit?: number
 	search?: string
-	area?: string[]
-	genre?: string[]
+	areas?: string[]
+	genres?: string[]
 	hasPrivateRoom?: boolean
 	smokingAllowed?: boolean
-	priceRange?: string[]
+	priceRanges?: string[]
 	sortBy?: string
 	sortOrder?: 'asc' | 'desc'
 }
@@ -56,7 +56,20 @@ export interface ListRestaurantsParams {
 export async function listRestaurants(
 	params: ListRestaurantsParams = {},
 ): Promise<RestaurantListResponse> {
-	const res = await apiClient.get<ApiResponse<RestaurantListItem[]>>('/restaurants', { params })
+	const res = await apiClient.get<ApiResponse<RestaurantListItem[]>>('/restaurants', {
+		params,
+		paramsSerializer: params => {
+			const searchParams = new URLSearchParams()
+			for (const [key, value] of Object.entries(params)) {
+				if (Array.isArray(value)) {
+					value.forEach(v => searchParams.append(key, v))
+				} else {
+					searchParams.set(key, value)
+				}
+			}
+			return searchParams.toString()
+		},
+	})
 
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)

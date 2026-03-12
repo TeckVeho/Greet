@@ -11,3 +11,9 @@ export class ApiError extends Error {
     Error.captureStackTrace(this, this.constructor)
   }
 }
+
+export const parseBoolean = (value: string | undefined): boolean | undefined => {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return undefined
+}
