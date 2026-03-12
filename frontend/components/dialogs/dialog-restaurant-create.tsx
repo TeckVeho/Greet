@@ -3,6 +3,15 @@
 import {
 	Button,
 	Checkbox,
+	Combobox,
+	ComboboxChip,
+	ComboboxChips,
+	ComboboxChipsInput,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxItem,
+	ComboboxList,
+	ComboboxValue,
 	Dialog,
 	DialogContent,
 	DialogFooter,
@@ -23,6 +32,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 	Spinner,
+	useComboboxAnchor,
 } from '@/components/ui'
 import { createRestaurant, uploadRestaurantImage } from '@/lib/api/restaurants'
 import { AREA_OPTIONS, GENRE_OPTIONS, PRICE_RANGE_OPTIONS } from '@/lib/constants'
@@ -41,11 +51,11 @@ interface RestaurantFormDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 }
-
+const frameworks = ['Next.js', 'SvelteKit', 'Nuxt.js', 'Remix', 'Astro'] as const
 const schema = z.object({
 	name: z.string().min(1, '店名は必須です'),
 	area: z.enum(AREA_OPTIONS.map(opt => opt.value)),
-	genre: z.enum(GENRE_OPTIONS.map(opt => opt.value)),
+	genre: z.array(z.enum(GENRE_OPTIONS.map(opt => opt.value))),
 	hasPrivateRoom: z.boolean(),
 	smokingAllowed: z.boolean(),
 	priceRange: z.enum(PRICE_RANGE_OPTIONS.map(opt => opt.value)),
@@ -82,7 +92,7 @@ const icons = [
 ]
 export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDialogProps) {
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
-
+	const anchor = useComboboxAnchor()
 	const form = useForm({
 		resolver: zodResolver(schema),
 		mode: 'onChange',
@@ -92,7 +102,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 			url: '',
 			icon: '🍽️',
 			area: 'GINZA',
-			genre: 'SUSHI',
+			genre: [GENRE_OPTIONS[0].value],
 			coverImage: undefined,
 			hasPrivateRoom: false,
 			smokingAllowed: false,
@@ -112,7 +122,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 			const payload = {
 				...data,
 				coverImage: coverImageUrl || undefined,
-				genres: [data.genre],
+				genres: data.genre,
 			}
 
 			await createRestaurant(payload)
@@ -284,7 +294,54 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 												<FormItem>
 													<FormLabel>ジャンル *</FormLabel>
 													<FormControl>
-														<Select value={field.value} onValueChange={field.onChange}>
+														<Combobox
+															multiple
+															autoHighlight
+															items={GENRE_OPTIONS}
+															onValueChange={values => {
+																console.log(values)
+
+																field.onChange(values)
+															}}
+															value={field.value}
+														>
+															<ComboboxChips ref={anchor} className='w-full'>
+																<ComboboxValue>
+																	{items => (
+																		<>
+																			{items.map((item: string) => (
+																				<ComboboxChip
+																					key={item}
+																					onClick={() => {
+																						console.log(items)
+																					}}
+																				>
+																					{item}
+																				</ComboboxChip>
+																			))}
+																			<ComboboxChipsInput />
+																		</>
+																	)}
+																</ComboboxValue>
+															</ComboboxChips>
+															<ComboboxContent anchor={anchor}>
+																<ComboboxEmpty>No items found.</ComboboxEmpty>
+																<ComboboxList>
+																	{item => (
+																		<ComboboxItem
+																			key={item.value}
+																			value={item.value}
+																			onClick={() => {
+																				console.log('item:', item)
+																			}}
+																		>
+																			{item.label}
+																		</ComboboxItem>
+																	)}
+																</ComboboxList>
+															</ComboboxContent>
+														</Combobox>
+														{/* <Select value={field.value} onValueChange={field.onChange}>
 															<SelectTrigger>
 																<SelectValue placeholder='ジャンルを選択' />
 															</SelectTrigger>
@@ -295,7 +352,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 																	</SelectItem>
 																))}
 															</SelectContent>
-														</Select>
+														</Select> */}
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -377,8 +434,8 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 													<FormControl>
 														<div className='flex items-center space-x-2'>
 															<Checkbox
-																onChange={field.onChange}
-																defaultChecked={field.value}
+																onCheckedChange={field.onChange}
+																checked={field.value}
 																id={'has_private_room_checkbox'}
 															/>
 															<Label htmlFor='has_private_room_checkbox'>個室あり </Label>
@@ -395,7 +452,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 												<FormItem>
 													<FormControl>
 														<div className='flex items-center space-x-2'>
-															<Checkbox onChange={field.onChange} defaultChecked={field.value} />
+															<Checkbox onCheckedChange={field.onChange} checked={field.value} />
 															<Label htmlFor='smoking_allowed_checkbox'>喫煙可 </Label>
 														</div>
 													</FormControl>

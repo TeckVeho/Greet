@@ -1,12 +1,13 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui'
-import type { RestaurantListItem } from '@/lib/api/restaurants'
+import { Restaurant } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { SheetReviewView } from '../sheets/sheet-review-view'
 
-export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
+export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	{
 		accessorKey: 'coverImage',
 		header: '写真',
@@ -20,19 +21,6 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 			)
 		},
 	},
-	{
-		accessorKey: 'url',
-		header: 'URL',
-		cell: ({ getValue, row }) => {
-			const url = getValue<string>()
-			return (
-				<a href={url} target='_blank' rel='noopener noreferrer'>
-					url
-				</a>
-			)
-		},
-	},
-
 	{
 		accessorKey: 'name',
 		header: '店名',
@@ -74,8 +62,20 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 		cell: ({ getValue }) => {
 			const hasPrivateRoom = getValue<boolean>()
 			return (
-				<Badge variant={hasPrivateRoom ? 'success' : 'danger'}>
+				<Badge variant={hasPrivateRoom ? 'success' : 'danger'} className='whitespace-nowrap'>
 					{hasPrivateRoom ? 'あり' : 'なし'}
+				</Badge>
+			)
+		},
+	},
+	{
+		accessorKey: 'smokingAllowed',
+		header: '喫煙可',
+		cell: ({ getValue }) => {
+			const smokingAllowed = getValue<boolean>()
+			return (
+				<Badge variant={smokingAllowed ? 'success' : 'danger'} className='whitespace-nowrap'>
+					{smokingAllowed ? 'あり' : 'なし'}
 				</Badge>
 			)
 		},
@@ -83,10 +83,18 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 	{
 		accessorKey: 'address',
 		header: '住所',
+		cell: ({ getValue }) => {
+			const address = getValue<string>()
+			return address ? <span>{address}</span> : <Badge variant={'danger'}>なし</Badge>
+		},
 	},
 	{
 		accessorKey: 'phone',
 		header: '電話番号',
+		cell: ({ getValue }) => {
+			const phone = getValue<string>()
+			return phone ? <span>{phone}</span> : <Badge variant={'danger'}>なし</Badge>
+		},
 	},
 	{
 		accessorKey: 'icon',
@@ -99,9 +107,34 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 	{
 		accessorKey: 'reviewCount',
 		header: 'レビュー数',
-		cell: ({ getValue }) => {
+		cell: ({ getValue, row }) => {
 			const reviewCount = getValue<number>()
-			return reviewCount ?? 0
+			const reviewIsValid = reviewCount > 0
+			return reviewIsValid ? (
+				<SheetReviewView
+					reviews={row.original.reviews}
+					trigger={<span className={'underline text-blue-500 cursor-pointer'}>{reviewCount}</span>}
+				/>
+			) : (
+				0
+			)
+		},
+	},
+	{
+		accessorKey: 'url',
+		header: 'URL',
+		cell: ({ getValue }) => {
+			const url = getValue<string>()
+			return (
+				<a
+					href={url}
+					target='_blank'
+					rel='noopener noreferrer'
+					className='font-medium underline text-blue-500'
+				>
+					Google Mapで見る
+				</a>
+			)
 		},
 	},
 	{
@@ -116,64 +149,4 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 			)
 		},
 	},
-	// {
-	// 	accessorKey: 'lastLoginAt',
-	// 	header: '最終ログイン',
-	// 	cell: ({ getValue }) => {
-	// 		return (
-	// 			<div className='flex flex-col'>
-	// 				<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
-	// 				<span>{format(getValue<Date>(), 'HH:mm')}</span>
-	// 			</div>
-	// 		)
-	// 	},
-	// },
-
-	// {
-	// 	id: 'actions',
-	// 	header: 'アクション',
-	// 	cell: ({ row }) => {
-	// 		const [isLoading, setIsloading] = useState<boolean>(false)
-	// 		const user_id = row.original.id
-	// 		const handleDelete = async () => {
-	// 			try {
-	// 				setIsloading(true)
-	// 				await deleteUser(user_id)
-	// 			} catch (err) {
-	// 				toast.error('ユーザーの削除に失敗しました。')
-	// 			} finally {
-	// 				setIsloading(false)
-	// 			}
-	// 		}
-	// 		return (
-	// 			<div className='flex items-center gap-3'>
-	// 				<DialogUpdateUser
-	// 					trigger={
-	// 						<Button variant='secondary' size='sm'>
-	// 							編集
-	// 						</Button>
-	// 					}
-	// 					user_data={row.original}
-	// 				/>
-
-	// 				<DialogWarning
-	// 					deleteAction={handleDelete}
-	// 					deleting={isLoading}
-	// 					description='このユーザーを削除してもよろしいですか？この操作は元に戻すことができません。'
-	// 					trigger={
-	// 						<Button
-	// 							variant='secondary'
-	// 							size='sm'
-	// 							className='text-red-600 hover:bg-red-50 hover:text-red-700'
-	// 						>
-	// 							削除
-	// 						</Button>
-	// 					}
-	// 					actionButtonText={'削除'}
-	// 					deletingText='削除中...'
-	// 				/>
-	// 			</div>
-	// 		)
-	// 	},
-	// },
 ]

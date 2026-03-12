@@ -5,6 +5,32 @@ export { Callout } from './callout'
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card'
 export { Checkbox } from './checkbox'
 export {
+	Combobox,
+	ComboboxChip,
+	ComboboxChips,
+	ComboboxChipsInput,
+	ComboboxCollection,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxGroup,
+	ComboboxInput,
+	ComboboxItem,
+	ComboboxLabel,
+	ComboboxList,
+	ComboboxSeparator,
+	ComboboxTrigger,
+	ComboboxValue,
+	useComboboxAnchor,
+} from './combobox'
+export {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandItem,
+	CommandList,
+	CommandSeparator,
+} from './command'
+export {
 	Dialog,
 	DialogBody,
 	DialogClose,
@@ -45,6 +71,7 @@ export {
 	PaginationNext,
 	PaginationPrevious,
 } from './pagination'
+export { Popover, PopoverContent, PopoverTrigger } from './popover'
 export { ScrollArea, ScrollBar } from './scroll-area'
 export {
 	Select,
