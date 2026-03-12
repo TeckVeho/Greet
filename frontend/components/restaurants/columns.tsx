@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui'
 import { Restaurant } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
-import { format } from 'date-fns'
+import { Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { SheetReviewView } from '../sheets/sheet-review-view'
 
@@ -27,11 +27,8 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 		cell: ({ getValue, row }) => {
 			const name = getValue<string>()
 			return (
-				<Link
-					href={`/restaurants/${row.original.id}`}
-					className='font-medium underline text-blue-500'
-				>
-					{name}
+				<Link href={`/restaurants/${row.original.id}`} className='font-medium  hover:text-blue-500'>
+					{row.original.icon} {name}
 				</Link>
 			)
 		},
@@ -39,6 +36,10 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	{
 		accessorKey: 'area',
 		header: 'エリア',
+		cell: ({ getValue }) => {
+			const area = getValue<string>()
+			return <Badge>{area}</Badge>
+		},
 	},
 	{
 		accessorKey: 'genres',
@@ -61,10 +62,10 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 		header: '個室あり',
 		cell: ({ getValue }) => {
 			const hasPrivateRoom = getValue<boolean>()
-			return (
-				<Badge variant={hasPrivateRoom ? 'success' : 'danger'} className='whitespace-nowrap'>
-					{hasPrivateRoom ? 'あり' : 'なし'}
-				</Badge>
+			return hasPrivateRoom ? (
+				<Check className='text-green-500 size-4' />
+			) : (
+				<X className=' size-4' />
 			)
 		},
 	},
@@ -73,11 +74,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 		header: '喫煙可',
 		cell: ({ getValue }) => {
 			const smokingAllowed = getValue<boolean>()
-			return (
-				<Badge variant={smokingAllowed ? 'success' : 'danger'} className='whitespace-nowrap'>
-					{smokingAllowed ? 'あり' : 'なし'}
-				</Badge>
-			)
+			return <Badge className='whitespace-nowrap'>{smokingAllowed ? '可' : '不可'}</Badge>
 		},
 	},
 	{
@@ -96,10 +93,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 			return phone ? <span>{phone}</span> : <Badge variant={'danger'}>なし</Badge>
 		},
 	},
-	{
-		accessorKey: 'icon',
-		header: 'アイコン',
-	},
+
 	{
 		accessorKey: 'createdBy.name',
 		header: '登録者',
@@ -121,32 +115,61 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 		},
 	},
 	{
-		accessorKey: 'url',
-		header: 'URL',
-		cell: ({ getValue }) => {
-			const url = getValue<string>()
+		accessorKey: 'reviews',
+		header: '利用者',
+		cell: ({ getValue, row }) => {
+			const reviews = getValue<{ author: { icon: string } }[]>() || []
+			const limit = 3
+			const displayReviews = reviews.slice(0, limit)
+			const remainingCount = reviews.length - limit
+
 			return (
-				<a
-					href={url}
-					target='_blank'
-					rel='noopener noreferrer'
-					className='font-medium underline text-blue-500'
-				>
-					Google Mapで見る
-				</a>
-			)
-		},
-	},
-	{
-		accessorKey: 'createdAt',
-		header: '作成日',
-		cell: ({ getValue }) => {
-			return (
-				<div className='flex flex-col'>
-					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
-					<span>{format(getValue<Date>(), 'HH:mm')}</span>
+				<div className='flex -space-x-2 overflow-hidden p-1'>
+					{displayReviews.map((review, index) => (
+						<Avatar className='shadow-sm hover:z-10 ' key={index}>
+							<AvatarImage src={review.author.icon} className='object-cover' />
+							<AvatarFallback className='bg-muted text-[10px]'>
+								{row.original.name.charAt(0)}
+							</AvatarFallback>
+						</Avatar>
+					))}
+
+					{remainingCount > 0 && (
+						<div className='flex h-10 w-10 items-center justify-center rounded-full  bg-muted text-[12px] font-medium text-muted-foreground shadow-sm'>
+							+{remainingCount}
+						</div>
+					)}
 				</div>
 			)
 		},
 	},
+	// {
+	// 	accessorKey: 'url',
+	// 	header: 'URL',
+	// 	cell: ({ getValue }) => {
+	// 		const url = getValue<string>()
+	// 		return (
+	// 			<a
+	// 				href={url}
+	// 				target='_blank'
+	// 				rel='noopener noreferrer'
+	// 				className='font-medium underline text-blue-500'
+	// 			>
+	// 				Google Mapで見る
+	// 			</a>
+	// 		)
+	// 	},
+	// },
+	// {
+	// 	accessorKey: 'createdAt',
+	// 	header: '作成日',
+	// 	cell: ({ getValue }) => {
+	// 		return (
+	// 			<div className='flex flex-col'>
+	// 				<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
+	// 				<span>{format(getValue<Date>(), 'HH:mm')}</span>
+	// 			</div>
+	// 		)
+	// 	},
+	// },
 ]
