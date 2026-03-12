@@ -34,9 +34,10 @@ const getGenreVariant = (genreKey: string): any => {
 interface RestaurantCardsProps {
 	data: RestaurantListItem[]
 	total?: number
-	pagination: PaginationState
-	setPagination: Dispatch<SetStateAction<PaginationState>>
+	pagination?: PaginationState
+	setPagination?: Dispatch<SetStateAction<PaginationState>>
 	isLoading?: boolean
+	totlaHidden?: boolean
 }
 
 export function DataCards({
@@ -45,15 +46,16 @@ export function DataCards({
 	pagination,
 	setPagination,
 	isLoading,
+	totlaHidden = true,
 }: RestaurantCardsProps) {
 	const { isFavorite, toggleFavorite } = useFavorites()
-	const totalPages = total ? Math.ceil(total / pagination.pageSize) : 0
+	const totalPages = total ? Math.ceil(total / (pagination?.pageSize || 0)) : 0
 
 	return (
 		<div className='space-y-6'>
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
 				{isLoading ? (
-					Array.from({ length: pagination.pageSize }).map((_, index) => (
+					Array.from({ length: pagination?.pageSize || 0 }).map((_, index) => (
 						<div
 							key={index}
 							className='rounded-lg border border-zinc-200 bg-white overflow-hidden shadow-sm'
@@ -166,14 +168,21 @@ export function DataCards({
 
 			{/* Paginatsiya (DataTable kabi) */}
 			<div className='flex items-center justify-between mt-4'>
-				<span className='whitespace-nowrap text-sm font-medium'>飲食店数: {total}</span>
-				<Pagination
-					totalPages={totalPages}
-					pageIndex={pagination.pageIndex}
-					pageSize={pagination.pageSize}
-					onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
-					onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
-				/>
+				{totlaHidden && (
+					<span className='whitespace-nowrap text-sm font-medium'>飲食店数: {total}</span>
+				)}
+
+				{typeof pagination?.pageSize === 'number' &&
+					typeof pagination?.pageIndex === 'number' &&
+					setPagination && (
+						<Pagination
+							totalPages={totalPages}
+							pageIndex={pagination.pageIndex}
+							pageSize={pagination.pageSize}
+							onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
+							onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
+						/>
+					)}
 			</div>
 		</div>
 	)

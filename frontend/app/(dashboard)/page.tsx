@@ -44,7 +44,7 @@ export default function Home() {
 	}, [user, isAuthLoading, router])
 
 	const {
-		data: restaurantss,
+		data: restaurants,
 		isLoading: isRestaurantsLoading,
 		isFetching: isRestaurantsFetching,
 	} = useRestaurants({
@@ -98,36 +98,34 @@ export default function Home() {
 				</div>
 
 				{/* 検索・フィルターバー */}
-				<div className='mb-6'>
-					<SearchFilterBar
-						onSearchChange={setSearchQuery}
-						searchValue={searchQuery}
-						onFilterClick={handleFilterClick}
-						onNewClick={handleNewRestaurant}
-						activeFilterCount={activeFilterCount}
-						viewMode={viewMode}
-						onViewModeChange={setViewMode}
-						sortOption={sortOption}
-						onSortChange={setSortOption}
-					/>
-				</div>
+				<SearchFilterBar
+					onSearchChange={setSearchQuery}
+					searchValue={searchQuery}
+					onFilterClick={handleFilterClick}
+					onNewClick={handleNewRestaurant}
+					activeFilterCount={activeFilterCount}
+					viewMode={viewMode}
+					onViewModeChange={setViewMode}
+					sortOption={sortOption}
+					onSortChange={setSortOption}
+				/>
 
 				{/* テーブル/カード表示（モバイルは常にカード） */}
 				{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
 					<DataCards
-						data={restaurantss?.data!}
+						data={restaurants?.data!}
 						pagination={pagination}
 						setPagination={setPagination}
-						total={restaurantss?.meta?.total}
+						total={restaurants?.meta?.total}
 						isLoading={isRestaurantsFetching}
 					/>
 				) : (
 					<DataTable
 						columns={RestaurantColumns}
-						data={restaurantss?.data!}
+						data={restaurants?.data!}
 						pagination={pagination}
 						setPagination={setPagination}
-						total={restaurantss?.meta?.total}
+						total={restaurants?.meta?.total}
 						isLoading={isRestaurantsFetching}
 					/>
 				)}

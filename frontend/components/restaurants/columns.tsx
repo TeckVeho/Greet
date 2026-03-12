@@ -2,13 +2,34 @@
 
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui'
 import { AREA_LABELS, GENRE_LABELS, PRICE_RANGE_LABELS } from '@/lib/constants'
+import { useFavorites } from '@/lib/favorites-context'
 import { Restaurant } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { SheetReviewView } from '../sheets/sheet-review-view'
-
 export const RestaurantColumns: ColumnDef<Restaurant>[] = [
+	{
+		id: 'rate',
+		header: 'お気に入り',
+		cell: ({ row }) => {
+			const restaurant = row.original
+			const { isFavorite, toggleFavorite } = useFavorites()
+			const isFav = isFavorite(restaurant.id)
+			return (
+				<button
+					onClick={e => {
+						e.preventDefault()
+						e.stopPropagation()
+						toggleFavorite(restaurant.id)
+					}}
+					className=' h-8 w-8 items-center justify-center rounded-full bg-white/90 hover:bg-white shadow-sm transition-colors cursor-pointer'
+				>
+					<span className='text-lg'>{isFav ? '⭐' : '☆'}</span>
+				</button>
+			)
+		},
+	},
 	{
 		accessorKey: 'coverImage',
 		header: '写真',
