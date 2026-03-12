@@ -1,10 +1,11 @@
 'use client'
 
-import { AppLayout } from '@/components/app-layout'
-import { DialogRestaurantCreate } from '@/components/dialogs'
-import { FilterDialog, FilterState } from '@/components/filter-dialog'
-import { DataCards, DataTable, RestaurantColumns } from '@/components/restaurants'
-import { SearchFilterBar } from '@/components/search-filter-bar'
+import {
+	DialogRestaurantCreate,
+	DialogRestaurantFilter,
+	type FilterState,
+} from '@/components/dialogs'
+import { DataCards, DataTable, RestaurantColumns, SearchFilterBar } from '@/components/restaurants'
 import { Spinner } from '@/components/ui'
 import { useRestaurants } from '@/hooks/use-restaurants'
 import { useAuth } from '@/lib/auth-context'
@@ -81,15 +82,11 @@ export default function Home() {
 	}
 
 	if (isRestaurantsLoading) {
-		return (
-			<AppLayout>
-				<Spinner type='page-loading' />
-			</AppLayout>
-		)
+		return <Spinner type='page-loading' />
 	}
 
 	return (
-		<AppLayout>
+		<>
 			<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
 				{/* ページヘッダー */}
 				<div className='mb-8'>
@@ -152,12 +149,12 @@ export default function Home() {
 			<DialogRestaurantCreate open={isDialogOpen} onOpenChange={setIsDialogOpen} />
 
 			{/* フィルターダイアログ */}
-			<FilterDialog
+			<DialogRestaurantFilter
 				open={isFilterOpen}
 				onOpenChange={setIsFilterOpen}
 				filters={filterState}
 				onFiltersChange={setFilterState}
 			/>
-		</AppLayout>
+		</>
 	)
 }

@@ -1,7 +1,7 @@
 import { Area, Genre, Prisma } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
-import { parseBoolean } from '../utils/utils'
+import { cleanArray, parseBoolean } from '../utils/utils'
 import type {
   createRestaurantBodySchema,
   listRestaurantsQueryBodySchema,
@@ -17,9 +17,9 @@ export class RestaurantService {
   async findAll(query: ListQuery, companyId: string) {
     const smokingAllowed = parseBoolean(query.smokingAllowed)
     const hasPrivateRoom = parseBoolean(query.hasPrivateRoom)
-    let genres = query.genres
-    let areas = query.areas
-    let priceRanges = query.priceRanges
+    let genres = cleanArray(query.genres)
+    let areas = cleanArray(query.areas)
+    let priceRanges = cleanArray(query.priceRanges)
     const search = query.search?.trim()
     const page = Math.max(1, Number(query.page) || 1)
     const limit = Math.max(1, Number(query.limit) || 10)

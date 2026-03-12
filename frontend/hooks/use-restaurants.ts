@@ -11,11 +11,11 @@ export const useRestaurants = ({
 	genres,
 	hasPrivateRoom,
 	smokingAllowed,
-	priceRanges,
+	priceRanges = undefined,
 }: {
-	page: number
-	limit: number
-	search: string
+	page?: number
+	limit?: number
+	search?: string
 	areas?: string[]
 	genres?: string[]
 	hasPrivateRoom?: boolean

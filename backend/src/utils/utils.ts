@@ -17,3 +17,9 @@ export const parseBoolean = (value: string | undefined): boolean | undefined => 
   if (value === 'false') return false
   return undefined
 }
+export const cleanArray = (arr: any) => {
+  if (!arr) return []
+  const normalized = Array.isArray(arr) ? arr : [arr]
+  // "undefined" stringini va bo'sh qiymatlarni olib tashlaymiz
+  return normalized.filter(item => item && item !== 'undefined')
+}
