@@ -1,13 +1,12 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui'
-import { Restaurant } from '@/lib/types'
+import type { RestaurantListItem } from '@/lib/api/restaurants'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { SheetReviewView } from '../sheets/sheet-review-view'
 
-export const RestaurantColumns: ColumnDef<Restaurant>[] = [
+export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 	{
 		accessorKey: 'coverImage',
 		header: '写真',
@@ -100,17 +99,9 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	{
 		accessorKey: 'reviewCount',
 		header: 'レビュー数',
-		cell: ({ getValue, row }) => {
+		cell: ({ getValue }) => {
 			const reviewCount = getValue<number>()
-			const reviewIsValid = reviewCount > 0
-			return reviewIsValid ? (
-				<SheetReviewView
-					reviews={row.original.reviews}
-					trigger={<span className={'underline text-blue-500 cursor-pointer'}>{reviewCount}</span>}
-				/>
-			) : (
-				0
-			)
+			return reviewCount ?? 0
 		},
 	},
 	{

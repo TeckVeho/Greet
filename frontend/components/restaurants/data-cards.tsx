@@ -3,7 +3,7 @@
 import { Badge, Skeleton } from '@/components/ui'
 import { areaLabel, genreLabel, priceRangeLabel } from '@/lib/constants'
 import { useFavorites } from '@/lib/favorites-context'
-import { Restaurant } from '@/lib/types' // Sizning DataTable'dagi tipingiz
+import type { RestaurantListItem } from '@/lib/api/restaurants'
 import { PaginationState } from '@tanstack/react-table'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -32,7 +32,7 @@ const getGenreVariant = (genreKey: string): any => {
 }
 
 interface RestaurantCardsProps {
-	data: Restaurant[]
+	data: RestaurantListItem[]
 	total?: number
 	pagination: PaginationState
 	setPagination: Dispatch<SetStateAction<PaginationState>>
@@ -153,7 +153,7 @@ export function DataCards({
 										{/* Review mantiqi (DataTable'dagi kabi) */}
 										<div className='mt-3 border-t border-zinc-100 pt-3 text-xs flex justify-between items-center'>
 											<div className='text-zinc-500'>
-												レビュー {restaurant.reviews.length} 件
+												レビュー {restaurant.reviewCount} 件
 												{/* {restaurant.reviews.length > 0 ? (
 													<SheetReviewView
 														reviews={restaurant.reviews}

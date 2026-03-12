@@ -1,6 +1,5 @@
 'use client'
 
-import { Restaurant } from '../types'
 import { apiClient } from './client'
 import type { ApiResponse } from './types'
 
@@ -35,7 +34,7 @@ export interface RestaurantListMeta {
 	total_pages: number
 }
 export interface RestaurantListResponse {
-	data: Restaurant[]
+	data: RestaurantListItem[]
 	meta: RestaurantListMeta
 }
 
@@ -71,7 +70,7 @@ export interface ListRestaurantsParams {
 export async function listRestaurants(
 	params: ListRestaurantsParams = {},
 ): Promise<RestaurantListResponse> {
-	const res = await apiClient.get<ApiResponse<Restaurant[]>>('/restaurants', { params })
+	const res = await apiClient.get<ApiResponse<RestaurantListItem[]>>('/restaurants', { params })
 
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)

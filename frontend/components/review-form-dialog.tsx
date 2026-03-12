@@ -46,7 +46,11 @@ export function ReviewFormDialog({
     // レビューデータを作成
     const reviewData: Omit<Review, "id" | "createdAt"> = {
       authorId: user.id,
-      author: user.name,
+      author: {
+        id: user.id,
+        name: user.name,
+        icon: user.icon ?? '',
+      },
       occasion: formData.occasion,
       result: formData.result,
       rating: formData.rating,
