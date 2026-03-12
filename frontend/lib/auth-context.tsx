@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		setIsLoading(false)
 	}, [])
 
-	const login = async (email: string, password: string): Promise<boolean> => {
+	const login = React.useCallback(async (email: string, password: string): Promise<boolean> => {
 		setIsLoading(true)
 		try {
 			const loginedUser = await loginApi({ email: email, password: password })
@@ -44,16 +44,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		} finally {
 			setIsLoading(false)
 		}
-	}
+	}, [queryClient])
 
-	const logout = () => {
+	const logout = React.useCallback(() => {
 		setUser(null)
 		localStorage.removeItem('user')
 		// JWT トークンを必ず削除してリクエストが旧ユーザーの権限で送られないようにする
 		localStorage.removeItem('token')
 		// 別ユーザーのデータが次のログインに漏れないようキャッシュを全消去
 		queryClient.clear()
-	}
+	}, [queryClient])
 
 	return (
 		<AuthContext.Provider value={{ user, login, logout, isLoading }}>

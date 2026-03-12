@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import axios from "axios"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "./auth-context"
 import {
@@ -20,15 +21,29 @@ interface FavoritesContextType {
 const FavoritesContext = React.createContext<FavoritesContextType | undefined>(undefined)
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth()
+  const { user, logout, isLoading } = useAuth()
   const queryClient = useQueryClient()
   const [favorites, setFavorites] = React.useState<string[]>([])
 
   // ログインユーザーのお気に入り一覧をAPIから取得
   React.useEffect(() => {
     const loadFavorites = async () => {
+      if (isLoading) {
+        return
+      }
+
       if (!user) {
         setFavorites([])
+        return
+      }
+
+      const token = typeof window !== "undefined"
+        ? localStorage.getItem("token")
+        : null
+
+      if (!token) {
+        setFavorites([])
+        logout()
         return
       }
 
@@ -36,12 +51,18 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         const items = await listFavoritesApi()
         setFavorites(items.map((item) => item.restaurant.id))
       } catch (e) {
+        if (axios.isAxiosError(e) && e.response?.status === 401) {
+          setFavorites([])
+          logout()
+          return
+        }
+
         console.error("Failed to load favorites from API", e)
       }
     }
 
     void loadFavorites()
-  }, [user])
+  }, [isLoading, user, logout])
 
   const addFavorite = React.useCallback((id: string) => {
     // 楽観的更新
