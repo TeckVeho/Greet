@@ -53,6 +53,7 @@ export function SearchFilterBar({
 					<InputGroupInput
 						placeholder='店名、エリア、ジャンルで検索...'
 						onChange={e => onSearchChange(e.target.value)}
+						value={searchValue}
 					/>
 					<InputGroupAddon>
 						<SearchIcon />
