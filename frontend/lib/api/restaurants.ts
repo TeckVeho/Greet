@@ -1,5 +1,6 @@
 'use client'
 
+import { Review } from '../types'
 import { apiClient } from './client'
 import type { ApiResponse } from './types'
 
@@ -10,21 +11,22 @@ export interface RestaurantListItem {
 	genres: string[]
 	hasPrivateRoom: boolean
 	priceRange: string
-	address?: string
-	phone?: string
+	address: string
+	phone: string
 	url?: string
 	smokingAllowed: boolean
 	coverImage?: string
-	icon?: string
+	icon: string
 	reviewCount: number
 	averageRating: number | null
+	reviews: Review[]
 	createdBy: {
 		id: string
 		name: string
 		icon?: string
 	}
-	createdAt: string
-	updatedAt: string
+	createdAt: Date
+	updatedAt: Date
 }
 
 export interface RestaurantListMeta {
@@ -36,22 +38,6 @@ export interface RestaurantListMeta {
 export interface RestaurantListResponse {
 	data: RestaurantListItem[]
 	meta: RestaurantListMeta
-}
-
-export interface RestaurantDetail extends RestaurantListItem {
-	reviews: Array<{
-		id: string
-		occasion: string
-		result: string
-		rating: number | null
-		author: {
-			id: string
-			name: string
-			icon?: string
-		}
-		createdAt: string
-	}>
-	isFavorite: boolean
 }
 
 export interface ListRestaurantsParams {
@@ -115,8 +101,8 @@ export async function createRestaurant(
 	return res.data.data
 }
 
-export async function getRestaurant(id: string): Promise<RestaurantDetail> {
-	const res = await apiClient.get<ApiResponse<RestaurantDetail>>(`/restaurants/${id}`)
+export async function getRestaurant(id: string): Promise<RestaurantListItem> {
+	const res = await apiClient.get<ApiResponse<RestaurantListItem>>(`/restaurants/${id}`)
 
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
