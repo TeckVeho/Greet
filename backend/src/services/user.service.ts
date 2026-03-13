@@ -5,9 +5,21 @@ import { prisma } from '../prisma'
 import { ApiError } from '../utils/utils'
 import { createUserBody, listUserQuery } from '../validators/user.validator'
 
+type Requester = {
+  userId: string
+  role: 'admin' | 'user'
+  companyId: string
+}
+
 export class UserService {
-  async findAll(query: listUserQuery) {
-    const companyId = query.companyId?.trim()
+  async findAll(query: listUserQuery, requester?: Requester) {
+    const requestedCompanyId = query.companyId?.trim()
+    // Tenant rule: only admins may access cross-company user data.
+    const companyId = !requester
+      ? requestedCompanyId
+      : requester.role === 'admin'
+        ? requestedCompanyId
+        : requester.companyId
     const search = query.search?.trim()
     const page = Math.max(1, Number(query.page) || 1)
     const limit = Math.max(1, Number(query.limit) || 10)
@@ -62,7 +74,7 @@ export class UserService {
     }
   }
 
-  async findById(id: string) {
+  async findById(id: string, requester?: Requester) {
     try {
       const user = await prisma.user.findUnique({
         where: { id },
@@ -76,6 +88,9 @@ export class UserService {
         },
       })
       if (!user) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+      }
+      if (requester && requester.role !== 'admin' && user.companyId !== requester.companyId) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
       }
       const { passwordHash, ...safeUser } = user
@@ -111,8 +126,16 @@ export class UserService {
     }
   }
 
-  async update(id: string, userData: Partial<createUserBody>) {
+  async update(id: string, userData: Partial<createUserBody>, requester?: Requester) {
     try {
+      const existing = await prisma.user.findUnique({ where: { id }, select: { companyId: true } })
+      if (!existing) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+      }
+      if (requester && requester.role !== 'admin' && existing.companyId !== requester.companyId) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+      }
+
       const { password, ...rest } = userData
       const data: any = { ...rest }
       if (password) {
@@ -137,8 +160,16 @@ export class UserService {
     }
   }
 
-  async delete(id: string) {
+  async delete(id: string, requester?: Requester) {
     try {
+      const existing = await prisma.user.findUnique({ where: { id }, select: { companyId: true } })
+      if (!existing) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+      }
+      if (requester && requester.role !== 'admin' && existing.companyId !== requester.companyId) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+      }
+
       await prisma.user.delete({ where: { id } })
       return {
         success: true,

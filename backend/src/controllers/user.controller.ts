@@ -4,14 +4,14 @@ import { listUserQuery } from '../validators/user.validator'
 
 class UserController {
   public getUsers = async (req: Request, res: Response) => {
-    const result = await userService.findAll(req.query as listUserQuery)
+    const result = await userService.findAll(req.query as listUserQuery, req.user!)
     res.status(result.statusCode).json(result)
   }
 
   public getUserById = async (req: Request, res: Response) => {
     const rawUserId = req.params.userId
     const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId
-    const result = await userService.findById(userId)
+    const result = await userService.findById(userId, req.user!)
     res.status(result.statusCode).json(result)
   }
 
@@ -27,14 +27,14 @@ class UserController {
   public updateUser = async (req: Request, res: Response) => {
     const rawUserId = req.params.userId
     const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId
-    const result = await userService.update(userId, req.body)
+    const result = await userService.update(userId, req.body, req.user!)
     res.status(result.statusCode).json(result)
   }
 
   public deleteUser = async (req: Request, res: Response) => {
     const rawUserId = req.params.userId
     const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId
-    const result = await userService.delete(userId)
+    const result = await userService.delete(userId, req.user!)
     res.status(result.statusCode).json(result)
   }
 }
