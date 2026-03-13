@@ -1,4 +1,5 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
@@ -59,6 +60,15 @@ function extractS3Key(url: string): string | null {
   }
 }
 
+function isS3ObjectUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.hostname.includes('.s3.') && parsed.pathname.length > 1
+  } catch {
+    return false
+  }
+}
+
 function extractLocalFilename(url: string): string | null {
   const prefix = '/media/restaurants/'
   const idx = url.indexOf(prefix)
@@ -113,4 +123,31 @@ export async function deleteFile(fileUrl: string): Promise<void> {
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath)
   }
+}
+
+export async function resolveFileUrl(fileUrl?: string | null): Promise<string | undefined> {
+  if (!fileUrl) return undefined
+
+  // In development we keep local URLs untouched.
+  if (!isProduction()) {
+    return fileUrl
+  }
+
+  // Non-S3 values (emoji icons, external URLs) should pass through as-is.
+  if (!isS3ObjectUrl(fileUrl)) {
+    return fileUrl
+  }
+
+  const key = extractS3Key(fileUrl)
+  if (!key) return fileUrl
+
+  const expiresIn = Number(process.env.S3_SIGNED_URL_EXPIRES_IN ?? '3600')
+  return getSignedUrl(
+    getS3(),
+    new GetObjectCommand({
+      Bucket: getBucket(),
+      Key: key,
+    }),
+    { expiresIn },
+  )
 }

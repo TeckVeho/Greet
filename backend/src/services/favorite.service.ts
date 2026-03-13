@@ -1,5 +1,6 @@
 import { prisma } from '../prisma'
 import { StatusCodes } from 'http-status-codes'
+import { resolveFileUrl } from './file.service'
 
 export class FavoriteService {
   async listForUser(userId: string) {
@@ -29,7 +30,8 @@ export class FavoriteService {
       },
     })
 
-    const data = favorites.map(f => {
+    const data = await Promise.all(
+      favorites.map(async f => {
       const { restaurant, ...favorite } = f
       const reviewCount = restaurant.reviews.length
       const averageRating =
@@ -50,13 +52,13 @@ export class FavoriteService {
           area: restaurant.area,
           genres: restaurant.genres.map(g => g.genre),
           priceRange: restaurant.priceRange,
-          icon: restaurant.icon,
+          icon: await resolveFileUrl(restaurant.icon),
           hasPrivateRoom: restaurant.hasPrivateRoom,
           address: restaurant.address ?? undefined,
           phone: restaurant.phone ?? undefined,
           url: restaurant.url ?? undefined,
           smokingAllowed: restaurant.smokingAllowed,
-          coverImage: restaurant.coverImage ?? undefined,
+          coverImage: await resolveFileUrl(restaurant.coverImage),
           reviewCount,
           averageRating,
           createdBy: {
@@ -69,7 +71,8 @@ export class FavoriteService {
         },
         createdAt: favorite.createdAt,
       }
-    })
+    }),
+    )
 
     return {
       success: true,

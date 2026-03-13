@@ -8,6 +8,7 @@ import type {
   updateRestaurantBodySchema,
 } from '../validators/restaurant.validator'
 import { deleteFile } from './file.service'
+import { resolveFileUrl } from './file.service'
 
 type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; createdById: string }
 type UpdateRestaurantInput = updateRestaurantBodySchema
@@ -95,7 +96,8 @@ export class RestaurantService {
       }),
     ])
 
-    const data = restaurants.map(r => {
+    const data = await Promise.all(
+      restaurants.map(async r => {
       const reviewCount = r.reviews.length
       const averageRating =
         reviewCount === 0
@@ -117,8 +119,8 @@ export class RestaurantService {
         phone: r.phone ?? undefined,
         url: r.url ?? undefined,
         smokingAllowed: r.smokingAllowed,
-        coverImage: r.coverImage ?? undefined,
-        icon: r.icon ?? undefined,
+        coverImage: await resolveFileUrl(r.coverImage),
+        icon: await resolveFileUrl(r.icon),
         reviewCount,
         reviews: r.reviews.map(review => ({
           id: review.id,
@@ -141,7 +143,8 @@ export class RestaurantService {
         createdAt: r.createdAt,
         updatedAt: r.updatedAt,
       }
-    })
+    }),
+    )
 
     const totalPages = Math.max(1, Math.ceil(total / limit))
 
@@ -228,8 +231,8 @@ export class RestaurantService {
       phone: restaurant.phone ?? undefined,
       url: restaurant.url ?? undefined,
       smokingAllowed: restaurant.smokingAllowed,
-      coverImage: restaurant.coverImage ?? undefined,
-      icon: restaurant.icon ?? undefined,
+      coverImage: await resolveFileUrl(restaurant.coverImage),
+      icon: await resolveFileUrl(restaurant.icon),
       createdBy: {
         id: restaurant.createdBy.id,
         name: restaurant.createdBy.name,
