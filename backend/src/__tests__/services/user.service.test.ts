@@ -264,6 +264,7 @@ describe('UserService', () => {
   describe('update', () => {
     it('ユーザー情報を正常に更新する', async () => {
       const updatedUser = { ...mockUserFromDb, name: '更新ユーザー' }
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
       mockUserUpdate.mockResolvedValue(updatedUser)
 
       const result = await service.update('user-1', { name: '更新ユーザー' })
@@ -274,6 +275,7 @@ describe('UserService', () => {
     })
 
     it('パスワード更新時にbcryptでハッシュ化される', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
       mockUserUpdate.mockResolvedValue(mockUserFromDb)
 
       await service.update('user-1', { password: 'newpassword' })
@@ -289,6 +291,7 @@ describe('UserService', () => {
     })
 
     it('パスワードなしの更新ではbcryptが呼ばれない', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
       mockUserUpdate.mockResolvedValue(mockUserFromDb)
 
       await service.update('user-1', { name: '名前のみ更新' })
@@ -308,6 +311,7 @@ describe('UserService', () => {
   // ─────────────────────────────────────────
   describe('delete', () => {
     it('ユーザーを正常に削除する', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
       mockUserDelete.mockResolvedValue(mockUserFromDb)
 
       const result = await service.delete('user-1')

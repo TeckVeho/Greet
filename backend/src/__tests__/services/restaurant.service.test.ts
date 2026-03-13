@@ -25,6 +25,7 @@ jest.mock('../../prisma', () => ({
 
 jest.mock('../../services/file.service', () => ({
   deleteFile: jest.fn().mockResolvedValue(undefined),
+  resolveFileUrl: jest.fn(async (value?: string | null) => value ?? undefined),
 }))
 
 const mockRestaurantCount = prisma.restaurant.count as jest.Mock
