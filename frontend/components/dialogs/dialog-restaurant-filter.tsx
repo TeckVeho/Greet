@@ -27,7 +27,12 @@ interface FilterDialogProps {
 	onFiltersChange: (filters: FilterState) => void
 }
 
-export function FilterDialog({ open, onOpenChange, filters, onFiltersChange }: FilterDialogProps) {
+export function DialogRestaurantFilter({
+	open,
+	onOpenChange,
+	filters,
+	onFiltersChange,
+}: FilterDialogProps) {
 	const [localFilters, setLocalFilters] = React.useState<FilterState>(filters)
 
 	React.useEffect(() => {
@@ -37,7 +42,9 @@ export function FilterDialog({ open, onOpenChange, filters, onFiltersChange }: F
 	const handleAreaToggle = (value: string) => {
 		setLocalFilters(prev => ({
 			...prev,
-			areas: prev.areas.includes(value) ? prev.areas.filter(a => a !== value) : [...prev.areas, value],
+			areas: prev.areas.includes(value)
+				? prev.areas.filter(a => a !== value)
+				: [...prev.areas, value],
 		}))
 	}
 
@@ -96,65 +103,65 @@ export function FilterDialog({ open, onOpenChange, filters, onFiltersChange }: F
 				</DialogHeader>
 
 				<div className='space-y-6'>
-				{/* エリア */}
-				<div>
-					<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>エリア</Label>
-					<div className='flex flex-wrap gap-2'>
-						{AREA_OPTIONS.map(opt => (
-							<button
-								key={opt.value}
-								onClick={() => handleAreaToggle(opt.value)}
-								className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-									localFilters.areas.includes(opt.value)
-										? 'bg-zinc-900 text-white'
-										: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-								}`}
-							>
-								{opt.label}
-							</button>
-						))}
+					{/* エリア */}
+					<div>
+						<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>エリア</Label>
+						<div className='flex flex-wrap gap-2'>
+							{AREA_OPTIONS.map(opt => (
+								<button
+									key={opt.value}
+									onClick={() => handleAreaToggle(opt.value)}
+									className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+										localFilters.areas.includes(opt.value)
+											? 'bg-zinc-900 text-white'
+											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+									}`}
+								>
+									{opt.label}
+								</button>
+							))}
+						</div>
 					</div>
-				</div>
 
-				{/* ジャンル */}
-				<div>
-					<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>ジャンル</Label>
-					<div className='flex flex-wrap gap-2'>
-						{GENRE_OPTIONS.map(opt => (
-							<button
-								key={opt.value}
-								onClick={() => handleGenreToggle(opt.value)}
-								className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-									localFilters.genres.includes(opt.value)
-										? 'bg-zinc-900 text-white'
-										: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-								}`}
-							>
-								{opt.label}
-							</button>
-						))}
+					{/* ジャンル */}
+					<div>
+						<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>ジャンル</Label>
+						<div className='flex flex-wrap gap-2'>
+							{GENRE_OPTIONS.map(opt => (
+								<button
+									key={opt.value}
+									onClick={() => handleGenreToggle(opt.value)}
+									className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+										localFilters.genres.includes(opt.value)
+											? 'bg-zinc-900 text-white'
+											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+									}`}
+								>
+									{opt.label}
+								</button>
+							))}
+						</div>
 					</div>
-				</div>
 
-				{/* 価格帯 */}
-				<div>
-					<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>価格帯</Label>
-					<div className='flex flex-wrap gap-2'>
-						{PRICE_RANGE_OPTIONS.map(opt => (
-							<button
-								key={opt.value}
-								onClick={() => handlePriceRangeToggle(opt.value)}
-								className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-									localFilters.priceRanges.includes(opt.value)
-										? 'bg-zinc-900 text-white'
-										: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-								}`}
-							>
-								{opt.label}
-							</button>
-						))}
+					{/* 価格帯 */}
+					<div>
+						<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>価格帯</Label>
+						<div className='flex flex-wrap gap-2'>
+							{PRICE_RANGE_OPTIONS.map(opt => (
+								<button
+									key={opt.value}
+									onClick={() => handlePriceRangeToggle(opt.value)}
+									className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+										localFilters.priceRanges.includes(opt.value)
+											? 'bg-zinc-900 text-white'
+											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+									}`}
+								>
+									{opt.label}
+								</button>
+							))}
+						</div>
 					</div>
-				</div>
 
 					{/* 個室・喫煙 */}
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

@@ -47,12 +47,13 @@ export function SearchFilterBar({
 	searchValue,
 }: SearchFilterBarProps) {
 	return (
-		<div className='flex flex-wrap items-center gap-2 md:flex-nowrap md:gap-3'>
+		<div className='flex flex-wrap items-center gap-2 md:flex-nowrap md:gap-3 mb-6'>
 			<div className='relative w-full md:flex-1 md:max-w-md'>
 				<InputGroup>
 					<InputGroupInput
 						placeholder='店名、エリア、ジャンルで検索...'
 						onChange={e => onSearchChange(e.target.value)}
+						value={searchValue}
 					/>
 					<InputGroupAddon>
 						<SearchIcon />
@@ -69,12 +70,6 @@ export function SearchFilterBar({
 						)}
 					</InputGroupAddon>
 				</InputGroup>
-				{/* <Input
-					type='text'
-					placeholder='店名、エリア、ジャンルで検索...'
-					className='pl-9'
-					onChange={e => onSearchChange(e.target.value)}
-				/> */}
 			</div>
 			<Button variant='secondary' onClick={onFilterClick} className='relative'>
 				<Filter className='size-4' />
@@ -108,16 +103,16 @@ export function SearchFilterBar({
 			{onViewModeChange && (
 				<div className='hidden md:flex items-center border border-zinc-200 rounded-md overflow-hidden'>
 					<Button
-						onClick={() => onViewModeChange('table')}
-						variant={viewMode === 'cards' ? 'secondary' : 'default'}
+						onClick={() => onViewModeChange('cards')}
+						variant={viewMode === 'cards' ? 'default' : 'secondary'}
 						className='rounded-r-none'
 						title='テーブル表示'
 					>
 						<LayoutGrid className={'size-4'} />
 					</Button>
 					<Button
-						onClick={() => onViewModeChange('cards')}
-						variant={viewMode === 'cards' ? 'default' : 'secondary'}
+						onClick={() => onViewModeChange('table')}
+						variant={viewMode === 'table' ? 'default' : 'secondary'}
 						title='カード表示'
 						className='rounded-l-none'
 					>

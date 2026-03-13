@@ -59,7 +59,24 @@ const mockRestaurantFromDb = {
   createdAt: new Date('2025-01-01'),
   updatedAt: new Date('2025-01-01'),
   genres: [{ genre: 'SUSHI' }],
-  reviews: [{ rating: 4 }, { rating: 5 }],
+  reviews: [
+    {
+      id: 'rev-1',
+      occasion: '接待',
+      result: '好評',
+      rating: 4,
+      createdAt: new Date('2025-01-02'),
+      author: { id: 'author-1', name: '著者1', icon: '📝' },
+    },
+    {
+      id: 'rev-2',
+      occasion: '会食',
+      result: '満足',
+      rating: 5,
+      createdAt: new Date('2025-01-03'),
+      author: { id: 'author-2', name: '著者2', icon: null },
+    },
+  ],
   createdBy: { id: userId, name: 'テストユーザー', icon: '👤' },
 }
 
@@ -126,18 +143,18 @@ describe('RestaurantService', () => {
       )
     })
 
-    it('デフォルトのページネーション値が適用される（page=1, limit=20）', async () => {
+    it('デフォルトのページネーション値が適用される（page=1, limit=10）', async () => {
       mockRestaurantCount.mockResolvedValue(0)
       mockRestaurantFindMany.mockResolvedValue([])
 
       const result = await service.findAll({}, companyId)
 
       expect(result.meta.page).toBe(1)
-      expect(result.meta.limit).toBe(20)
+      expect(result.meta.limit).toBe(10)
       expect(mockRestaurantFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
           skip: 0,
-          take: 20,
+          take: 10,
         }),
       )
     })
@@ -169,10 +186,16 @@ describe('RestaurantService', () => {
 
       await service.findAll({}, 'specific-company')
 
-      expect(mockRestaurantCount).toHaveBeenCalledWith({ where: { companyId: 'specific-company' } })
+      expect(mockRestaurantCount).toHaveBeenCalledWith({
+        where: {
+          AND: expect.arrayContaining([{ companyId: 'specific-company' }]),
+        },
+      })
       expect(mockRestaurantFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { companyId: 'specific-company' },
+          where: {
+            AND: expect.arrayContaining([{ companyId: 'specific-company' }]),
+          },
         }),
       )
     })

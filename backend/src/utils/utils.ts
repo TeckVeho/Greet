@@ -11,3 +11,15 @@ export class ApiError extends Error {
     Error.captureStackTrace(this, this.constructor)
   }
 }
+
+export const parseBoolean = (value: string | undefined): boolean | undefined => {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return undefined
+}
+export const cleanArray = (arr: any) => {
+  if (!arr) return []
+  const normalized = Array.isArray(arr) ? arr : [arr]
+  // "undefined" stringini va bo'sh qiymatlarni olib tashlaymiz
+  return normalized.filter(item => item && item !== 'undefined')
+}

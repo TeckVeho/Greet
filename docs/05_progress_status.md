@@ -139,44 +139,44 @@
 
 | # | テスト対象 | ステータス | 担当 |
 |---|-----------|-----------|------|
-| 1 | `auth.service.ts` - ログイン成功・失敗 | ⬜ 未着手 | - |
-| 2 | `auth.service.ts` - JWT生成・検証 | ⬜ 未着手 | - |
-| 3 | `restaurant.service.ts` - CRUD | ⬜ 未着手 | - |
-| 4 | `restaurant.service.ts` - フィルタリング | ⬜ 未着手 | - |
-| 5 | `review.service.ts` - レビュー投稿・削除 | ⬜ 未着手 | - |
-| 6 | `user.service.ts` - ユーザーCRUD | ⬜ 未着手 | - |
-| 7 | `jwt.ts` - トークン生成・検証・期限切れ | ⬜ 未着手 | - |
-| 8 | `password.ts` - ハッシュ化・比較 | ⬜ 未着手 | - |
-| 9 | フロントエンド: `AuthContext` | ⬜ 未着手 | - |
-| 10 | フロントエンド: `FavoritesContext` | ⬜ 未着手 | - |
-| 11 | フロントエンド: `RestaurantFormDialog` | ⬜ 未着手 | - |
-| 12 | フロントエンド: `SearchFilterBar` | ⬜ 未着手 | - |
+| 1 | `auth.service.ts` - ログイン成功・失敗 | ✅ 完了 | Copilot |
+| 2 | `auth.service.ts` - JWT生成・検証 | ✅ 完了 | Copilot |
+| 3 | `restaurant.service.ts` - CRUD | ✅ 完了 | Copilot |
+| 4 | `restaurant.service.ts` - フィルタリング | ✅ 完了 | Copilot |
+| 5 | `review.service.ts` - レビュー投稿・削除 | ✅ 完了 | Copilot |
+| 6 | `user.service.ts` - ユーザーCRUD | ✅ 完了 | Copilot |
+| 7 | `jwt.ts` - トークン生成・検証・期限切れ | ✅ 完了 | Copilot |
+| 8 | `password.ts` - ハッシュ化・比較 | ✅ 完了 | Copilot |
+| 9 | フロントエンド: `AuthContext` | ✅ 完了 | Copilot |
+| 10 | フロントエンド: `FavoritesContext` | ✅ 完了 | Copilot |
+| 11 | フロントエンド: `DialogRestaurantCreate`（旧 `RestaurantFormDialog` 相当） | ✅ 完了 | Copilot |
+| 12 | フロントエンド: `SearchFilterBar` | ✅ 完了 | Copilot |
 
 ### 5.2 インテグレーションテスト（IT） - Supertest
 
 | # | テスト対象 | ステータス | 担当 |
 |---|-----------|-----------|------|
-| 1 | `POST /auth/login` - 正常ログイン | ⬜ 未着手 | - |
-| 2 | `POST /auth/login` - 誤パスワード | ⬜ 未着手 | - |
-| 3 | `GET /restaurants` - 認証なしで 401 | ⬜ 未着手 | - |
-| 4 | `GET /restaurants` - 一覧取得 | ⬜ 未着手 | - |
-| 5 | `GET /restaurants` - フィルタリング | ⬜ 未着手 | - |
-| 6 | `POST /restaurants` - 登録成功 | ⬜ 未着手 | - |
-| 7 | `POST /restaurants` - バリデーションエラー | ⬜ 未着手 | - |
-| 8 | `PUT /restaurants/:id` - 更新成功 | ⬜ 未着手 | - |
-| 9 | `DELETE /restaurants/:id` - admin のみ | ⬜ 未着手 | - |
-| 10 | `POST /restaurants/:id/reviews` - 投稿成功 | ⬜ 未着手 | - |
-| 11 | `GET /users` - admin のみアクセス可 | ⬜ 未着手 | - |
-| 12 | `POST /users` - ユーザー登録 | ⬜ 未着手 | - |
-| 13 | お気に入り追加・削除・一覧 | ⬜ 未着手 | - |
+| 1 | `POST /auth/login` - 正常ログイン | ✅ 完了 | Copilot |
+| 2 | `POST /auth/login` - 誤パスワード | ✅ 完了 | Copilot |
+| 3 | `GET /restaurants` - 認証なしで 401 | ✅ 完了 | Copilot |
+| 4 | `GET /restaurants` - 一覧取得 | ✅ 完了 | Copilot |
+| 5 | `GET /restaurants` - フィルタリング | ✅ 完了 | Copilot |
+| 6 | `POST /restaurants` - 登録成功 | ✅ 完了 | Copilot |
+| 7 | `POST /restaurants` - バリデーションエラー | ✅ 完了 | Copilot |
+| 8 | `PUT /restaurants/:id` - 更新成功 | ✅ 完了 | Copilot |
+| 9 | `DELETE /restaurants/:id` - admin のみ | ✅ 完了 | Copilot |
+| 10 | `POST /restaurants/:id/reviews` - 投稿成功 | ✅ 完了 | Copilot |
+| 11 | `GET /users` - admin のみアクセス可 | ✅ 完了 | Copilot |
+| 12 | `POST /users` - ユーザー登録 | ✅ 完了 | Copilot |
+| 13 | お気に入り追加・削除・一覧 | ✅ 完了 | Copilot |
 
 ### 5.3 E2Eテスト（E2E） - Playwright
 
 | # | シナリオ | ステータス | 担当 |
 |---|---------|-----------|------|
-| 1 | ログインフロー（正常） | ⬜ 未着手 | - |
-| 2 | ログインフロー（エラー表示） | ⬜ 未着手 | - |
-| 3 | 飲食店一覧表示・検索 | ⬜ 未着手 | - |
+| 1 | ログインフロー（正常） | ✅ 完了 | Copilot |
+| 2 | ログインフロー（エラー表示） | ✅ 完了 | Copilot |
+| 3 | 飲食店一覧表示・検索 | ✅ 完了 | Copilot |
 | 4 | フィルター適用・解除 | ⬜ 未着手 | - |
 | 5 | 飲食店登録フロー | ⬜ 未着手 | - |
 | 6 | 飲食店詳細表示・レビュー投稿 | ⬜ 未着手 | - |

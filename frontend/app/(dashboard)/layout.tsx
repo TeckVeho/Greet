@@ -1,6 +1,6 @@
 'use client'
 
-import { GlobalSearchDialog } from '@/components/global-search-dialog'
+import { GlobalSearchDialog } from '@/components/dialogs/dialog-global-search'
 import { Header } from '@/components/header'
 import { Sidebar } from '@/components/sidebar'
 import { cn } from '@/lib/utils'

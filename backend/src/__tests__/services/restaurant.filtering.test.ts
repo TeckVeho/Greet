@@ -30,7 +30,7 @@ const mockFavoriteFindFirst = prisma.favorite.findFirst as jest.Mock
 const companyId = 'company-1'
 
 function makeRestaurant(overrides: Record<string, unknown> = {}) {
-  return {
+  const restaurant = {
     id: 'rest-1',
     name: '銀座 鮨処',
     area: 'GINZA',
@@ -50,6 +50,20 @@ function makeRestaurant(overrides: Record<string, unknown> = {}) {
     reviews: [{ rating: 4 }, { rating: 5 }],
     createdBy: { id: 'user-1', name: 'テストユーザー', icon: '👤' },
     ...overrides,
+  }
+
+  return {
+    ...restaurant,
+    reviews: (restaurant.reviews as Array<Record<string, unknown>>).map((review, index) => ({
+      id: (review.id as string | undefined) ?? `review-${index + 1}`,
+      occasion: (review.occasion as string | undefined) ?? '接待',
+      result: (review.result as string | undefined) ?? '好評',
+      rating: review.rating as number | null | undefined,
+      createdAt: (review.createdAt as Date | undefined) ?? new Date('2025-02-01'),
+      author:
+        (review.author as { id: string; name: string; icon?: string | null } | undefined) ??
+        { id: `author-${index + 1}`, name: `著者${index + 1}`, icon: null },
+    })),
   }
 }
 

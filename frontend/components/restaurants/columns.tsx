@@ -1,12 +1,35 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui'
-import type { RestaurantListItem } from '@/lib/api/restaurants'
+import { AREA_LABELS, GENRE_LABELS, PRICE_RANGE_LABELS } from '@/lib/constants'
+import { useFavorites } from '@/lib/favorites-context'
+import { Restaurant } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
-import { format } from 'date-fns'
+import { Check, X } from 'lucide-react'
 import Link from 'next/link'
-
-export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
+import { SheetReviewView } from '../sheets/sheet-review-view'
+export const RestaurantColumns: ColumnDef<Restaurant>[] = [
+	{
+		id: 'rate',
+		header: 'お気に入り',
+		cell: ({ row }) => {
+			const restaurant = row.original
+			const { isFavorite, toggleFavorite } = useFavorites()
+			const isFav = isFavorite(restaurant.id)
+			return (
+				<button
+					onClick={e => {
+						e.preventDefault()
+						e.stopPropagation()
+						toggleFavorite(restaurant.id)
+					}}
+					className=' h-8 w-8 items-center justify-center rounded-full bg-white/90 hover:bg-white shadow-sm transition-colors cursor-pointer'
+				>
+					<span className='text-lg'>{isFav ? '⭐' : '☆'}</span>
+				</button>
+			)
+		},
+	},
 	{
 		accessorKey: 'coverImage',
 		header: '写真',
@@ -21,29 +44,13 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 		},
 	},
 	{
-		accessorKey: 'url',
-		header: 'URL',
-		cell: ({ getValue, row }) => {
-			const url = getValue<string>()
-			return (
-				<a href={url} target='_blank' rel='noopener noreferrer'>
-					url
-				</a>
-			)
-		},
-	},
-
-	{
 		accessorKey: 'name',
 		header: '店名',
 		cell: ({ getValue, row }) => {
 			const name = getValue<string>()
 			return (
-				<Link
-					href={`/restaurants/${row.original.id}`}
-					className='font-medium underline text-blue-500'
-				>
-					{name}
+				<Link href={`/restaurants/${row.original.id}`} className='font-medium  hover:text-blue-500'>
+					{row.original.icon} {name}
 				</Link>
 			)
 		},
@@ -51,6 +58,10 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 	{
 		accessorKey: 'area',
 		header: 'エリア',
+		cell: ({ getValue }) => {
+			const area = getValue<string>()
+			return <Badge className='whitespace-nowrap'>{AREA_LABELS[area]}</Badge>
+		},
 	},
 	{
 		accessorKey: 'genres',
@@ -60,8 +71,8 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 			return (
 				<div className='flex flex-wrap gap-2'>
 					{genres.map(genre => (
-						<Badge key={genre} variant='genre'>
-							{genre}
+						<Badge key={genre} variant='genre' className='whitespace-nowrap'>
+							{GENRE_LABELS[genre]}
 						</Badge>
 					))}
 				</div>
@@ -73,24 +84,44 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 		header: '個室あり',
 		cell: ({ getValue }) => {
 			const hasPrivateRoom = getValue<boolean>()
-			return (
-				<Badge variant={hasPrivateRoom ? 'success' : 'danger'}>
-					{hasPrivateRoom ? 'あり' : 'なし'}
-				</Badge>
+			return hasPrivateRoom ? (
+				<Check className='text-green-500 size-4' />
+			) : (
+				<X className=' size-4' />
 			)
+		},
+	},
+	{
+		accessorKey: 'smokingAllowed',
+		header: '喫煙可',
+		cell: ({ getValue }) => {
+			const smokingAllowed = getValue<boolean>()
+			return <Badge className='whitespace-nowrap'>{smokingAllowed ? '可' : '不可'}</Badge>
 		},
 	},
 	{
 		accessorKey: 'address',
 		header: '住所',
+		cell: ({ getValue }) => {
+			const address = getValue<string>()
+			return address ? <span>{address}</span> : <Badge variant={'danger'}>なし</Badge>
+		},
 	},
 	{
 		accessorKey: 'phone',
 		header: '電話番号',
+		cell: ({ getValue }) => {
+			const phone = getValue<string>()
+			return phone ? <span>{phone}</span> : <Badge variant={'danger'}>なし</Badge>
+		},
 	},
 	{
-		accessorKey: 'icon',
-		header: 'アイコン',
+		accessorKey: 'priceRange',
+		header: '価格帯',
+		cell: ({ getValue }) => {
+			const priceRange = getValue<string>()
+			return <span>{PRICE_RANGE_LABELS[priceRange]}</span>
+		},
 	},
 	{
 		accessorKey: 'createdBy.name',
@@ -99,79 +130,72 @@ export const RestaurantColumns: ColumnDef<RestaurantListItem>[] = [
 	{
 		accessorKey: 'reviewCount',
 		header: 'レビュー数',
-		cell: ({ getValue }) => {
+		cell: ({ getValue, row }) => {
 			const reviewCount = getValue<number>()
-			return reviewCount ?? 0
+			const reviewIsValid = reviewCount > 0
+			return reviewIsValid ? (
+				<SheetReviewView
+					reviews={row.original.reviews}
+					trigger={<span className={'underline text-blue-500 cursor-pointer'}>{reviewCount}</span>}
+				/>
+			) : (
+				0
+			)
 		},
 	},
 	{
-		accessorKey: 'createdAt',
-		header: '作成日',
-		cell: ({ getValue }) => {
+		accessorKey: 'reviews',
+		header: '利用者',
+		cell: ({ getValue, row }) => {
+			const reviews = getValue<{ author: { icon: string } }[]>() || []
+			const limit = 3
+			const displayReviews = reviews.slice(0, limit)
+			const remainingCount = reviews.length - limit
+
 			return (
-				<div className='flex flex-col'>
-					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
-					<span>{format(getValue<Date>(), 'HH:mm')}</span>
+				<div className='flex -space-x-2 overflow-hidden p-1'>
+					{displayReviews.map((review, index) => (
+						<Avatar className='shadow-sm hover:z-10 ' key={index}>
+							<AvatarFallback className='bg-muted text-[10px]'>
+								{review.author.icon ? review.author.icon : row.original.name.charAt(0)}
+							</AvatarFallback>
+						</Avatar>
+					))}
+
+					{remainingCount > 0 && (
+						<div className='flex h-10 w-10 items-center justify-center rounded-full  bg-muted text-[12px] font-medium text-muted-foreground shadow-sm'>
+							+{remainingCount}
+						</div>
+					)}
 				</div>
 			)
 		},
 	},
 	// {
-	// 	accessorKey: 'lastLoginAt',
-	// 	header: '最終ログイン',
+	// 	accessorKey: 'url',
+	// 	header: 'URL',
+	// 	cell: ({ getValue }) => {
+	// 		const url = getValue<string>()
+	// 		return (
+	// 			<a
+	// 				href={url}
+	// 				target='_blank'
+	// 				rel='noopener noreferrer'
+	// 				className='font-medium underline text-blue-500'
+	// 			>
+	// 				Google Mapで見る
+	// 			</a>
+	// 		)
+	// 	},
+	// },
+	// {
+	// 	accessorKey: 'createdAt',
+	// 	header: '作成日',
 	// 	cell: ({ getValue }) => {
 	// 		return (
 	// 			<div className='flex flex-col'>
 	// 				<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
 	// 				<span>{format(getValue<Date>(), 'HH:mm')}</span>
-	// 			</div>
-	// 		)
-	// 	},
-	// },
-
-	// {
-	// 	id: 'actions',
-	// 	header: 'アクション',
-	// 	cell: ({ row }) => {
-	// 		const [isLoading, setIsloading] = useState<boolean>(false)
-	// 		const user_id = row.original.id
-	// 		const handleDelete = async () => {
-	// 			try {
-	// 				setIsloading(true)
-	// 				await deleteUser(user_id)
-	// 			} catch (err) {
-	// 				toast.error('ユーザーの削除に失敗しました。')
-	// 			} finally {
-	// 				setIsloading(false)
-	// 			}
-	// 		}
-	// 		return (
-	// 			<div className='flex items-center gap-3'>
-	// 				<DialogUpdateUser
-	// 					trigger={
-	// 						<Button variant='secondary' size='sm'>
-	// 							編集
-	// 						</Button>
-	// 					}
-	// 					user_data={row.original}
-	// 				/>
-
-	// 				<DialogWarning
-	// 					deleteAction={handleDelete}
-	// 					deleting={isLoading}
-	// 					description='このユーザーを削除してもよろしいですか？この操作は元に戻すことができません。'
-	// 					trigger={
-	// 						<Button
-	// 							variant='secondary'
-	// 							size='sm'
-	// 							className='text-red-600 hover:bg-red-50 hover:text-red-700'
-	// 						>
-	// 							削除
-	// 						</Button>
-	// 					}
-	// 					actionButtonText={'削除'}
-	// 					deletingText='削除中...'
-	// 				/>
 	// 			</div>
 	// 		)
 	// 	},

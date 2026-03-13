@@ -23,10 +23,11 @@ import { Skeleton } from '../ui'
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[]
 	data: TData[]
-	setPagination: Dispatch<SetStateAction<PaginationState>>
-	pagination: PaginationState
+	setPagination?: Dispatch<SetStateAction<PaginationState>>
+	pagination?: PaginationState
 	total?: number
 	isLoading?: boolean
+	totlaHidden?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -36,6 +37,7 @@ export function DataTable<TData, TValue>({
 	pagination,
 	setPagination,
 	isLoading,
+	totlaHidden = true,
 }: DataTableProps<TData, TValue>) {
 	const table = useReactTable({
 		data,
@@ -108,16 +110,25 @@ export function DataTable<TData, TValue>({
 					</TableBody>
 				</Table>
 			</div>
-			<div className='flex items-center justify-between mt-4'>
-				<span className='whitespace-nowrap'>飲食店数 {total}</span>
-				<Pagination
-					totalPages={table.getPageCount()}
-					pageIndex={pagination.pageIndex}
-					pageSize={pagination.pageSize}
-					onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
-					onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
-				/>
-			</div>
+			{totlaHidden &&
+				typeof pagination?.pageIndex === 'number' &&
+				typeof pagination?.pageSize === 'number' &&
+				setPagination && (
+					<div className='flex items-center justify-between mt-4'>
+						{totlaHidden && <span className='whitespace-nowrap'>飲食店数 {total}</span>}
+						{typeof pagination?.pageIndex === 'number' &&
+							typeof pagination.pageSize === 'number' &&
+							setPagination && (
+								<Pagination
+									totalPages={table.getPageCount()}
+									pageIndex={pagination.pageIndex}
+									pageSize={pagination.pageSize}
+									onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
+									onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
+								/>
+							)}
+					</div>
+				)}
 		</>
 	)
 }

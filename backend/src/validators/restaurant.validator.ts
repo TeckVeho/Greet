@@ -26,6 +26,11 @@ export const listRestaurantsQuerySchema = z.object({
   limit: z.number().int().positive().max(100).optional(),
   page: z.number().int().positive().optional(),
   search: z.string().optional(),
+  areas: z.array(z.nativeEnum(Area)).optional(),
+  genres: z.array(z.nativeEnum(Genre)).optional(),
+  hasPrivateRoom: z.enum(['true', 'false']).optional(),
+  smokingAllowed: z.enum(['true', 'false']).optional(),
+  priceRanges: z.array(z.nativeEnum(PriceRange)).optional(),
 })
 
 export const restaurantIdSchema = z.object({

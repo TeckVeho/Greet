@@ -1,9 +1,9 @@
 'use client'
 
 import { Badge, Skeleton } from '@/components/ui'
+import type { RestaurantListItem } from '@/lib/api/restaurants'
 import { areaLabel, genreLabel, priceRangeLabel } from '@/lib/constants'
 import { useFavorites } from '@/lib/favorites-context'
-import type { RestaurantListItem } from '@/lib/api/restaurants'
 import { PaginationState } from '@tanstack/react-table'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -34,9 +34,10 @@ const getGenreVariant = (genreKey: string): any => {
 interface RestaurantCardsProps {
 	data: RestaurantListItem[]
 	total?: number
-	pagination: PaginationState
-	setPagination: Dispatch<SetStateAction<PaginationState>>
+	pagination?: PaginationState
+	setPagination?: Dispatch<SetStateAction<PaginationState>>
 	isLoading?: boolean
+	totlaHidden?: boolean
 }
 
 export function DataCards({
@@ -45,18 +46,16 @@ export function DataCards({
 	pagination,
 	setPagination,
 	isLoading,
+	totlaHidden = true,
 }: RestaurantCardsProps) {
 	const { isFavorite, toggleFavorite } = useFavorites()
-
-	// Sahifalar sonini hisoblash
-	const totalPages = total ? Math.ceil(total / pagination.pageSize) : 0
+	const totalPages = total ? Math.ceil(total / (pagination?.pageSize || 0)) : 0
 
 	return (
 		<div className='space-y-6'>
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
 				{isLoading ? (
-					// Yuklanayotgan holat (Skeleton)
-					Array.from({ length: pagination.pageSize }).map((_, index) => (
+					Array.from({ length: pagination?.pageSize || 0 }).map((_, index) => (
 						<div
 							key={index}
 							className='rounded-lg border border-zinc-200 bg-white overflow-hidden shadow-sm'
@@ -82,7 +81,6 @@ export function DataCards({
 									href={`/restaurants/${restaurant.id}`}
 									className='block rounded-lg border border-zinc-200 bg-white overflow-hidden transition-all hover:shadow-md hover:scale-[1.01]'
 								>
-									{/* Rasm qismi */}
 									<div className='relative w-full h-48 bg-linear-to-br from-zinc-50 to-zinc-100'>
 										{restaurant.coverImage ? (
 											<Image
@@ -98,7 +96,6 @@ export function DataCards({
 											</div>
 										)}
 
-										{/* Sevimlilar tugmasi */}
 										<button
 											onClick={e => {
 												e.preventDefault()
@@ -136,7 +133,6 @@ export function DataCards({
 											<span>予算:</span> {priceRangeLabel(restaurant.priceRange)}
 										</div>
 
-										{/* Statuslar */}
 										<div className='flex items-center gap-4 text-sm'>
 											<div className='flex items-center gap-1.5'>
 												{restaurant.hasPrivateRoom ? (
@@ -147,26 +143,16 @@ export function DataCards({
 													<span className='text-zinc-400'>個室なし</span>
 												)}
 											</div>
-											<div className='text-zinc-500'>{restaurant.phone || '電話番号はなし'}</div>
+
+											{restaurant.phone ? (
+												<div className='text-zinc-500'>{restaurant.phone}</div>
+											) : (
+												<Badge variant={'danger'}>電話番号はなし</Badge>
+											)}
 										</div>
 
-										{/* Review mantiqi (DataTable'dagi kabi) */}
 										<div className='mt-3 border-t border-zinc-100 pt-3 text-xs flex justify-between items-center'>
-											<div className='text-zinc-500'>
-												レビュー {restaurant.reviewCount} 件
-												{/* {restaurant.reviews.length > 0 ? (
-													<SheetReviewView
-														reviews={restaurant.reviews}
-														trigger={
-															<span className='underline text-blue-500 cursor-pointer'>
-																レビュー {restaurant.reviews.length} 件
-															</span>
-														}
-													/>
-												) : (
-													<span>レビュー 0 件</span>
-												)} */}
-											</div>
+											<div className='text-zinc-500'>レビュー {restaurant.reviewCount} 件</div>
 										</div>
 									</div>
 								</Link>
@@ -182,14 +168,21 @@ export function DataCards({
 
 			{/* Paginatsiya (DataTable kabi) */}
 			<div className='flex items-center justify-between mt-4'>
-				<span className='whitespace-nowrap text-sm font-medium'>飲食店数: {total}</span>
-				<Pagination
-					totalPages={totalPages}
-					pageIndex={pagination.pageIndex}
-					pageSize={pagination.pageSize}
-					onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
-					onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
-				/>
+				{totlaHidden && (
+					<span className='whitespace-nowrap text-sm font-medium'>飲食店数: {total}</span>
+				)}
+
+				{typeof pagination?.pageSize === 'number' &&
+					typeof pagination?.pageIndex === 'number' &&
+					setPagination && (
+						<Pagination
+							totalPages={totalPages}
+							pageIndex={pagination.pageIndex}
+							pageSize={pagination.pageSize}
+							onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
+							onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
+						/>
+					)}
 			</div>
 		</div>
 	)

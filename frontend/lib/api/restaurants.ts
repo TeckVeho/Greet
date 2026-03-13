@@ -1,5 +1,6 @@
 'use client'
 
+import { Review } from '../types'
 import { apiClient } from './client'
 import type { ApiResponse } from './types'
 
@@ -10,21 +11,22 @@ export interface RestaurantListItem {
 	genres: string[]
 	hasPrivateRoom: boolean
 	priceRange: string
-	address?: string
-	phone?: string
+	address: string
+	phone: string
 	url?: string
 	smokingAllowed: boolean
 	coverImage?: string
-	icon?: string
+	icon: string
 	reviewCount: number
 	averageRating: number | null
+	reviews: Review[]
 	createdBy: {
 		id: string
 		name: string
 		icon?: string
 	}
-	createdAt: string
-	updatedAt: string
+	createdAt: Date
+	updatedAt: Date
 }
 
 export interface RestaurantListMeta {
@@ -38,31 +40,15 @@ export interface RestaurantListResponse {
 	meta: RestaurantListMeta
 }
 
-export interface RestaurantDetail extends RestaurantListItem {
-	reviews: Array<{
-		id: string
-		occasion: string
-		result: string
-		rating: number | null
-		author: {
-			id: string
-			name: string
-			icon?: string
-		}
-		createdAt: string
-	}>
-	isFavorite: boolean
-}
-
 export interface ListRestaurantsParams {
 	page?: number
 	limit?: number
 	search?: string
-	area?: string[]
-	genre?: string[]
+	areas?: string[]
+	genres?: string[]
 	hasPrivateRoom?: boolean
 	smokingAllowed?: boolean
-	priceRange?: string[]
+	priceRanges?: string[]
 	sortBy?: string
 	sortOrder?: 'asc' | 'desc'
 }
@@ -70,7 +56,20 @@ export interface ListRestaurantsParams {
 export async function listRestaurants(
 	params: ListRestaurantsParams = {},
 ): Promise<RestaurantListResponse> {
-	const res = await apiClient.get<ApiResponse<RestaurantListItem[]>>('/restaurants', { params })
+	const res = await apiClient.get<ApiResponse<RestaurantListItem[]>>('/restaurants', {
+		params,
+		paramsSerializer: params => {
+			const searchParams = new URLSearchParams()
+			for (const [key, value] of Object.entries(params)) {
+				if (Array.isArray(value)) {
+					value.forEach(v => searchParams.append(key, v))
+				} else {
+					searchParams.set(key, value)
+				}
+			}
+			return searchParams.toString()
+		},
+	})
 
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
@@ -115,8 +114,8 @@ export async function createRestaurant(
 	return res.data.data
 }
 
-export async function getRestaurant(id: string): Promise<RestaurantDetail> {
-	const res = await apiClient.get<ApiResponse<RestaurantDetail>>(`/restaurants/${id}`)
+export async function getRestaurant(id: string): Promise<RestaurantListItem> {
+	const res = await apiClient.get<ApiResponse<RestaurantListItem>>(`/restaurants/${id}`)
 
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
