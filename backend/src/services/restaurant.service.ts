@@ -7,8 +7,7 @@ import type {
   listRestaurantsQueryBodySchema,
   updateRestaurantBodySchema,
 } from '../validators/restaurant.validator'
-import { deleteFile } from './file.service'
-import { resolveFileUrl } from './file.service'
+import { deleteFile, resolveFileUrl } from './file.service'
 
 type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; createdById: string }
 type UpdateRestaurantInput = updateRestaurantBodySchema
@@ -18,6 +17,7 @@ export class RestaurantService {
   async findAll(query: ListQuery, companyId: string) {
     const smokingAllowed = parseBoolean(query.smokingAllowed)
     const hasPrivateRoom = parseBoolean(query.hasPrivateRoom)
+    const sort = query.sort
     let genres = cleanArray(query.genres)
     let areas = cleanArray(query.areas)
     let priceRanges = cleanArray(query.priceRanges)
@@ -25,6 +25,7 @@ export class RestaurantService {
     const page = Math.max(1, Number(query.page) || 1)
     const limit = Math.max(1, Number(query.limit) || 10)
     const skip = (page - 1) * limit
+    console.log(sort)
 
     if (genres && !Array.isArray(genres)) {
       genres = [genres]
@@ -42,7 +43,31 @@ export class RestaurantService {
     const matchedGenres = search
       ? Object.values(Genre).filter(genre => genre.toLowerCase().includes(search.toLowerCase()))
       : []
+    let orderBy: Prisma.RestaurantOrderByWithRelationInput = { createdAt: 'desc' }
 
+    if (sort) {
+      const [field, direction] = sort.split('_') as [string, 'asc' | 'desc']
+
+      switch (field) {
+        case 'createdAt':
+          orderBy = { createdAt: direction }
+          break
+        case 'name':
+          orderBy = { name: direction }
+          break
+        case 'price':
+          orderBy = { priceRange: direction }
+          break
+        case 'reviews':
+          orderBy = { reviews: { _count: direction } }
+          break
+        // case 'rating':
+        //   orderBy = { reviews: { rating: direction } }
+        //   break
+        default:
+          orderBy = { createdAt: 'desc' }
+      }
+    }
     const where: Prisma.RestaurantWhereInput = {
       AND: [
         companyId ? { companyId: companyId } : {},
@@ -78,9 +103,7 @@ export class RestaurantService {
         where,
         skip,
         take: limit,
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: orderBy,
         include: {
           genres: true,
           reviews: {
@@ -98,52 +121,52 @@ export class RestaurantService {
 
     const data = await Promise.all(
       restaurants.map(async r => {
-      const reviewCount = r.reviews.length
-      const averageRating =
-        reviewCount === 0
-          ? null
-          : Number(
-              (
-                r.reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) / reviewCount
-              ).toFixed(1),
-            )
+        const reviewCount = r.reviews.length
+        const averageRating =
+          reviewCount === 0
+            ? null
+            : Number(
+                (
+                  r.reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) / reviewCount
+                ).toFixed(1),
+              )
 
-      return {
-        id: r.id,
-        name: r.name,
-        area: r.area,
-        genres: r.genres.map(g => g.genre),
-        hasPrivateRoom: r.hasPrivateRoom,
-        priceRange: r.priceRange,
-        address: r.address ?? undefined,
-        phone: r.phone ?? undefined,
-        url: r.url ?? undefined,
-        smokingAllowed: r.smokingAllowed,
-        coverImage: await resolveFileUrl(r.coverImage),
-        icon: await resolveFileUrl(r.icon),
-        reviewCount,
-        reviews: r.reviews.map(review => ({
-          id: review.id,
-          occasion: review.occasion,
-          author: {
-            id: review.author.id,
-            name: review.author.name,
-            icon: review.author.icon ?? undefined,
+        return {
+          id: r.id,
+          name: r.name,
+          area: r.area,
+          genres: r.genres.map(g => g.genre),
+          hasPrivateRoom: r.hasPrivateRoom,
+          priceRange: r.priceRange,
+          address: r.address ?? undefined,
+          phone: r.phone ?? undefined,
+          url: r.url ?? undefined,
+          smokingAllowed: r.smokingAllowed,
+          coverImage: await resolveFileUrl(r.coverImage),
+          icon: await resolveFileUrl(r.icon),
+          reviewCount,
+          reviews: r.reviews.map(review => ({
+            id: review.id,
+            occasion: review.occasion,
+            author: {
+              id: review.author.id,
+              name: review.author.name,
+              icon: review.author.icon ?? undefined,
+            },
+            result: review.result,
+            rating: review.rating,
+            createdAt: review.createdAt,
+          })),
+          averageRating,
+          createdBy: {
+            id: r.createdBy.id,
+            name: r.createdBy.name,
+            icon: r.createdBy.icon ?? undefined,
           },
-          result: review.result,
-          rating: review.rating,
-          createdAt: review.createdAt,
-        })),
-        averageRating,
-        createdBy: {
-          id: r.createdBy.id,
-          name: r.createdBy.name,
-          icon: r.createdBy.icon ?? undefined,
-        },
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-      }
-    }),
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+        }
+      }),
     )
 
     const totalPages = Math.max(1, Math.ceil(total / limit))

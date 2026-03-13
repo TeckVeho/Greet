@@ -1,6 +1,7 @@
 'use client'
 
 import { Review } from '../types'
+import { SortOption } from '../utils'
 import { apiClient } from './client'
 import type { ApiResponse } from './types'
 
@@ -49,8 +50,7 @@ export interface ListRestaurantsParams {
 	hasPrivateRoom?: boolean
 	smokingAllowed?: boolean
 	priceRanges?: string[]
-	sortBy?: string
-	sortOrder?: 'asc' | 'desc'
+	sort?: SortOption
 }
 
 export async function listRestaurants(

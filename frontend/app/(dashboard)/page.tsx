@@ -35,6 +35,8 @@ export default function Home() {
 		priceRanges: [],
 	})
 	const [sortOption, setSortOption] = React.useState<SortOption>('createdAt_desc')
+	const [sortBy, setSortBy] = React.useState<string>('createdAt')
+	const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc')
 
 	// 認証チェック
 	React.useEffect(() => {
@@ -56,6 +58,7 @@ export default function Home() {
 		hasPrivateRoom: filterState.hasPrivateRoom,
 		smokingAllowed: filterState.smokingAllowed,
 		priceRanges: filterState.priceRanges,
+		sort: sortOption,
 	})
 
 	// アクティブフィルター数の計算

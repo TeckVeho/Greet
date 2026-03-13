@@ -47,7 +47,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 					<DialogTitle className='sr-only'>レストラン検索</DialogTitle>
 					<InputGroup className='h-13'>
 						<InputGroupInput
-							placeholder='名前、メールアドレス、部署、会社名で検索...'
+							placeholder='店名、エリア、ジャンルで検索...'
 							className=''
 							onChange={e => setSearchQuery(e.target.value)}
 							value={searchQuery}
@@ -120,9 +120,9 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 					)}
 				</div>
 				<DialogFooter>
-					{restaurants && restaurants.meta.limit > 0 && (
+					{restaurants && restaurants?.data.length > 0 && (
 						<div className='px-6 py-3 border-t border-zinc-200 text-xs text-zinc-500 w-full'>
-							{restaurants?.meta.limit} 件の飲食店が見つかりました
+							{restaurants?.data.length} 件の飲食店が見つかりました
 						</div>
 					)}
 				</DialogFooter>
