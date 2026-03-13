@@ -5,6 +5,7 @@ import { AREA_LABELS, GENRE_LABELS, PRICE_RANGE_LABELS } from '@/lib/constants'
 import { useFavorites } from '@/lib/favorites-context'
 import { Restaurant } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
+import { format } from 'date-fns'
 import { Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { SheetReviewView } from '../sheets/sheet-review-view'
@@ -69,7 +70,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 		cell: ({ getValue }) => {
 			const genres = getValue<string[]>()
 			return (
-				<div className='flex flex-wrap gap-2'>
+				<div className='flex flex-wrap gap-2 min-w-37.5'>
 					{genres.map(genre => (
 						<Badge key={genre} variant='genre' className='whitespace-nowrap'>
 							{GENRE_LABELS[genre]}
@@ -152,8 +153,8 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 			const displayReviews = reviews.slice(0, limit)
 			const remainingCount = reviews.length - limit
 
-			return (
-				<div className='flex -space-x-2 overflow-hidden p-1'>
+			return displayReviews.length > 0 ? (
+				<div className='flex -space-x-4 overflow-hidden p-1'>
 					{displayReviews.map((review, index) => (
 						<Avatar className='shadow-sm hover:z-10 ' key={index}>
 							<AvatarFallback className='bg-muted text-[10px]'>
@@ -163,41 +164,43 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 					))}
 
 					{remainingCount > 0 && (
-						<div className='flex h-10 w-10 items-center justify-center rounded-full  bg-muted text-[12px] font-medium text-muted-foreground shadow-sm'>
+						<div className='flex h-10 w-10 items-center justify-center rounded-full  bg-muted text-[12px] font-medium text-muted-foreground shadow-sm z-11'>
 							+{remainingCount}
 						</div>
 					)}
 				</div>
+			) : (
+				'-'
 			)
 		},
 	},
-	// {
-	// 	accessorKey: 'url',
-	// 	header: 'URL',
-	// 	cell: ({ getValue }) => {
-	// 		const url = getValue<string>()
-	// 		return (
-	// 			<a
-	// 				href={url}
-	// 				target='_blank'
-	// 				rel='noopener noreferrer'
-	// 				className='font-medium underline text-blue-500'
-	// 			>
-	// 				Google Mapで見る
-	// 			</a>
-	// 		)
-	// 	},
-	// },
-	// {
-	// 	accessorKey: 'createdAt',
-	// 	header: '作成日',
-	// 	cell: ({ getValue }) => {
-	// 		return (
-	// 			<div className='flex flex-col'>
-	// 				<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
-	// 				<span>{format(getValue<Date>(), 'HH:mm')}</span>
-	// 			</div>
-	// 		)
-	// 	},
-	// },
+	{
+		accessorKey: 'url',
+		header: 'URL',
+		cell: ({ getValue }) => {
+			const url = getValue<string>()
+			return (
+				<a
+					href={url}
+					target='_blank'
+					rel='noopener noreferrer'
+					className='font-medium underline text-blue-500'
+				>
+					Google Mapで見る
+				</a>
+			)
+		},
+	},
+	{
+		accessorKey: 'createdAt',
+		header: '作成日',
+		cell: ({ getValue }) => {
+			return (
+				<div className='flex flex-col'>
+					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
+					<span>{format(getValue<Date>(), 'HH:mm')}</span>
+				</div>
+			)
+		},
+	},
 ]

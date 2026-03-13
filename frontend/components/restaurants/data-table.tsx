@@ -6,17 +6,24 @@ import {
 	getCoreRowModel,
 	PaginationState,
 	useReactTable,
+	VisibilityState,
 } from '@tanstack/react-table'
 
 import {
+	Button,
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuTrigger,
 	Table,
 	TableBody,
 	TableCell,
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@/components/ui/table'
-import { Dispatch, SetStateAction } from 'react'
+} from '@/components/ui'
+import { Settings2 } from 'lucide-react'
+import { Dispatch, SetStateAction, useState } from 'react'
 import { Pagination } from '../pagination'
 import { Skeleton } from '../ui'
 
@@ -39,21 +46,47 @@ export function DataTable<TData, TValue>({
 	isLoading,
 	totlaHidden = true,
 }: DataTableProps<TData, TValue>) {
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 	const table = useReactTable({
 		data,
 		columns,
 		rowCount: total,
 		state: {
 			pagination,
+			columnVisibility,
 		},
 		onPaginationChange: setPagination,
 		getCoreRowModel: getCoreRowModel(),
+		onColumnVisibilityChange: setColumnVisibility,
 		manualPagination: true,
 	})
-
 	return (
 		<>
-			<div className='overflow-hidden border border-muted-foreground/30 rounded-lg'>
+			<div className='overflow-hidden border border-muted-foreground/30 rounded-lg relative'>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild className='absolute top-1 right-1 z-10'>
+						<Button variant='default' className='rounded-full' size={'icon'}>
+							<Settings2 className='size-4' />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align='end'>
+						{table
+							.getAllColumns()
+							.filter(column => column.getCanHide())
+							.map(column => {
+								return (
+									<DropdownMenuCheckboxItem
+										key={column.id}
+										className='capitalize'
+										checked={column.getIsVisible()}
+										onCheckedChange={value => column.toggleVisibility(!!value)}
+									>
+										{column.id}
+									</DropdownMenuCheckboxItem>
+								)
+							})}
+					</DropdownMenuContent>
+				</DropdownMenu>
 				<Table>
 					<TableHeader className='bg-muted/60'>
 						{table.getHeaderGroups().map(headerGroup => (

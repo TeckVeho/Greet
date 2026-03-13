@@ -44,6 +44,23 @@ export {
 	DialogTrigger,
 } from './dialog'
 export {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuPortal,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
+	DropdownMenuShortcut,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
+	DropdownMenuTrigger,
+} from './dropdown-menu'
+export {
 	Form,
 	FormControl,
 	FormDescription,
@@ -96,3 +113,13 @@ export {
 } from './sheet'
 export { Skeleton } from './skeleton'
 export { Spinner } from './spinner'
+export {
+	Table,
+	TableBody,
+	TableCaption,
+	TableCell,
+	TableFooter,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from './table'
