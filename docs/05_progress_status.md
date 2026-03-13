@@ -159,24 +159,24 @@
 | 1 | `POST /auth/login` - 正常ログイン | ✅ 完了 | Copilot |
 | 2 | `POST /auth/login` - 誤パスワード | ✅ 完了 | Copilot |
 | 3 | `GET /restaurants` - 認証なしで 401 | ✅ 完了 | Copilot |
-| 4 | `GET /restaurants` - 一覧取得 | ⬜ 未着手 | - |
-| 5 | `GET /restaurants` - フィルタリング | ⬜ 未着手 | - |
-| 6 | `POST /restaurants` - 登録成功 | ⬜ 未着手 | - |
-| 7 | `POST /restaurants` - バリデーションエラー | ⬜ 未着手 | - |
-| 8 | `PUT /restaurants/:id` - 更新成功 | ⬜ 未着手 | - |
-| 9 | `DELETE /restaurants/:id` - admin のみ | ⬜ 未着手 | - |
-| 10 | `POST /restaurants/:id/reviews` - 投稿成功 | ⬜ 未着手 | - |
-| 11 | `GET /users` - admin のみアクセス可 | ⬜ 未着手 | - |
-| 12 | `POST /users` - ユーザー登録 | ⬜ 未着手 | - |
-| 13 | お気に入り追加・削除・一覧 | ⬜ 未着手 | - |
+| 4 | `GET /restaurants` - 一覧取得 | ✅ 完了 | Copilot |
+| 5 | `GET /restaurants` - フィルタリング | ✅ 完了 | Copilot |
+| 6 | `POST /restaurants` - 登録成功 | ✅ 完了 | Copilot |
+| 7 | `POST /restaurants` - バリデーションエラー | ✅ 完了 | Copilot |
+| 8 | `PUT /restaurants/:id` - 更新成功 | ✅ 完了 | Copilot |
+| 9 | `DELETE /restaurants/:id` - admin のみ | ✅ 完了 | Copilot |
+| 10 | `POST /restaurants/:id/reviews` - 投稿成功 | ✅ 完了 | Copilot |
+| 11 | `GET /users` - admin のみアクセス可 | ✅ 完了 | Copilot |
+| 12 | `POST /users` - ユーザー登録 | ✅ 完了 | Copilot |
+| 13 | お気に入り追加・削除・一覧 | ✅ 完了 | Copilot |
 
 ### 5.3 E2Eテスト（E2E） - Playwright
 
 | # | シナリオ | ステータス | 担当 |
 |---|---------|-----------|------|
-| 1 | ログインフロー（正常） | ⬜ 未着手 | - |
-| 2 | ログインフロー（エラー表示） | ⬜ 未着手 | - |
-| 3 | 飲食店一覧表示・検索 | ⬜ 未着手 | - |
+| 1 | ログインフロー（正常） | ✅ 完了 | Copilot |
+| 2 | ログインフロー（エラー表示） | ✅ 完了 | Copilot |
+| 3 | 飲食店一覧表示・検索 | ✅ 完了 | Copilot |
 | 4 | フィルター適用・解除 | ⬜ 未着手 | - |
 | 5 | 飲食店登録フロー | ⬜ 未着手 | - |
 | 6 | 飲食店詳細表示・レビュー投稿 | ⬜ 未着手 | - |

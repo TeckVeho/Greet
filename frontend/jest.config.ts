@@ -8,6 +8,7 @@ const config: Config = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    '^@base-ui/react$': '<rootDir>/__mocks__/base-ui-react.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   clearMocks: true,

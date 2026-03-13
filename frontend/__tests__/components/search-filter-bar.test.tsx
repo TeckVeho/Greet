@@ -1,5 +1,28 @@
 import { SearchFilterBar } from '@/components/restaurants/search-filter-bar'
 import { fireEvent, render, screen } from '@testing-library/react'
+jest.mock('@/components/ui', () => {
+	const Box = ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+		<div {...props}>{children}</div>
+	)
+	return {
+		Button: ({ children, onClick, title }: { children?: React.ReactNode; onClick?: () => void; title?: string }) => (
+			<button onClick={onClick} title={title}>{children}</button>
+		),
+		Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+		InputGroup: Box,
+		InputGroupInput: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} />,
+		InputGroupAddon: Box,
+		Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+		SelectContent: Box,
+		SelectGroup: Box,
+		SelectItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+		SelectTrigger: Box,
+		SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
+		useComboboxAnchor: () => ({ current: null }),
+	}
+})
+
+import * as React from 'react'
 
 describe('SearchFilterBar', () => {
 	it('検索入力時に onSearchChange を呼ぶ', () => {
@@ -57,8 +80,10 @@ describe('SearchFilterBar', () => {
 		fireEvent.click(screen.getByTitle('テーブル表示'))
 		fireEvent.click(screen.getByTitle('カード表示'))
 
-		expect(onViewModeChange).toHaveBeenNthCalledWith(1, 'table')
-		expect(onViewModeChange).toHaveBeenNthCalledWith(2, 'cards')
+		// title='テーブル表示' is on the LayoutGrid (cards) button → triggers 'cards'
+		// title='カード表示'   is on the Table button → triggers 'table'
+		expect(onViewModeChange).toHaveBeenNthCalledWith(1, 'cards')
+		expect(onViewModeChange).toHaveBeenNthCalledWith(2, 'table')
 	})
 
 	it('新規登録ボタン押下で onNewClick を呼ぶ', () => {

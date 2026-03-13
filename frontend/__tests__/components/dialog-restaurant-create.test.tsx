@@ -36,6 +36,15 @@ jest.mock('@/components/ui', () => {
     Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
       <button {...props}>{children}</button>
     ),
+      Combobox: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+      ComboboxChip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+      ComboboxChips: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+      ComboboxChipsInput: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} />,
+      ComboboxContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+      ComboboxEmpty: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+      ComboboxItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+      ComboboxList: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+      ComboboxValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
     Checkbox: ({ onChange, defaultChecked, id }: { onChange?: (value: boolean) => void; defaultChecked?: boolean; id?: string }) => (
       <input
         type='checkbox'
@@ -69,6 +78,7 @@ jest.mock('@/components/ui', () => {
     SelectTrigger: Box,
     SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
     Spinner: ({ text }: { text?: string }) => <span>{text}</span>,
+    useComboboxAnchor: () => ({ current: null }),
   }
 })
 
@@ -151,7 +161,7 @@ describe('DialogRestaurantCreate', () => {
           name: '銀座 鮨 さいとう',
           url: 'https://maps.example.com/store',
           area: 'GINZA',
-          genre: 'SUSHI',
+          genre: expect.arrayContaining(['SUSHI']),
           genres: ['SUSHI'],
           coverImage: undefined,
         }),

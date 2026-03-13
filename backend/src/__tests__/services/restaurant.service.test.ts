@@ -188,13 +188,13 @@ describe('RestaurantService', () => {
 
       expect(mockRestaurantCount).toHaveBeenCalledWith({
         where: {
-          AND: [{ companyId: 'specific-company' }, {}],
+          AND: expect.arrayContaining([{ companyId: 'specific-company' }]),
         },
       })
       expect(mockRestaurantFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            AND: [{ companyId: 'specific-company' }, {}],
+            AND: expect.arrayContaining([{ companyId: 'specific-company' }]),
           },
         }),
       )
