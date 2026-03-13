@@ -3,8 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
-import { RestaurantTable } from "@/components/restaurant-table"
-import { RestaurantCards } from "@/components/restaurant-cards"
+import { DataCards, DataTable, RestaurantColumns } from "@/components/restaurants"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth-context"
 import { sortRestaurants, type SortOption } from "@/lib/utils"
@@ -227,10 +226,10 @@ export default function AreaPage() {
                   </div>
                   {/* モバイルは常にカード表示 */}
                   {viewMode === "cards" || typeof window !== 'undefined' && window.innerWidth < 768 ? (
-                    <RestaurantCards restaurants={restaurants} />
+                    <DataCards data={restaurants} />
                   ) : (
                     <div className="rounded-lg border border-zinc-200 bg-white">
-                      <RestaurantTable restaurants={restaurants} />
+                      <DataTable columns={RestaurantColumns} data={restaurants} />
                     </div>
                   )}
                 </div>
@@ -241,10 +240,10 @@ export default function AreaPage() {
           <>
             {/* 特定エリアのテーブル/カード表示（モバイルは常にカード） */}
             {viewMode === "cards" || typeof window !== 'undefined' && window.innerWidth < 768 ? (
-              <RestaurantCards restaurants={displayedRestaurants} />
+              <DataCards data={displayedRestaurants} />
             ) : (
               <div className="rounded-lg border border-zinc-200 bg-white">
-                <RestaurantTable restaurants={displayedRestaurants} />
+                <DataTable columns={RestaurantColumns} data={displayedRestaurants} />
               </div>
             )}
 
