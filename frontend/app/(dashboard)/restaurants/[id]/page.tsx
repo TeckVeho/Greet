@@ -1,6 +1,7 @@
 'use client'
 
 import { DialogWarning } from '@/components/dialogs'
+import { DialogRestaurantUpdate } from '@/components/dialogs/dialog-restaurant-update'
 import { Rating } from '@/components/rating'
 import { ReviewFormDialog } from '@/components/review-form-dialog'
 import { Badge } from '@/components/ui/badge'
@@ -139,10 +140,16 @@ export default function RestaurantDetailPage() {
 								description='本当に削除したいですか？'
 								title={`${restaurant.name}を削除`}
 							/>
-							<Button>
-								<Edit className='size-4' />
-								変更
-							</Button>
+							<DialogRestaurantUpdate
+								trigger={
+									<Button>
+										<Edit className='size-4' />
+										変更
+									</Button>
+								}
+								restaurant={restaurant}
+								id={restaurantId}
+							/>
 						</div>
 					</div>
 					<div className='mb-2 flex items-center gap-3'>

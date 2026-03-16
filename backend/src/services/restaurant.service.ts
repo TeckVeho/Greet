@@ -25,7 +25,6 @@ export class RestaurantService {
     const page = Math.max(1, Number(query.page) || 1)
     const limit = Math.max(1, Number(query.limit) || 10)
     const skip = (page - 1) * limit
-    console.log(sort)
 
     if (genres && !Array.isArray(genres)) {
       genres = [genres]

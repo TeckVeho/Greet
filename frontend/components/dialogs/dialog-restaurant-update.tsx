@@ -1,5 +1,28 @@
-'use client'
-
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+	deleteRestaurantImage,
+	updateRestaurant,
+	uploadRestaurantImage,
+} from '@/lib/api/restaurants'
+import { AREA_OPTIONS, GENRE_OPTIONS, icons, PRICE_RANGE_OPTIONS } from '@/lib/constants'
+import { queryClient } from '@/lib/query-client'
+import { Restaurant } from '@/lib/types'
+import { onError } from '@/lib/utils'
+import { zodResolver } from '@hookform/resolvers/zod'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import z from 'zod'
+import { ButtonRemoveImage } from '../button-remove'
 import {
 	Button,
 	Checkbox,
@@ -12,11 +35,6 @@ import {
 	ComboboxItem,
 	ComboboxList,
 	ComboboxValue,
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
 	Form,
 	FormControl,
 	FormField,
@@ -33,24 +51,7 @@ import {
 	SelectValue,
 	Spinner,
 	useComboboxAnchor,
-} from '@/components/ui'
-import { createRestaurant, uploadRestaurantImage } from '@/lib/api/restaurants'
-import { AREA_OPTIONS, GENRE_OPTIONS, icons, PRICE_RANGE_OPTIONS } from '@/lib/constants'
-import { queryClient } from '@/lib/query-client'
-import { onError } from '@/lib/utils'
-import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
-import Image from 'next/image'
-import * as React from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import z from 'zod'
-import { ButtonRemoveImage } from '../button-remove'
-
-interface RestaurantFormDialogProps {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-}
+} from '../ui'
 const schema = z.object({
 	name: z.string().min(1, '店名は必須です'),
 	area: z.enum(AREA_OPTIONS.map(opt => opt.value)),
@@ -64,10 +65,14 @@ const schema = z.object({
 	icon: z.string().optional(),
 	coverImage: z.instanceof(File).optional(),
 })
-type RestaurantFormData = z.infer<typeof schema>
-
-export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDialogProps) {
-	const [isSubmitting, setIsSubmitting] = React.useState(false)
+type FormValues = z.infer<typeof schema>
+export const DialogRestaurantUpdate: React.FC<{
+	trigger: React.ReactNode
+	restaurant: Restaurant
+	id: string
+}> = ({ trigger, restaurant, id }) => {
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const anchor = useComboboxAnchor()
 	const form = useForm({
 		resolver: zodResolver(schema),
@@ -76,7 +81,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 			address: '',
 			phone: '',
 			url: '',
-			icon: '🍽️',
+			icon: '',
 			area: 'GINZA',
 			genres: [GENRE_OPTIONS[0].value],
 			coverImage: undefined,
@@ -86,55 +91,68 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 			name: '',
 		},
 	})
-	const onSubmit: SubmitHandler<RestaurantFormData> = async data => {
+
+	const onSubmit: SubmitHandler<FormValues> = async data => {
 		setIsSubmitting(true)
 		try {
-			let coverImageUrl = ''
+			let coverImageUrl: string | undefined
+			const existingCoverImage =
+				typeof restaurant.coverImage === 'string' && restaurant.coverImage.trim().length > 0
+					? restaurant.coverImage
+					: undefined
 
 			if (data.coverImage instanceof File) {
 				coverImageUrl = await uploadRestaurantImage(data.coverImage)
 			}
 
-			const payload = {
-				...data,
-				coverImage: coverImageUrl || undefined,
+			const { coverImage, ...safeData } = data
+			const payload = coverImageUrl ? { ...safeData, coverImage: coverImageUrl } : safeData
+
+			const res = await updateRestaurant(id, payload)
+
+			if (coverImageUrl && existingCoverImage && existingCoverImage !== coverImageUrl) {
+				await deleteRestaurantImage(existingCoverImage).catch(() => {})
 			}
 
-			await createRestaurant(payload)
-			await queryClient.invalidateQueries({ queryKey: ['restaurants'] })
-			onOpenChange(false)
-			form.reset()
-			toast.success('飲食店を登録しました')
+			toast.success('変更されました。')
+			setIsOpen(false)
+			queryClient.invalidateQueries({ queryKey: ['restaurant', id] })
 		} catch (err) {
-			let errorMessage = '登録に失敗しました'
-
-			if (axios.isAxiosError(err)) {
-				const serverData = err.response?.data
-
-				errorMessage = serverData?.error?.message
-
-				console.error('Server xatoligi:', serverData)
-			} else if (err instanceof Error) {
-				errorMessage = err.message
-			}
-
-			toast.error(errorMessage)
+			console.log(err)
+			toast.error('更新に失敗しました')
 		} finally {
 			setIsSubmitting(false)
 		}
 	}
+	useEffect(() => {
+		if (restaurant) {
+			form.reset({
+				name: restaurant.name,
+				area: restaurant.area,
+				address: restaurant.address ?? '',
+				phone: restaurant.phone ?? '',
+				url: restaurant.url ?? '',
+				genres: restaurant.genres,
+				hasPrivateRoom: restaurant.hasPrivateRoom,
+				smokingAllowed: restaurant.smokingAllowed,
+				icon: restaurant.icon ?? '',
+				priceRange: restaurant.priceRange,
+			})
+		}
+	}, [restaurant, form])
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={isOpen} onOpenChange={setIsOpen}>
+			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent className='px-2 max-w-200' aria-describedby={undefined}>
 				<DialogHeader className='px-5'>
-					<DialogTitle>新規飲食店登録</DialogTitle>
+					<DialogTitle>飲食店情報を更新</DialogTitle>
 				</DialogHeader>
 				<ScrollArea className='max-h-[75vh]'>
 					<Form {...form}>
 						<form
 							onSubmit={form.handleSubmit(onSubmit, onError)}
 							className='px-5'
-							id='form-create-restaurant'
+							id='form-update-restaurant'
 						>
 							<div className='space-y-4'>
 								{/* カバー画像 */}
@@ -154,14 +172,17 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 															id='cover-image-input'
 															onChange={e => {
 																const file = e.target.files?.[0]
-																const url = file ? URL.createObjectURL(file) : null
 																if (file) field.onChange(file)
 															}}
 														/>
 														{field.value instanceof File ? (
 															<div className='relative flex items-center justify-center w-full h-32 rounded-lg overflow-hidden bg-zinc-100'>
 																<Image
-																	src={URL.createObjectURL(field.value)}
+																	src={
+																		URL.createObjectURL(field.value)
+																			? URL.createObjectURL(field.value)
+																			: restaurant.coverImage || ''
+																	}
 																	alt='image restaourant'
 																	width={200}
 																	height={200}
@@ -301,13 +322,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 																<ComboboxEmpty>No items found.</ComboboxEmpty>
 																<ComboboxList>
 																	{item => (
-																		<ComboboxItem
-																			key={item.value}
-																			value={item.value}
-																			onClick={() => {
-																				console.log('item:', item)
-																			}}
-																		>
+																		<ComboboxItem key={item.value} value={item.value}>
 																			{item.label}
 																		</ComboboxItem>
 																	)}
@@ -428,16 +443,13 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 					</Form>
 				</ScrollArea>
 				<DialogFooter>
-					<Button
-						type='button'
-						variant='secondary'
-						onClick={() => onOpenChange(false)}
-						disabled={isSubmitting}
-					>
-						キャンセル
-					</Button>
-					<Button type='submit' disabled={isSubmitting} form='form-create-restaurant'>
-						{isSubmitting ? <Spinner text={'登録中...'} /> : '登録'}
+					<DialogClose asChild>
+						<Button type='button' variant='secondary' disabled={isSubmitting}>
+							キャンセル
+						</Button>
+					</DialogClose>
+					<Button type='submit' form='form-update-restaurant' disabled={isSubmitting}>
+						{isSubmitting ? <Spinner text={'更新中...'} /> : '更新'}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
