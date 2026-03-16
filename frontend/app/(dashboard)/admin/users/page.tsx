@@ -67,7 +67,7 @@ export default function UsersPage() {
 	}
 
 	const handleSaveUser = async (userData: Partial<User> & { password?: string }) => {
-		if (!userData.name || !userData.email || !userData.role || !userData.password) {
+		if (!userData.name || !userData.email || !userData.role || !userData.password || !userData.companyId) {
 			return
 		}
 		setIsSaving(true)
@@ -76,6 +76,7 @@ export default function UsersPage() {
 				name: userData.name,
 				email: userData.email,
 				password: userData.password,
+				companyId: userData.companyId,
 				role: userData.role,
 				department: userData.department,
 			})

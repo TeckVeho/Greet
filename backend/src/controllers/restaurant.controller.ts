@@ -5,17 +5,15 @@ import { restaurantService } from '../services/restaurant.service'
 
 class RestaurantController {
   public getRestaurants = async (req: Request, res: Response) => {
-    const companyId = req.user!.companyId
-    const result = await restaurantService.findAll(req.query as any, companyId)
+    const result = await restaurantService.findAll(req.query as any)
     res.status(result.statusCode).json(result)
   }
 
   public getRestaurantById = async (req: Request, res: Response) => {
     const rawRestaurantId = req.params.restaurantId
     const restaurantId = Array.isArray(rawRestaurantId) ? rawRestaurantId[0] : rawRestaurantId
-    const companyId = req.user!.companyId
     const userId = req.user?.userId
-    const result = await restaurantService.findById(restaurantId, companyId, userId)
+    const result = await restaurantService.findById(restaurantId, userId)
     res.status(result.statusCode).json(result)
   }
 
@@ -37,8 +35,12 @@ class RestaurantController {
       const restaurantId = Array.isArray(req.params.restaurantId)
         ? req.params.restaurantId[0]
         : req.params.restaurantId
-      const companyId = req.user!.companyId
-      const result = await restaurantService.update(restaurantId, companyId, req.body)
+      const result = await restaurantService.update(
+        restaurantId,
+        req.body,
+        req.user!.userId,
+        req.user!.role,
+      )
       res.status(result.statusCode).json(result)
     } catch (error) {
       next(error)
@@ -48,8 +50,7 @@ class RestaurantController {
   public deleteRestaurant = async (req: Request, res: Response) => {
     const rawRestaurantId = req.params.restaurantId
     const restaurantId = Array.isArray(rawRestaurantId) ? rawRestaurantId[0] : rawRestaurantId
-    const companyId = req.user!.companyId
-    const result = await restaurantService.delete(restaurantId, companyId)
+    const result = await restaurantService.delete(restaurantId)
     res.status(result.statusCode).json(result)
   }
 

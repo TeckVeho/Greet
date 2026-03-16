@@ -81,11 +81,8 @@ export class FavoriteService {
     }
   }
 
-  async add(userId: string, restaurantId: string, userCompanyId: string) {
-    // Verify the restaurant belongs to the user's company
-    const restaurant = await prisma.restaurant.findFirst({
-      where: { id: restaurantId, companyId: userCompanyId },
-    })
+  async add(userId: string, restaurantId: string) {
+    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } })
     if (!restaurant) {
       return {
         success: false,

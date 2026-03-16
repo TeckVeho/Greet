@@ -46,6 +46,7 @@ export function DialogUserCreate({
 		password: '',
 		role: 'user',
 		department: '',
+		companyId: '',
 	})
 
 	React.useEffect(() => {
@@ -56,6 +57,7 @@ export function DialogUserCreate({
 				password: '',
 				role: user.role,
 				department: user.department,
+				companyId: user.companyId,
 			})
 		} else {
 			setFormData({
@@ -64,6 +66,7 @@ export function DialogUserCreate({
 				password: '',
 				role: 'user',
 				department: '',
+				companyId: '',
 			})
 		}
 	}, [mode, user, open])
@@ -71,7 +74,7 @@ export function DialogUserCreate({
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
 
-		if (!formData.name || !formData.email || !formData.role) {
+		if (!formData.name || !formData.email || !formData.role || !formData.companyId) {
 			alert('必須項目を全て入力してください')
 			return
 		}
@@ -159,6 +162,26 @@ export function DialogUserCreate({
 									<SelectContent>
 										<SelectItem value='user'>一般ユーザー</SelectItem>
 										<SelectItem value='admin'>管理者</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							{/* 所属会社 */}
+							<div className='space-y-2'>
+								<Label htmlFor='companyId'>所属会社 *</Label>
+								<Select
+									value={formData.companyId || ''}
+									onValueChange={value => setFormData({ ...formData, companyId: value })}
+								>
+									<SelectTrigger id='companyId'>
+										<SelectValue placeholder='会社を選択' />
+									</SelectTrigger>
+									<SelectContent>
+										{companies.map(company => (
+											<SelectItem key={company.id} value={company.id}>
+												{company.icon} {company.name}
+											</SelectItem>
+										))}
 									</SelectContent>
 								</Select>
 							</div>

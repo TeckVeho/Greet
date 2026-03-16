@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import { authMiddleware } from '../middleware/auth.middleware'
-import { tenantMiddleware } from '../middleware/tenant.middleware'
 import { validateBody, validateParams } from '../middleware/validate.middleware'
 import { errorMiddleware } from '../middleware/error.middleware'
 import { favoriteController } from '../controllers/favorite.controller'
@@ -8,7 +7,7 @@ import { addFavoriteSchema, favoriteRestaurantIdSchema } from '../validators/fav
 
 const router = Router()
 
-router.use(authMiddleware, tenantMiddleware)
+router.use(authMiddleware)
 
 router.get('/', favoriteController.listFavorites)
 

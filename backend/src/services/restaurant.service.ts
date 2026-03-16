@@ -14,7 +14,7 @@ type UpdateRestaurantInput = updateRestaurantBodySchema
 type ListQuery = listRestaurantsQueryBodySchema
 
 export class RestaurantService {
-  async findAll(query: ListQuery, companyId: string) {
+  async findAll(query: ListQuery) {
     const smokingAllowed = parseBoolean(query.smokingAllowed)
     const hasPrivateRoom = parseBoolean(query.hasPrivateRoom)
     const sort = query.sort
@@ -69,7 +69,6 @@ export class RestaurantService {
     }
     const where: Prisma.RestaurantWhereInput = {
       AND: [
-        companyId ? { companyId: companyId } : {},
         smokingAllowed !== undefined ? { smokingAllowed } : {},
         hasPrivateRoom !== undefined ? { hasPrivateRoom } : {},
         genres && genres.length > 0
@@ -183,9 +182,9 @@ export class RestaurantService {
     }
   }
 
-  async findById(id: string, companyId: string, userId?: string) {
+  async findById(id: string, userId?: string) {
     const restaurant = await prisma.restaurant.findFirst({
-      where: { id, companyId },
+      where: { id },
       include: {
         genres: true,
         reviews: {
@@ -300,16 +299,28 @@ export class RestaurantService {
 
   async update(
     id: string,
-    companyId: string,
     payload: UpdateRestaurantInput & { genres?: Genre[] },
+    callerId: string,
+    callerRole: 'admin' | 'user',
   ) {
-    // Verify the restaurant belongs to the caller's company before updating
-    const existing = await prisma.restaurant.findFirst({ where: { id, companyId } })
+    // Only the creator or an admin may update the restaurant.
+    const existing = await prisma.restaurant.findUnique({
+      where: { id },
+      select: { id: true, createdById: true, coverImage: true },
+    })
     if (!existing) {
       return {
         success: false,
         error: { code: 'NOT_FOUND', message: '飲食店が見つかりません' },
         statusCode: StatusCodes.NOT_FOUND,
+      }
+    }
+
+    if (callerRole !== 'admin' && existing.createdById !== callerId) {
+      return {
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'この飲食店を更新する権限がありません' },
+        statusCode: StatusCodes.FORBIDDEN,
       }
     }
 
@@ -347,9 +358,12 @@ export class RestaurantService {
     }
   }
 
-  async delete(id: string, companyId: string) {
+  async delete(id: string) {
     // Fetch the restaurant first to get the cover image URL
-    const existing = await prisma.restaurant.findFirst({ where: { id, companyId } })
+    const existing = await prisma.restaurant.findUnique({
+      where: { id },
+      select: { coverImage: true },
+    })
     if (!existing) {
       return {
         success: false,
@@ -358,7 +372,7 @@ export class RestaurantService {
       }
     }
 
-    await prisma.restaurant.deleteMany({ where: { id, companyId } })
+    await prisma.restaurant.delete({ where: { id } })
 
     // Delete cover image from S3 if it exists
     if (existing.coverImage) {

@@ -55,6 +55,7 @@ export interface CreateUserPayload {
 	email: string
 	password: string
 	name: string
+	companyId: string
 	role?: 'admin' | 'user'
 	department?: string
 	icon?: string

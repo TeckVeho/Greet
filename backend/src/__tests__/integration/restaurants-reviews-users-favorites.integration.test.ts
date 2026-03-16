@@ -14,7 +14,7 @@
  *   IT #13 GET/POST/DELETE /favorites  お気に入り追加・削除・一覧
  *
  * Strategy:
- *   - Real Express routers + middleware (auth, tenant, admin, validate)
+ *   - Real Express routers + middleware (auth, admin, validate)
  *   - Service layer is mocked entirely — no DB connection required
  *   - JWT tokens are signed with the fixed test secret set in src/__tests__/setup.ts
  */
@@ -154,7 +154,7 @@ describe('Integration: restaurants CRUD (IT #4-9)', () => {
     expect(Array.isArray(res.body.data)).toBe(true)
     expect(res.body.data).toHaveLength(1)
     expect(res.body.meta.total).toBe(1)
-    expect(mockRsFindAll).toHaveBeenCalledWith(expect.any(Object), 'company-1')
+    expect(mockRsFindAll).toHaveBeenCalledWith(expect.any(Object))
   })
 
   // IT #5 ─────────────────────────────────────────────────────────────────
@@ -173,7 +173,6 @@ describe('Integration: restaurants CRUD (IT #4-9)', () => {
     expect(res.status).toBe(200)
     expect(mockRsFindAll).toHaveBeenCalledWith(
       expect.objectContaining({ search: 'テスト', limit: '5' }),
-      'company-1',
     )
   })
 
@@ -240,8 +239,9 @@ describe('Integration: restaurants CRUD (IT #4-9)', () => {
     expect(res.body.data.name).toBe('Updated Name')
     expect(mockRsUpdate).toHaveBeenCalledWith(
       VALID_UUID,
-      'company-1',
       expect.objectContaining({ name: 'Updated Name' }),
+      'user-1',
+      'user',
     )
   })
 
@@ -259,7 +259,7 @@ describe('Integration: restaurants CRUD (IT #4-9)', () => {
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    expect(mockRsDelete).toHaveBeenCalledWith(VALID_UUID, 'company-1')
+    expect(mockRsDelete).toHaveBeenCalledWith(VALID_UUID)
   })
 
   // IT #9b ─────────────────────────────────────────────────────────────────
@@ -312,7 +312,6 @@ describe('Integration: restaurant reviews (IT #10)', () => {
     expect(mockRvCreate).toHaveBeenCalledWith(
       VALID_UUID,
       'user-1',
-      'company-1',
       expect.objectContaining({ occasion: '接待', result: '美味しかった', rating: 5 }),
     )
   })
@@ -388,6 +387,7 @@ describe('Integration: users (IT #11-12)', () => {
         email: 'newuser@example.com',
         password: 'password123',
         role: 'user',
+        companyId: '22222222-2222-4222-8222-222222222222',
       })
 
     expect(res.status).toBe(201)
@@ -396,7 +396,7 @@ describe('Integration: users (IT #11-12)', () => {
       expect.objectContaining({
         name: '新規ユーザー',
         email: 'newuser@example.com',
-        companyId: 'company-1',
+        companyId: '22222222-2222-4222-8222-222222222222',
       }),
     )
   })
@@ -443,7 +443,7 @@ describe('Integration: favorites (IT #13)', () => {
 
     expect(res.status).toBe(201)
     expect(res.body.success).toBe(true)
-    expect(mockFavAdd).toHaveBeenCalledWith('user-1', VALID_UUID, 'company-1')
+    expect(mockFavAdd).toHaveBeenCalledWith('user-1', VALID_UUID)
   })
 
   it('IT #13 DELETE /favorites/:restaurantId - お気に入り削除 (200)', async () => {

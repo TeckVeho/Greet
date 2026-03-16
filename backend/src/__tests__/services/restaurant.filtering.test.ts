@@ -85,7 +85,7 @@ describe('RestaurantService - フィルタリング', () => {
         makeRestaurant({ reviews: [{ rating: 3 }, { rating: 4 }, { rating: 5 }] }),
       ])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
       // (3 + 4 + 5) / 3 = 4.0
       expect(result.data[0].averageRating).toBe(4)
       expect(result.data[0].reviewCount).toBe(3)
@@ -97,7 +97,7 @@ describe('RestaurantService - フィルタリング', () => {
         makeRestaurant({ reviews: [{ rating: 3 }, { rating: 5 }] }),
       ])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
       // (3 + 5) / 2 = 4.0
       expect(result.data[0].averageRating).toBe(4)
     })
@@ -108,7 +108,7 @@ describe('RestaurantService - フィルタリング', () => {
         makeRestaurant({ reviews: [{ rating: 1 }, { rating: 2 }] }),
       ])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
       expect(result.data[0].averageRating).toBe(1.5)
     })
 
@@ -118,7 +118,7 @@ describe('RestaurantService - フィルタリング', () => {
         makeRestaurant({ reviews: [{ rating: null }, { rating: 4 }] }),
       ])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
       // (0 + 4) / 2 = 2.0
       expect(result.data[0].averageRating).toBe(2)
       expect(result.data[0].reviewCount).toBe(2)
@@ -128,7 +128,7 @@ describe('RestaurantService - フィルタリング', () => {
       mockCount.mockResolvedValue(1)
       mockFindMany.mockResolvedValue([makeRestaurant({ reviews: [] })])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
       expect(result.data[0].averageRating).toBeNull()
       expect(result.data[0].reviewCount).toBe(0)
     })
@@ -150,7 +150,7 @@ describe('RestaurantService - フィルタリング', () => {
         }),
       ])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
       const item = result.data[0]
 
       expect(item.address).toBeUndefined()
@@ -172,7 +172,7 @@ describe('RestaurantService - フィルタリング', () => {
         }),
       ])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
       const item = result.data[0]
 
       expect(item.address).toBe('東京都中央区')
@@ -195,7 +195,7 @@ describe('RestaurantService - フィルタリング', () => {
         }),
       ])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
       expect(result.data[0].genres).toEqual(['SUSHI', 'WASHOKU', 'KAPPO'])
     })
 
@@ -203,7 +203,7 @@ describe('RestaurantService - フィルタリング', () => {
       mockCount.mockResolvedValue(1)
       mockFindMany.mockResolvedValue([makeRestaurant({ genres: [] })])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
       expect(result.data[0].genres).toEqual([])
     })
   })
@@ -229,7 +229,7 @@ describe('RestaurantService - フィルタリング', () => {
       mockCount.mockResolvedValue(2)
       mockFindMany.mockResolvedValue([rest1, rest2])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
 
       expect(result.data).toHaveLength(2)
       expect(result.data[0].name).toBe('寿司A')
@@ -242,7 +242,7 @@ describe('RestaurantService - フィルタリング', () => {
       mockCount.mockResolvedValue(0)
       mockFindMany.mockResolvedValue([])
 
-      await service.findAll({}, companyId)
+      await service.findAll({})
 
       expect(mockFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -282,7 +282,7 @@ describe('RestaurantService - フィルタリング', () => {
       mockFindFirst.mockResolvedValue(detailedRestaurant)
       mockFavoriteFindFirst.mockResolvedValue(null)
 
-      const result = await service.findById('rest-1', companyId)
+      const result = await service.findById('rest-1')
 
       expect(result.data!.reviews).toHaveLength(2)
       expect(result.data!.reviews[0]).toEqual({
@@ -299,7 +299,7 @@ describe('RestaurantService - フィルタリング', () => {
       mockFindFirst.mockResolvedValue(detailedRestaurant)
       mockFavoriteFindFirst.mockResolvedValue(null)
 
-      const result = await service.findById('rest-1', companyId)
+      const result = await service.findById('rest-1')
 
       // (5 + 3) / 2 = 4.0
       expect(result.data!.averageRating).toBe(4)
@@ -314,7 +314,7 @@ describe('RestaurantService - フィルタリング', () => {
       })
       mockFavoriteFindFirst.mockResolvedValue(null)
 
-      const result = await service.findById('rest-1', companyId)
+      const result = await service.findById('rest-1')
       expect(result.data!.createdBy.icon).toBeUndefined()
     })
   })

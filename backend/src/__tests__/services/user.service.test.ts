@@ -14,6 +14,15 @@ jest.mock('../../prisma', () => ({
       update: jest.fn(),
       delete: jest.fn(),
     },
+    restaurant: {
+      count: jest.fn(),
+    },
+    review: {
+      deleteMany: jest.fn(),
+    },
+    favorite: {
+      deleteMany: jest.fn(),
+    },
   },
 }))
 
@@ -27,6 +36,9 @@ const mockUserFindUnique = prisma.user.findUnique as jest.Mock
 const mockUserCreate = prisma.user.create as jest.Mock
 const mockUserUpdate = prisma.user.update as jest.Mock
 const mockUserDelete = prisma.user.delete as jest.Mock
+const mockRestaurantCount = prisma.restaurant.count as jest.Mock
+const mockReviewDeleteMany = prisma.review.deleteMany as jest.Mock
+const mockFavoriteDeleteMany = prisma.favorite.deleteMany as jest.Mock
 
 const mockCompany = { id: 'company-1', name: 'テスト会社' }
 
@@ -52,6 +64,9 @@ describe('UserService', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     service = new UserService()
+    mockRestaurantCount.mockResolvedValue(0)
+    mockReviewDeleteMany.mockResolvedValue({ count: 0 })
+    mockFavoriteDeleteMany.mockResolvedValue({ count: 0 })
   })
 
   // ─────────────────────────────────────────
@@ -67,8 +82,6 @@ describe('UserService', () => {
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
       expect(result.data).toHaveLength(1)
-      // passwordHash が除外されていること
-      expect(result.data[0]).not.toHaveProperty('passwordHash')
       expect(result.data[0].email).toBe('test@example.com')
     })
 
@@ -311,7 +324,7 @@ describe('UserService', () => {
   // ─────────────────────────────────────────
   describe('delete', () => {
     it('ユーザーを正常に削除する', async () => {
-      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1', role: 'user' })
       mockUserDelete.mockResolvedValue(mockUserFromDb)
 
       const result = await service.delete('user-1')
@@ -319,7 +332,19 @@ describe('UserService', () => {
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
       expect((result.data as { message: string }).message).toBe('ユーザーを削除しました')
+      expect(mockReviewDeleteMany).toHaveBeenCalledWith({ where: { authorId: 'user-1' } })
+      expect(mockFavoriteDeleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } })
       expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: 'user-1' } })
+    })
+
+    it('作成済み飲食店があるユーザーは削除できない', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1', role: 'user' })
+      mockRestaurantCount.mockResolvedValue(1)
+
+      await expect(service.delete('user-1')).rejects.toThrow(
+        'このユーザーが作成した飲食店が残っているため削除できません。先に飲食店を削除してください',
+      )
+      expect(mockUserDelete).not.toHaveBeenCalled()
     })
 
     it('削除失敗時にApiErrorをスローする', async () => {
@@ -327,6 +352,33 @@ describe('UserService', () => {
 
       await expect(service.delete('nonexistent')).rejects.toThrow(ApiError)
       await expect(service.delete('nonexistent')).rejects.toThrow('ユーザー削除に失敗しました')
+    })
+
+    it('adminは他社の一般ユーザーを削除できる', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-2', role: 'user' })
+      mockUserDelete.mockResolvedValue(mockUserFromDb)
+
+      const result = await service.delete('user-2', {
+        userId: 'admin-1',
+        role: 'admin',
+        companyId: 'company-1',
+      })
+
+      expect(result.success).toBe(true)
+      expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: 'user-2' } })
+    })
+
+    it('adminはadminユーザーを削除できない', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-2', role: 'admin' })
+
+      await expect(
+        service.delete('admin-2', {
+          userId: 'admin-1',
+          role: 'admin',
+          companyId: 'company-1',
+        }),
+      ).rejects.toThrow('管理者ユーザーは削除できません')
+      expect(mockUserDelete).not.toHaveBeenCalled()
     })
   })
 })

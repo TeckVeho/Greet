@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 jest.mock('../../prisma', () => ({
   prisma: {
     restaurant: {
-      findFirst: jest.fn(),
+      findUnique: jest.fn(),
     },
     review: {
       create: jest.fn(),
@@ -15,12 +15,11 @@ jest.mock('../../prisma', () => ({
   },
 }))
 
-const mockRestaurantFindFirst = prisma.restaurant.findFirst as jest.Mock
+const mockRestaurantFindUnique = prisma.restaurant.findUnique as jest.Mock
 const mockReviewCreate = prisma.review.create as jest.Mock
 const mockReviewFindUnique = prisma.review.findUnique as jest.Mock
 const mockReviewDelete = prisma.review.delete as jest.Mock
 
-const companyId = 'company-1'
 const authorId = 'user-1'
 
 describe('ReviewService', () => {
@@ -42,7 +41,7 @@ describe('ReviewService', () => {
     }
 
     it('レビューを正常に投稿する', async () => {
-      mockRestaurantFindFirst.mockResolvedValue({ id: 'rest-1', companyId })
+      mockRestaurantFindUnique.mockResolvedValue({ id: 'rest-1', companyId: 'company-1' })
       mockReviewCreate.mockResolvedValue({
         id: 'rev-1',
         restaurantId: 'rest-1',
@@ -54,7 +53,7 @@ describe('ReviewService', () => {
         author: { id: authorId, name: 'テストユーザー', icon: '👤' },
       })
 
-      const result = await service.create('rest-1', authorId, companyId, payload)
+      const result = await service.create('rest-1', authorId, payload)
 
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.CREATED)
@@ -70,9 +69,9 @@ describe('ReviewService', () => {
     })
 
     it('レストランが存在しない場合NOT_FOUNDを返す', async () => {
-      mockRestaurantFindFirst.mockResolvedValue(null)
+      mockRestaurantFindUnique.mockResolvedValue(null)
 
-      const result = await service.create('nonexistent', authorId, companyId, payload)
+      const result = await service.create('nonexistent', authorId, payload)
 
       expect(result.success).toBe(false)
       expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
@@ -80,18 +79,8 @@ describe('ReviewService', () => {
       expect(mockReviewCreate).not.toHaveBeenCalled()
     })
 
-    it('他社の飲食店にはレビューを投稿できない', async () => {
-      // findFirst returns null because companyId doesn't match
-      mockRestaurantFindFirst.mockResolvedValue(null)
-
-      const result = await service.create('rest-1', authorId, 'other-company', payload)
-
-      expect(result.success).toBe(false)
-      expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
-    })
-
     it('ratingなしでレビューを投稿できる', async () => {
-      mockRestaurantFindFirst.mockResolvedValue({ id: 'rest-1', companyId })
+      mockRestaurantFindUnique.mockResolvedValue({ id: 'rest-1', companyId: 'company-1' })
       mockReviewCreate.mockResolvedValue({
         id: 'rev-2',
         restaurantId: 'rest-1',
@@ -103,7 +92,7 @@ describe('ReviewService', () => {
         author: { id: authorId, name: 'テストユーザー', icon: null },
       })
 
-      const result = await service.create('rest-1', authorId, companyId, {
+      const result = await service.create('rest-1', authorId, {
         occasion: '会食',
         result: 'よかった',
       })
@@ -113,8 +102,8 @@ describe('ReviewService', () => {
       expect((result.data as any).author.icon).toBeUndefined()
     })
 
-    it('レストラン検証でcompanyIdが使われる', async () => {
-      mockRestaurantFindFirst.mockResolvedValue({ id: 'rest-1', companyId })
+    it('レストラン検証でrestaurantIdが使われる', async () => {
+      mockRestaurantFindUnique.mockResolvedValue({ id: 'rest-1', companyId: 'company-1' })
       mockReviewCreate.mockResolvedValue({
         id: 'rev-1',
         restaurantId: 'rest-1',
@@ -124,10 +113,10 @@ describe('ReviewService', () => {
         author: { id: authorId, name: 'テスト', icon: null },
       })
 
-      await service.create('rest-1', authorId, companyId, payload)
+      await service.create('rest-1', authorId, payload)
 
-      expect(mockRestaurantFindFirst).toHaveBeenCalledWith({
-        where: { id: 'rest-1', companyId },
+      expect(mockRestaurantFindUnique).toHaveBeenCalledWith({
+        where: { id: 'rest-1' },
       })
     })
   })
@@ -136,17 +125,13 @@ describe('ReviewService', () => {
   // delete
   // ─────────────────────────────────────────
   describe('delete', () => {
-    const mockReview = {
-      id: 'rev-1',
-      authorId: 'user-1',
-      restaurant: { companyId },
-    }
+    const mockReview = { id: 'rev-1', authorId: 'user-1' }
 
     it('レビュー投稿者が自分のレビューを削除できる', async () => {
       mockReviewFindUnique.mockResolvedValue(mockReview)
       mockReviewDelete.mockResolvedValue(mockReview)
 
-      const result = await service.delete('rev-1', 'user-1', 'user', companyId)
+      const result = await service.delete('rev-1', 'user-1', 'user')
 
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
@@ -158,7 +143,7 @@ describe('ReviewService', () => {
       mockReviewFindUnique.mockResolvedValue(mockReview)
       mockReviewDelete.mockResolvedValue(mockReview)
 
-      const result = await service.delete('rev-1', 'admin-user', 'admin', companyId)
+      const result = await service.delete('rev-1', 'admin-user', 'admin')
 
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
@@ -168,7 +153,7 @@ describe('ReviewService', () => {
     it('一般ユーザーは他人のレビューを削除できない', async () => {
       mockReviewFindUnique.mockResolvedValue(mockReview)
 
-      const result = await service.delete('rev-1', 'other-user', 'user', companyId)
+      const result = await service.delete('rev-1', 'other-user', 'user')
 
       expect(result.success).toBe(false)
       expect(result.statusCode).toBe(StatusCodes.FORBIDDEN)
@@ -179,25 +164,21 @@ describe('ReviewService', () => {
     it('存在しないレビューの削除でNOT_FOUNDを返す', async () => {
       mockReviewFindUnique.mockResolvedValue(null)
 
-      const result = await service.delete('nonexistent', 'user-1', 'user', companyId)
+      const result = await service.delete('nonexistent', 'user-1', 'user')
 
       expect(result.success).toBe(false)
       expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
       expect(mockReviewDelete).not.toHaveBeenCalled()
     })
 
-    it('他社のレビューは削除できない（テナント分離）', async () => {
-      mockReviewFindUnique.mockResolvedValue({
-        id: 'rev-1',
-        authorId: 'user-1',
-        restaurant: { companyId: 'other-company' },
-      })
+    it('レビューがあれば投稿者は削除できる（会社に依存しない）', async () => {
+      mockReviewFindUnique.mockResolvedValue({ id: 'rev-2', authorId: 'user-1' })
+      mockReviewDelete.mockResolvedValue({ id: 'rev-2' })
 
-      const result = await service.delete('rev-1', 'user-1', 'user', companyId)
+      const result = await service.delete('rev-2', 'user-1', 'user')
 
-      expect(result.success).toBe(false)
-      expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
-      expect(mockReviewDelete).not.toHaveBeenCalled()
+      expect(result.success).toBe(true)
+      expect(result.statusCode).toBe(StatusCodes.OK)
     })
   })
 })

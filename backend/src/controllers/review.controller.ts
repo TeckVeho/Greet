@@ -16,12 +16,7 @@ class ReviewController {
 
     const rawRestaurantId = req.params.restaurantId
     const restaurantId = Array.isArray(rawRestaurantId) ? rawRestaurantId[0] : rawRestaurantId
-    const result = await reviewService.create(
-      restaurantId,
-      req.user.userId,
-      req.user.companyId,
-      req.body,
-    )
+    const result = await reviewService.create(restaurantId, req.user.userId, req.body)
     res.status(result.statusCode).json(result)
   }
 
@@ -43,7 +38,6 @@ class ReviewController {
       reviewId,
       req.user.userId,
       req.user.role,
-      req.user.companyId,
     )
     res.status(result.statusCode).json(result)
   }

@@ -9,9 +9,10 @@ jest.mock('../../prisma', () => ({
       count: jest.fn(),
       findMany: jest.fn(),
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      deleteMany: jest.fn(),
+      delete: jest.fn(),
     },
     restaurantGenre: {
       createMany: jest.fn(),
@@ -31,9 +32,10 @@ jest.mock('../../services/file.service', () => ({
 const mockRestaurantCount = prisma.restaurant.count as jest.Mock
 const mockRestaurantFindMany = prisma.restaurant.findMany as jest.Mock
 const mockRestaurantFindFirst = prisma.restaurant.findFirst as jest.Mock
+const mockRestaurantFindUnique = prisma.restaurant.findUnique as jest.Mock
 const mockRestaurantCreate = prisma.restaurant.create as jest.Mock
 const mockRestaurantUpdate = prisma.restaurant.update as jest.Mock
-const mockRestaurantDeleteMany = prisma.restaurant.deleteMany as jest.Mock
+const mockRestaurantDelete = prisma.restaurant.delete as jest.Mock
 const mockGenreCreateMany = prisma.restaurantGenre.createMany as jest.Mock
 const mockGenreDeleteMany = prisma.restaurantGenre.deleteMany as jest.Mock
 const mockFavoriteFindFirst = prisma.favorite.findFirst as jest.Mock
@@ -113,7 +115,7 @@ describe('RestaurantService', () => {
       mockRestaurantCount.mockResolvedValue(1)
       mockRestaurantFindMany.mockResolvedValue([mockRestaurantFromDb])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
 
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
@@ -128,7 +130,7 @@ describe('RestaurantService', () => {
       mockRestaurantCount.mockResolvedValue(50)
       mockRestaurantFindMany.mockResolvedValue([])
 
-      const result = await service.findAll({ page: 2, limit: 10 }, companyId)
+      const result = await service.findAll({ page: 2, limit: 10 })
 
       expect(result.meta.total).toBe(50)
       expect(result.meta.page).toBe(2)
@@ -148,7 +150,7 @@ describe('RestaurantService', () => {
       mockRestaurantCount.mockResolvedValue(0)
       mockRestaurantFindMany.mockResolvedValue([])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
 
       expect(result.meta.page).toBe(1)
       expect(result.meta.limit).toBe(10)
@@ -165,7 +167,7 @@ describe('RestaurantService', () => {
       mockRestaurantCount.mockResolvedValue(1)
       mockRestaurantFindMany.mockResolvedValue([restaurantNoReviews])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
 
       expect(result.data[0].reviewCount).toBe(0)
       expect(result.data[0].averageRating).toBeNull()
@@ -175,30 +177,23 @@ describe('RestaurantService', () => {
       mockRestaurantCount.mockResolvedValue(0)
       mockRestaurantFindMany.mockResolvedValue([])
 
-      const result = await service.findAll({}, companyId)
+      const result = await service.findAll({})
 
       expect(result.data).toHaveLength(0)
       expect(result.meta.totalPages).toBe(1)
     })
 
-    it('companyIdで絞り込みが行われる', async () => {
+    it('companyIdでの絞り込みは行われない（全社横断一覧）', async () => {
       mockRestaurantCount.mockResolvedValue(0)
       mockRestaurantFindMany.mockResolvedValue([])
 
-      await service.findAll({}, 'specific-company')
+      await service.findAll({})
 
       expect(mockRestaurantCount).toHaveBeenCalledWith({
         where: {
-          AND: expect.arrayContaining([{ companyId: 'specific-company' }]),
+          AND: expect.not.arrayContaining([expect.objectContaining({ companyId: expect.anything() })]),
         },
       })
-      expect(mockRestaurantFindMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            AND: expect.arrayContaining([{ companyId: 'specific-company' }]),
-          },
-        }),
-      )
     })
   })
 
@@ -210,7 +205,7 @@ describe('RestaurantService', () => {
       mockRestaurantFindFirst.mockResolvedValue(mockRestaurantDetailed)
       mockFavoriteFindFirst.mockResolvedValue(null)
 
-      const result = await service.findById('rest-1', companyId, userId)
+      const result = await service.findById('rest-1', userId)
 
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
@@ -223,7 +218,7 @@ describe('RestaurantService', () => {
       mockRestaurantFindFirst.mockResolvedValue(mockRestaurantDetailed)
       mockFavoriteFindFirst.mockResolvedValue({ id: 'fav-1', userId, restaurantId: 'rest-1' })
 
-      const result = await service.findById('rest-1', companyId, userId)
+      const result = await service.findById('rest-1', userId)
 
       expect(result.data!.isFavorite).toBe(true)
     })
@@ -231,7 +226,7 @@ describe('RestaurantService', () => {
     it('存在しない飲食店IDでNOT_FOUNDを返す', async () => {
       mockRestaurantFindFirst.mockResolvedValue(null)
 
-      const result = await service.findById('nonexistent', companyId)
+      const result = await service.findById('nonexistent')
 
       expect(result.success).toBe(false)
       expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
@@ -241,7 +236,7 @@ describe('RestaurantService', () => {
     it('userIdがない場合、isFavoriteがfalseになる', async () => {
       mockRestaurantFindFirst.mockResolvedValue(mockRestaurantDetailed)
 
-      const result = await service.findById('rest-1', companyId)
+      const result = await service.findById('rest-1')
 
       expect(result.data!.isFavorite).toBe(false)
       expect(mockFavoriteFindFirst).not.toHaveBeenCalled()
@@ -315,11 +310,11 @@ describe('RestaurantService', () => {
 
     it('飲食店を正常に更新する', async () => {
       const existing = { ...mockRestaurantFromDb, coverImage: null }
-      mockRestaurantFindFirst.mockResolvedValue(existing)
+      mockRestaurantFindUnique.mockResolvedValue(existing)
       const updated = { ...existing, name: '更新後レストラン' }
       mockRestaurantUpdate.mockResolvedValue(updated)
 
-      const result = await service.update('rest-1', companyId, updatePayload)
+      const result = await service.update('rest-1', updatePayload, userId, 'user')
 
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
@@ -330,9 +325,9 @@ describe('RestaurantService', () => {
     })
 
     it('存在しない飲食店の更新でNOT_FOUNDを返す', async () => {
-      mockRestaurantFindFirst.mockResolvedValue(null)
+      mockRestaurantFindUnique.mockResolvedValue(null)
 
-      const result = await service.update('nonexistent', companyId, updatePayload)
+      const result = await service.update('nonexistent', updatePayload, userId, 'user')
 
       expect(result.success).toBe(false)
       expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
@@ -340,15 +335,15 @@ describe('RestaurantService', () => {
     })
 
     it('ジャンル付きで更新する場合、既存ジャンルを削除して再作成する', async () => {
-      mockRestaurantFindFirst.mockResolvedValue(mockRestaurantFromDb)
+      mockRestaurantFindUnique.mockResolvedValue(mockRestaurantFromDb)
       mockRestaurantUpdate.mockResolvedValue(mockRestaurantFromDb)
       mockGenreDeleteMany.mockResolvedValue({ count: 1 })
       mockGenreCreateMany.mockResolvedValue({ count: 2 })
 
-      const result = await service.update('rest-1', companyId, {
+      const result = await service.update('rest-1', {
         name: '更新',
         genres: ['FRENCH' as const, 'ITALIAN' as const],
-      })
+      }, userId, 'user')
 
       expect(result.success).toBe(true)
       expect(mockGenreDeleteMany).toHaveBeenCalledWith({ where: { restaurantId: 'rest-1' } })
@@ -360,6 +355,34 @@ describe('RestaurantService', () => {
         skipDuplicates: true,
       })
     })
+    it('作成者以外の一般ユーザーは更新できない', async () => {
+      mockRestaurantFindUnique.mockResolvedValue({
+        id: 'rest-1',
+        createdById: 'owner-1',
+        coverImage: null,
+      })
+
+      const result = await service.update('rest-1', updatePayload, 'user-2', 'user')
+
+      expect(result.success).toBe(false)
+      expect(result.statusCode).toBe(StatusCodes.FORBIDDEN)
+      expect(mockRestaurantUpdate).not.toHaveBeenCalled()
+    })
+
+    it('adminは作成者でなくても更新できる', async () => {
+      mockRestaurantFindUnique.mockResolvedValue({
+        id: 'rest-1',
+        createdById: 'owner-1',
+        coverImage: null,
+      })
+      mockRestaurantUpdate.mockResolvedValue({ ...mockRestaurantFromDb, name: '管理者更新' })
+
+      const result = await service.update('rest-1', updatePayload, 'admin-1', 'admin')
+
+      expect(result.success).toBe(true)
+      expect(result.statusCode).toBe(StatusCodes.OK)
+    })
+
   })
 
   // ─────────────────────────────────────────
@@ -367,38 +390,37 @@ describe('RestaurantService', () => {
   // ─────────────────────────────────────────
   describe('delete', () => {
     it('飲食店を正常に削除する', async () => {
-      mockRestaurantFindFirst.mockResolvedValue({ ...mockRestaurantFromDb, coverImage: null })
-      mockRestaurantDeleteMany.mockResolvedValue({ count: 1 })
+      mockRestaurantFindUnique.mockResolvedValue({ coverImage: null })
+      mockRestaurantDelete.mockResolvedValue({ id: 'rest-1' })
 
-      const result = await service.delete('rest-1', companyId)
+      const result = await service.delete('rest-1')
 
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
       expect((result.data as { message: string }).message).toBe('飲食店を削除しました')
-      expect(mockRestaurantDeleteMany).toHaveBeenCalledWith({
-        where: { id: 'rest-1', companyId },
+      expect(mockRestaurantDelete).toHaveBeenCalledWith({
+        where: { id: 'rest-1' },
       })
     })
 
     it('存在しない飲食店の削除でNOT_FOUNDを返す', async () => {
-      mockRestaurantFindFirst.mockResolvedValue(null)
+      mockRestaurantFindUnique.mockResolvedValue(null)
 
-      const result = await service.delete('nonexistent', companyId)
+      const result = await service.delete('nonexistent')
 
       expect(result.success).toBe(false)
       expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
-      expect(mockRestaurantDeleteMany).not.toHaveBeenCalled()
+      expect(mockRestaurantDelete).not.toHaveBeenCalled()
     })
 
     it('カバー画像がある場合、削除時にdeleteFileが呼ばれる', async () => {
       const { deleteFile } = require('../../services/file.service')
-      mockRestaurantFindFirst.mockResolvedValue({
-        ...mockRestaurantFromDb,
+      mockRestaurantFindUnique.mockResolvedValue({
         coverImage: 'https://s3.example.com/image.jpg',
       })
-      mockRestaurantDeleteMany.mockResolvedValue({ count: 1 })
+      mockRestaurantDelete.mockResolvedValue({ id: 'rest-1' })
 
-      await service.delete('rest-1', companyId)
+      await service.delete('rest-1')
 
       expect(deleteFile).toHaveBeenCalledWith('https://s3.example.com/image.jpg')
     })

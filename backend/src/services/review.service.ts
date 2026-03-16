@@ -5,16 +5,8 @@ import type { TcreateReviewBodySchema } from '../validators/review.validator'
 type CreateReviewInput = TcreateReviewBodySchema
 
 export class ReviewService {
-  async create(
-    restaurantId: string,
-    authorId: string,
-    authorCompanyId: string,
-    payload: CreateReviewInput,
-  ) {
-    // Verify the target restaurant belongs to the author's company
-    const restaurant = await prisma.restaurant.findFirst({
-      where: { id: restaurantId, companyId: authorCompanyId },
-    })
+  async create(restaurantId: string, authorId: string, payload: CreateReviewInput) {
+    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } })
     if (!restaurant) {
       return {
         success: false,
@@ -67,17 +59,13 @@ export class ReviewService {
     id: string,
     callerId: string,
     callerRole: string,
-    callerCompanyId: string,
   ) {
-    // Fetch the review and its restaurant to verify tenancy
     const review = await prisma.review.findUnique({
       where: { id },
-      include: {
-        restaurant: { select: { companyId: true } },
-      },
+      select: { id: true, authorId: true },
     })
 
-    if (!review || review.restaurant.companyId !== callerCompanyId) {
+    if (!review) {
       return {
         success: false,
         error: { code: 'NOT_FOUND', message: 'レビューが見つかりません' },

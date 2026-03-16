@@ -16,11 +16,7 @@ class UserController {
   }
 
   public createUser = async (req: Request, res: Response) => {
-    // companyId is injected from the admin's JWT — client cannot supply it
-    const result = await userService.create({
-      ...req.body,
-      companyId: req.user!.companyId,
-    })
+    const result = await userService.create(req.body)
     res.status(result.statusCode).json(result)
   }
 
