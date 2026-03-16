@@ -1,8 +1,15 @@
 'use client'
 
-import { listRestaurants, RestaurantListResponse } from '@/lib/api/restaurants'
+import {
+	deleteRestaurant,
+	getRestaurant,
+	listRestaurants,
+	RestaurantListResponse,
+} from '@/lib/api/restaurants'
+import { queryClient } from '@/lib/query-client'
 import { SortOption } from '@/lib/utils'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 
 export const useRestaurants = ({
 	page,
@@ -51,5 +58,23 @@ export const useRestaurants = ({
 				sort,
 			}),
 		placeholderData: data => data,
+	})
+}
+
+export const useRestaurantsById = (id: string) => {
+	return useQuery({
+		queryKey: ['restaurant', id],
+		queryFn: async () => await getRestaurant(id),
+	})
+}
+export const useDeleteRestaurant = (id: string) => {
+	const router = useRouter()
+	return useMutation({
+		mutationKey: ['deleteRestaurant', id],
+		mutationFn: async () => await deleteRestaurant(id),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['restaurants'] })
+			router.push('/')
+		},
 	})
 }

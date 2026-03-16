@@ -1,41 +1,35 @@
 'use client'
 
+import { DialogWarning } from '@/components/dialogs'
 import { Rating } from '@/components/rating'
 import { ReviewFormDialog } from '@/components/review-form-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Callout } from '@/components/ui/callout'
-import { getRestaurant } from '@/lib/api/restaurants'
+import { useDeleteRestaurant, useRestaurantsById } from '@/hooks/use-restaurants'
 import { createReview } from '@/lib/api/reviews'
 import { useAuth } from '@/lib/auth-context'
 import { areaLabel, genreLabel, priceRangeLabel } from '@/lib/constants'
 import { useFavorites } from '@/lib/favorites-context'
 import type { Review } from '@/lib/types'
-import { useQuery } from '@tanstack/react-query'
+import { Edit, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import * as React from 'react'
 
 export default function RestaurantDetailPage() {
 	const params = useParams()
+	const restaurantId = params.id as string
 	const router = useRouter()
 	const { user, isLoading } = useAuth()
-	const restaurantId = React.useMemo(() => {
-		const raw = (params as { id?: string | string[] }).id
-		if (!raw) return ''
-		return Array.isArray(raw) ? raw[0] : raw
-	}, [params])
 
 	const {
 		data: restaurant,
 		isPending: isRestaurantPending,
 		refetch,
-	} = useQuery({
-		queryKey: ['restaurant', restaurantId],
-		queryFn: () => getRestaurant(restaurantId),
-		enabled: !!user && !!restaurantId,
-	})
-
+	} = useRestaurantsById(restaurantId)
+	const { mutateAsync: deleteRestaurant, isPending: isDeletePending } =
+		useDeleteRestaurant(restaurantId)
 	const { isFavorite, toggleFavorite } = useFavorites()
 	const [isReviewDialogOpen, setIsReviewDialogOpen] = React.useState(false)
 
@@ -126,9 +120,30 @@ export default function RestaurantDetailPage() {
 			{/* メインコンテンツ */}
 			<div className='mx-auto max-w-4xl px-4 md:px-8 md:my-15'>
 				{/* アイコンとタイトル */}
-				<div className='-mt-12 mb-4'>
-					<div className='mb-4 flex h-16 w-16 md:h-24 md:w-24 items-center justify-center rounded-lg bg-white text-4xl md:text-5xl shadow-md'>
-						{restaurant.icon}
+				<div className=' mb-4'>
+					<div className='flex items-center justify-between'>
+						<div className='mb-4 flex h-16 w-16 md:h-24 md:w-24 items-center justify-center rounded-lg bg-white text-4xl md:text-5xl shadow-md'>
+							{restaurant.icon}
+						</div>
+						<div className='flex items-center gap-3'>
+							<DialogWarning
+								deleteAction={deleteRestaurant}
+								deleting={isDeletePending}
+								trigger={
+									<Button size={'icon'} variant={'denger'}>
+										<Trash2 className='size-4' />
+									</Button>
+								}
+								actionButtonText='削除'
+								deletingText=''
+								description='本当に削除したいですか？'
+								title={`${restaurant.name}を削除`}
+							/>
+							<Button>
+								<Edit className='size-4' />
+								変更
+							</Button>
+						</div>
 					</div>
 					<div className='mb-2 flex items-center gap-3'>
 						<h1 className='text-2xl md:text-4xl font-bold text-zinc-900'>{restaurant.name}</h1>

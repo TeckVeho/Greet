@@ -151,6 +151,12 @@ export async function deleteRestaurantImage(url: string): Promise<void> {
 	}
 }
 
+export async function deleteRestaurant(id: string): Promise<void> {
+	const res = await apiClient.delete<ApiResponse<{ message: string }>>(`/restaurants/${id}`)
+	if (!res.data.success) {
+		throw new Error(res.data.error.message)
+	}
+}
 export async function updateRestaurant(
 	id: string,
 	payload: Partial<CreateRestaurantPayload>,
