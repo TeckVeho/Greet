@@ -118,7 +118,6 @@ export const DialogRestaurantUpdate: React.FC<{
 			setIsOpen(false)
 			queryClient.invalidateQueries({ queryKey: ['restaurant', id] })
 		} catch (err) {
-			console.log(err)
 			toast.error('更新に失敗しました')
 		} finally {
 			setIsSubmitting(false)

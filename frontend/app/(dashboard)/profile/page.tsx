@@ -11,10 +11,11 @@ import {
 } from '@/components/ui'
 import { Section } from '@/components/ui/section'
 import { useAuth } from '@/lib/auth-context'
+import { format } from 'date-fns'
 import Image from 'next/image'
 
 const ProfileField = ({ label, value }: { label: string; value?: string | Date | null }) => {
-	const displayValue = value instanceof Date ? value.toISOString() : (value ?? '-')
+	const displayValue = value instanceof Date ? format(value, 'yyyy-MM-dd HH:mm:ss') : (value ?? '-')
 
 	return (
 		<div className='space-y-2'>
@@ -60,7 +61,6 @@ export default function Page() {
 							</div>
 						</div>
 
-						<ProfileField label='ユーザーID' value={user?.id} />
 						<ProfileField label='ロール' value={user?.role} />
 						<ProfileField label='部署' value={user?.department} />
 					</CardContent>
@@ -75,7 +75,6 @@ export default function Page() {
 						<ProfileField label='名前' value={user?.name} />
 						<ProfileField label='メールアドレス' value={user?.email} />
 						<ProfileField label='アイコン' value={user?.icon} />
-						<ProfileField label='会社ID' value={user?.companyId} />
 						<ProfileField label='会社コード' value={user?.company?.code} />
 						<div className='md:col-span-2'>
 							<ProfileField label='会社名' value={user?.company?.name} />

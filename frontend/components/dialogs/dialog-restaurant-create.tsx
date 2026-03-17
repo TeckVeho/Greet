@@ -301,13 +301,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 																<ComboboxEmpty>No items found.</ComboboxEmpty>
 																<ComboboxList>
 																	{item => (
-																		<ComboboxItem
-																			key={item.value}
-																			value={item.value}
-																			onClick={() => {
-																				console.log('item:', item)
-																			}}
-																		>
+																		<ComboboxItem key={item.value} value={item.value}>
 																			{item.label}
 																		</ComboboxItem>
 																	)}
