@@ -18,6 +18,7 @@ import {
 	useSidebar,
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/lib/auth-context'
+import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -31,7 +32,7 @@ export function NavUser({
 		role?: 'admin' | 'user'
 	}
 }) {
-	const { isMobile } = useSidebar()
+	const { isMobile, open } = useSidebar()
 	const { logout } = useAuth()
 	const router = useRouter()
 
@@ -42,11 +43,16 @@ export function NavUser({
 					<DropdownMenuTrigger asChild>
 						<SidebarMenuButton
 							size='lg'
-							className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+							className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground '
 						>
 							<Avatar className='h-8 w-8 rounded-lg'>
 								<AvatarImage src={user.avatar} alt={user.name} />
-								<AvatarFallback className='rounded-lg text-center'>
+								<AvatarFallback
+									className={cn(
+										`text-sm bg-red-300 leading-none rounded-lg font-medium w-8`,
+										open && 'w-10',
+									)}
+								>
 									{user.name.charAt(0)}
 								</AvatarFallback>
 							</Avatar>
@@ -67,7 +73,9 @@ export function NavUser({
 							<div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
 								<Avatar className='h-8 w-8 rounded-lg'>
 									<AvatarImage src={user.avatar} alt={user.name} />
-									<AvatarFallback className='rounded-lg'>{user.name.charAt(0)}</AvatarFallback>
+									<AvatarFallback className='rounded-lg text-sm leading-none font-medium'>
+										{user.name.charAt(0)}
+									</AvatarFallback>
 								</Avatar>
 								<div className='grid flex-1 text-left text-sm leading-tight'>
 									<span className='truncate font-semibold'>{user.name}</span>
