@@ -1,0 +1,89 @@
+'use client'
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+	Input,
+	Label,
+	Spinner,
+} from '@/components/ui'
+import { useAuth } from '@/lib/auth-context'
+import Image from 'next/image'
+
+const ProfileField = ({ label, value }: { label: string; value?: string | Date | null }) => {
+	const displayValue = value instanceof Date ? value.toISOString() : (value ?? '-')
+
+	return (
+		<div className='space-y-2'>
+			<Label>{label}</Label>
+			<Input value={displayValue} disabled readOnly />
+		</div>
+	)
+}
+
+export default function Page() {
+	const { user, isLoading } = useAuth()
+	if (isLoading) {
+		return <Spinner type='page-loading' />
+	}
+	return (
+		<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
+			<div className='mb-8'>
+				<div className='mb-2 flex items-center gap-2'>
+					<span className='text-2xl md:text-3xl'>🙍</span>
+					<h1 className='text-2xl md:text-3xl font-bold text-zinc-900'>プロフィール</h1>
+				</div>
+				<p className='text-sm text-zinc-500'>ユーザー情報の表示専用ページ</p>
+			</div>
+
+			<div className='grid gap-6 lg:grid-cols-3 w-full'>
+				<Card className='lg:col-span-1'>
+					<CardHeader>
+						<CardTitle className='text-lg'>基本情報</CardTitle>
+						<CardDescription>プロフィールの概要</CardDescription>
+					</CardHeader>
+					<CardContent className='space-y-4'>
+						<div className='flex items-center gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-3'>
+							<div className='flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl shadow-sm'>
+								{user?.avatar ? (
+									<Image src={user?.avatar} alt='Avatar' width={48} height={48} />
+								) : (
+									user?.icon
+								)}
+							</div>
+							<div>
+								<p className='font-medium text-zinc-900'>{user?.name}</p>
+								<p className='text-sm text-zinc-500'>{user?.email}</p>
+							</div>
+						</div>
+
+						<ProfileField label='ユーザーID' value={user?.id} />
+						<ProfileField label='ロール' value={user?.role} />
+						<ProfileField label='部署' value={user?.department} />
+					</CardContent>
+				</Card>
+
+				<Card className='lg:col-span-2'>
+					<CardHeader>
+						<CardTitle className='text-lg'>詳細情報</CardTitle>
+						<CardDescription>すべての項目は読み取り専用です</CardDescription>
+					</CardHeader>
+					<CardContent className='grid gap-4 md:grid-cols-2'>
+						<ProfileField label='名前' value={user?.name} />
+						<ProfileField label='メールアドレス' value={user?.email} />
+						<ProfileField label='アイコン' value={user?.icon} />
+						<ProfileField label='会社ID' value={user?.companyId} />
+						<ProfileField label='会社コード' value={user?.company?.code} />
+						<div className='md:col-span-2'>
+							<ProfileField label='会社名' value={user?.company?.name} />
+						</div>
+						<ProfileField label='作成日時' value={user?.createdAt} />
+						<ProfileField label='最終ログイン' value={user?.lastLogin} />
+					</CardContent>
+				</Card>
+			</div>
+		</div>
+	)
+}

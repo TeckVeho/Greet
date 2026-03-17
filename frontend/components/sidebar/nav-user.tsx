@@ -18,6 +18,7 @@ import {
 	useSidebar,
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/lib/auth-context'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export function NavUser({
@@ -27,6 +28,7 @@ export function NavUser({
 		name: string
 		email: string
 		avatar?: string
+		role?: 'admin' | 'user'
 	}
 }) {
 	const { isMobile } = useSidebar()
@@ -72,10 +74,12 @@ export function NavUser({
 							</div>
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>
-							<BadgeCheck />
-							Account
-						</DropdownMenuItem>
+						<Link href='/profile'>
+							<DropdownMenuItem>
+								<BadgeCheck />
+								Profile
+							</DropdownMenuItem>
+						</Link>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
 							onClick={() => {
