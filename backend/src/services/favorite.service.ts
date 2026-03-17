@@ -2,6 +2,18 @@ import { prisma } from '../prisma'
 import { StatusCodes } from 'http-status-codes'
 import { resolveFileUrl } from './file.service'
 
+function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
+  if (!user) {
+    return null
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    icon: user.icon ?? undefined,
+  }
+}
+
 export class FavoriteService {
   async listForUser(userId: string) {
     const favorites = await prisma.favorite.findMany({
@@ -61,11 +73,7 @@ export class FavoriteService {
           coverImage: await resolveFileUrl(restaurant.coverImage),
           reviewCount,
           averageRating,
-          createdBy: {
-            id: restaurant.createdBy.id,
-            name: restaurant.createdBy.name,
-            icon: restaurant.createdBy.icon ?? undefined,
-          },
+          createdBy: mapUserSummary(restaurant.createdBy),
           createdAt: restaurant.createdAt.toISOString(),
           updatedAt: restaurant.updatedAt.toISOString(),
         },

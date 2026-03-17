@@ -12,15 +12,24 @@ import {
 	SheetTrigger,
 } from '@/components/ui'
 import { Company } from '@/lib/types'
-import { format } from 'date-fns'
+import { format, isValid } from 'date-fns'
 import { Building2, Calendar, Hash, Tag } from 'lucide-react'
 import { ReactNode } from 'react'
 
-export const SheetCompanyView: React.FC<{ trigger: ReactNode; company_data: Company | null }> = ({
+type CompanyPreview = Partial<Company> & { id?: string; name?: string }
+
+export const SheetCompanyView: React.FC<{ trigger: ReactNode; company_data: CompanyPreview | null }> = ({
 	trigger,
 	company_data,
 }) => {
 	if (!company_data) return null
+
+	const createdAtValue = company_data.createdAt
+		? (() => {
+				const parsed = new Date(company_data.createdAt)
+				return isValid(parsed) ? format(parsed, 'yyyy/MM/dd HH:mm') : '未設定'
+			})()
+		: '未設定'
 
 	return (
 		<Sheet>
@@ -45,7 +54,7 @@ export const SheetCompanyView: React.FC<{ trigger: ReactNode; company_data: Comp
 							<Building2 className='h-3.5 w-3.5' /> 会社名
 						</Label>
 						<Input
-							value={company_data.name}
+							value={company_data.name || '未設定'}
 							disabled
 							className='bg-muted/30 border-muted text-foreground opacity-100 cursor-default'
 						/>
@@ -69,7 +78,7 @@ export const SheetCompanyView: React.FC<{ trigger: ReactNode; company_data: Comp
 							<Hash className='h-3.5 w-3.5' /> 企業コード
 						</Label>
 						<Input
-							value={company_data.code}
+							value={company_data.code || '未設定'}
 							disabled
 							className='bg-muted/30 border-muted text-foreground opacity-100 cursor-default'
 						/>
@@ -81,7 +90,7 @@ export const SheetCompanyView: React.FC<{ trigger: ReactNode; company_data: Comp
 							<Calendar className='h-3.5 w-3.5' /> 登録時間
 						</Label>
 						<Input
-							value={format(new Date(company_data.createdAt), 'yyyy/MM/dd HH:mm')}
+							value={createdAtValue}
 							disabled
 							className='bg-muted/30 border-muted text-foreground opacity-100 cursor-default'
 						/>

@@ -14,15 +14,6 @@ jest.mock('../../prisma', () => ({
       update: jest.fn(),
       delete: jest.fn(),
     },
-    restaurant: {
-      count: jest.fn(),
-    },
-    review: {
-      deleteMany: jest.fn(),
-    },
-    favorite: {
-      deleteMany: jest.fn(),
-    },
   },
 }))
 
@@ -36,9 +27,6 @@ const mockUserFindUnique = prisma.user.findUnique as jest.Mock
 const mockUserCreate = prisma.user.create as jest.Mock
 const mockUserUpdate = prisma.user.update as jest.Mock
 const mockUserDelete = prisma.user.delete as jest.Mock
-const mockRestaurantCount = prisma.restaurant.count as jest.Mock
-const mockReviewDeleteMany = prisma.review.deleteMany as jest.Mock
-const mockFavoriteDeleteMany = prisma.favorite.deleteMany as jest.Mock
 
 const mockCompany = { id: 'company-1', name: 'テスト会社' }
 
@@ -64,9 +52,6 @@ describe('UserService', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     service = new UserService()
-    mockRestaurantCount.mockResolvedValue(0)
-    mockReviewDeleteMany.mockResolvedValue({ count: 0 })
-    mockFavoriteDeleteMany.mockResolvedValue({ count: 0 })
   })
 
   // ─────────────────────────────────────────
@@ -332,19 +317,7 @@ describe('UserService', () => {
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
       expect((result.data as { message: string }).message).toBe('ユーザーを削除しました')
-      expect(mockReviewDeleteMany).toHaveBeenCalledWith({ where: { authorId: 'user-1' } })
-      expect(mockFavoriteDeleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } })
       expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: 'user-1' } })
-    })
-
-    it('作成済み飲食店があるユーザーは削除できない', async () => {
-      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1', role: 'user' })
-      mockRestaurantCount.mockResolvedValue(1)
-
-      await expect(service.delete('user-1')).rejects.toThrow(
-        'このユーザーが作成した飲食店が残っているため削除できません。先に飲食店を削除してください',
-      )
-      expect(mockUserDelete).not.toHaveBeenCalled()
     })
 
     it('削除失敗時にApiErrorをスローする', async () => {

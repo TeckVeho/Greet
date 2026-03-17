@@ -40,11 +40,14 @@ export class ReviewService {
       occasion: review.occasion,
       result: review.result,
       rating: review.rating,
-      author: {
-        id: review.author.id,
-        name: review.author.name,
-        icon: review.author.icon ?? undefined,
-      },
+      authorId: review.authorId,
+      author: review.author
+        ? {
+            id: review.author.id,
+            name: review.author.name,
+            icon: review.author.icon ?? undefined,
+          }
+        : null,
       createdAt: review.createdAt,
     }
 
@@ -55,11 +58,7 @@ export class ReviewService {
     }
   }
 
-  async delete(
-    id: string,
-    callerId: string,
-    callerRole: string,
-  ) {
+  async delete(id: string, callerId: string, callerRole: string) {
     const review = await prisma.review.findUnique({
       where: { id },
       select: { id: true, authorId: true },

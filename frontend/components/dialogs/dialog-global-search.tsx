@@ -27,6 +27,18 @@ export function DialogGlobalSearch() {
 
 	const { data: restaurants, isPending } = useRestaurants({ search: searchQuery })
 
+	React.useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+				e.preventDefault()
+				setOpen(true)
+			}
+		}
+
+		document.addEventListener('keydown', handleKeyDown)
+		return () => document.removeEventListener('keydown', handleKeyDown)
+	}, [])
+
 	// ダイアログが閉じられたら検索クエリをリセット
 	React.useEffect(() => {
 		if (!open) {

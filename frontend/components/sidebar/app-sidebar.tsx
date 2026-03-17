@@ -1,6 +1,6 @@
 'use client'
 
-import { Coffee, MapPin, Star } from 'lucide-react'
+import { Coffee, MapPin, Shield, Star } from 'lucide-react'
 import * as React from 'react'
 
 import { MainLogo } from '@/components/sidebar/main-logo'
@@ -49,13 +49,28 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { user } = useAuth()
+	const navItems = React.useMemo(() => {
+		if (user?.role === 'admin') {
+			return [
+				...data.navMain,
+				{
+					title: 'ユーザー管理',
+					url: '/admin/users',
+					icon: Shield,
+				},
+			]
+		}
+
+		return data.navMain
+	}, [user?.role])
+
 	return (
 		<Sidebar collapsible='icon' {...props}>
 			<SidebarHeader>
 				<MainLogo />
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={data.navMain} />
+				<NavMain items={navItems} />
 				{/* <NavProjects projects={data.projects} /> */}
 			</SidebarContent>
 			<SidebarFooter>

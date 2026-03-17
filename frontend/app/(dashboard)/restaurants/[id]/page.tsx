@@ -255,9 +255,10 @@ export default function RestaurantDetailPage() {
 					) : (
 						<div className='space-y-4'>
 							{restaurant.reviews.map(review => {
+								const authorName = review.author?.name ?? '削除済みユーザー'
 								const nameIcon = (
 									<div className='flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-700'>
-										{review.author.icon ?? review.author.name.charAt(0)}
+										{review.author?.icon ?? authorName.charAt(0)}
 									</div>
 								)
 								return (
@@ -265,7 +266,7 @@ export default function RestaurantDetailPage() {
 										<div className='space-y-2'>
 											<div className='flex items-center justify-between'>
 												<div className='flex flex-wrap items-center gap-2'>
-													<div className='font-semibold text-zinc-900'>{review.author.name}</div>
+													<div className='font-semibold text-zinc-900'>{authorName}</div>
 												</div>
 												<div className='text-xs text-zinc-500'>
 													{new Date(review.createdAt).toLocaleDateString('ja-JP')}

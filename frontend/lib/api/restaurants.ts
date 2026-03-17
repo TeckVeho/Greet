@@ -1,6 +1,6 @@
 'use client'
 
-import { Review } from '../types'
+import { Review, UserSummary } from '../types'
 import { SortOption } from '../utils'
 import { apiClient } from './client'
 import type { ApiResponse } from './types'
@@ -21,11 +21,7 @@ export interface RestaurantListItem {
 	reviewCount: number
 	averageRating: number | null
 	reviews: Review[]
-	createdBy: {
-		id: string
-		name: string
-		icon?: string
-	}
+	createdBy: UserSummary | null
 	createdAt: Date
 	updatedAt: Date
 }

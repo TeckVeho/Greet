@@ -2,6 +2,7 @@
 
 import { apiClient } from "./client"
 import type { ApiResponse } from "./types"
+import type { UserSummary } from "../types"
 
 export interface CreateReviewPayload {
   occasion: string
@@ -15,11 +16,8 @@ export interface ReviewResponse {
   occasion: string
   result: string
   rating: number | null
-  author: {
-    id: string
-    name: string
-    icon?: string
-  }
+  authorId?: string | null
+  author: UserSummary | null
   createdAt: string
 }
 
