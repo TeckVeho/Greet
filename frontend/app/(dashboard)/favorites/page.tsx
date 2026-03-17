@@ -1,7 +1,7 @@
 'use client'
 
 import { DataCards, DataTable, RestaurantColumns } from '@/components/restaurants'
-import { Button, Section } from '@/components/ui'
+import { Button, Section, Spinner } from '@/components/ui'
 import { Callout } from '@/components/ui/callout'
 import { listFavorites } from '@/lib/api/favorites'
 import type { RestaurantListItem } from '@/lib/api/restaurants'
@@ -38,11 +38,7 @@ export default function FavoritesPage() {
 	}
 
 	if (isFavoritesPending) {
-		return (
-			<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
-				<p className='text-sm text-zinc-500'>お気に入りを読み込み中です...</p>
-			</div>
-		)
+		return <Spinner type='page-loading' />
 	}
 
 	return (

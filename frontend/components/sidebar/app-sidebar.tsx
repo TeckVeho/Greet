@@ -14,6 +14,7 @@ import {
 	SidebarRail,
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/lib/auth-context'
+import { Separator } from '../ui'
 
 // This is sample data.
 const data = {
@@ -63,9 +64,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<MainLogo />
 			</SidebarHeader>
 			<SidebarContent>
+				<Separator />
 				<NavMain items={filteredNavMain} />
 				{/* <NavProjects projects={data.projects} /> */}
 			</SidebarContent>
+			<Separator />
 			<SidebarFooter>
 				<NavUser user={user ? user : data.user} />
 			</SidebarFooter>

@@ -46,7 +46,9 @@ export function NavUser({
 						>
 							<Avatar className='h-8 w-8 rounded-lg'>
 								<AvatarImage src={user.avatar} alt={user.name} />
-								<AvatarFallback className='rounded-lg'>{user.name.charAt(0)}</AvatarFallback>
+								<AvatarFallback className='rounded-lg text-center'>
+									{user.name.charAt(0)}
+								</AvatarFallback>
 							</Avatar>
 							<div className='grid flex-1 text-left text-sm leading-tight'>
 								<span className='truncate font-semibold'>{user.name}</span>
@@ -77,7 +79,7 @@ export function NavUser({
 						<Link href='/profile'>
 							<DropdownMenuItem>
 								<BadgeCheck />
-								Profile
+								プロファイル
 							</DropdownMenuItem>
 						</Link>
 						<DropdownMenuSeparator />
@@ -88,7 +90,7 @@ export function NavUser({
 							}}
 						>
 							<LogOut />
-							Log out
+							ログアウト
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

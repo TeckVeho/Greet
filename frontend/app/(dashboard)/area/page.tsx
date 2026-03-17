@@ -1,7 +1,7 @@
 'use client'
 
 import { DataCards, DataTable, RestaurantColumns } from '@/components/restaurants'
-import { Section } from '@/components/ui'
+import { Section, Spinner } from '@/components/ui'
 import { Badge } from '@/components/ui/badge'
 import { listRestaurants } from '@/lib/api/restaurants'
 import { useAuth } from '@/lib/auth-context'
@@ -67,11 +67,7 @@ export default function AreaPage() {
 	}
 
 	if (isRestaurantsPending) {
-		return (
-			<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
-				<p className='text-sm text-zinc-500'>エリア別の飲食店を読み込み中です...</p>
-			</div>
-		)
+		return <Spinner type='page-loading' />
 	}
 
 	return (
