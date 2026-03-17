@@ -78,6 +78,7 @@ export {
 	InputGroupText,
 	InputGroupTextarea,
 } from './input-group'
+export { Kbd } from './kbd'
 export { Label } from './label'
 export {
 	Pagination,

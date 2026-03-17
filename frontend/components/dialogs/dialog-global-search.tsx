@@ -1,14 +1,17 @@
 'use client'
 
 import {
+	Button,
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DialogTrigger,
 	InputGroup,
 	InputGroupAddon,
 	InputGroupInput,
+	Kbd,
 } from '@/components/ui'
 import { Badge } from '@/components/ui/badge'
 import { useRestaurants } from '@/hooks/use-restaurants'
@@ -17,12 +20,8 @@ import { Search, SearchIcon, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
-interface GlobalSearchDialogProps {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-}
-
-export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogProps) {
+export function DialogGlobalSearch() {
+	const [open, setOpen] = React.useState(false)
 	const router = useRouter()
 	const [searchQuery, setSearchQuery] = React.useState('')
 
@@ -37,11 +36,18 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 
 	const handleResultClick = (restaurantId: string) => {
 		router.push(`/restaurants/${restaurantId}`)
-		onOpenChange(false)
+		setOpen(false)
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={setOpen}>
+			<DialogTrigger asChild>
+				<Button variant={'secondary'} className=' text-zinc-600 hover:bg-zinc-100'>
+					<Search className='size-4' />
+					<span>検索...</span>
+					<Kbd>⌘ K</Kbd>
+				</Button>
+			</DialogTrigger>
 			<DialogContent className='max-w-[95vw] md:max-w-2xl p-0' showClose={false}>
 				<DialogHeader className='px-6 pt-5 pb-4 border-b border-zinc-200'>
 					<DialogTitle className='sr-only'>レストラン検索</DialogTitle>

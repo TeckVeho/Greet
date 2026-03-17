@@ -1,124 +1,152 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  /* ピンクベージュ・グルメイメージ（明るめ） */
-  --background: 28 30% 98%;
-  --foreground: 20 15% 18%;
-  --card: 30 18% 100%;
-  --card-foreground: 20 15% 18%;
-  --popover: 30 18% 100%;
-  --popover-foreground: 20 15% 18%;
-  --primary: 10 35% 48%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 25 20% 94%;
-  --secondary-foreground: 20 15% 18%;
-  --muted: 25 20% 94%;
-  --muted-foreground: 20 10% 45%;
-  --accent: 15 30% 92%;
-  --accent-foreground: 10 38% 35%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 25 15% 90%;
-  --input: 25 15% 90%;
-  --ring: 10 35% 48%;
-  --radius: 0.5rem;
+	/* ピンクベージュ・グルメイメージ（明るめ） */
+	--background: 28 30% 98%;
+	--foreground: 20 15% 18%;
+	--card: 30 18% 100%;
+	--card-foreground: 20 15% 18%;
+	--popover: 30 18% 100%;
+	--popover-foreground: 20 15% 18%;
+	--primary: 10 35% 48%;
+	--primary-foreground: 0 0% 98%;
+	--secondary: 25 20% 94%;
+	--secondary-foreground: 20 15% 18%;
+	--muted: 25 20% 94%;
+	--muted-foreground: 20 10% 45%;
+	--accent: 15 30% 92%;
+	--accent-foreground: 10 38% 35%;
+	--destructive: 0 84% 60%;
+	--destructive-foreground: 0 0% 98%;
+	--border: 25 15% 90%;
+	--input: 25 15% 90%;
+	--ring: 10 35% 48%;
+	--radius: 0.5rem;
+	--sidebar: hsl(28 30% 97%); /* background bilan deyarli bir xil, biroz issiqroq oq */
+	--sidebar-foreground: hsl(20 15% 18%); /* foreground — to'q jigarrang matn */
+	--sidebar-primary: hsl(10 35% 48%); /* primary — asosiy jigarrang-qizil */
+	--sidebar-primary-foreground: hsl(0 0% 98%); /* primary ustidagi matn — oq */
+	--sidebar-accent: hsl(15 30% 92%); /* accent — och pushti-bej hover */
+	--sidebar-accent-foreground: hsl(10 38% 35%); /* accent ustidagi matn — to'q jigarrang */
+	--sidebar-border: hsl(25 15% 88%); /* border — border bilan bir xil */
+	--sidebar-ring: hsl(10 35% 48%);
 }
 
 @theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+	--color-background: hsl(var(--background));
+	--color-foreground: hsl(var(--foreground));
+	--color-card: hsl(var(--card));
+	--color-card-foreground: hsl(var(--card-foreground));
+	--color-popover: hsl(var(--popover));
+	--color-popover-foreground: hsl(var(--popover-foreground));
+	--color-primary: hsl(var(--primary));
+	--color-primary-foreground: hsl(var(--primary-foreground));
+	--color-secondary: hsl(var(--secondary));
+	--color-secondary-foreground: hsl(var(--secondary-foreground));
+	--color-muted: hsl(var(--muted));
+	--color-muted-foreground: hsl(var(--muted-foreground));
+	--color-accent: hsl(var(--accent));
+	--color-accent-foreground: hsl(var(--accent-foreground));
+	--color-destructive: hsl(var(--destructive));
+	--color-destructive-foreground: hsl(var(--destructive-foreground));
+	--color-border: hsl(var(--border));
+	--color-input: hsl(var(--input));
+	--color-ring: hsl(var(--ring));
+	--radius-lg: var(--radius);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-sm: calc(var(--radius) - 4px);
+	--font-sans: var(--font-geist-sans);
+	--font-mono: var(--font-geist-mono);
+	--color-sidebar-ring: var(--sidebar-ring);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar: var(--sidebar);
 }
 
-
 body {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: Arial, Helvetica, sans-serif;
+	background: hsl(var(--background));
+	color: hsl(var(--foreground));
+	font-family: Arial, Helvetica, sans-serif;
 }
 
 /* スムーズスクロール */
 html {
-  scroll-behavior: smooth;
+	scroll-behavior: smooth;
 }
 
 /* フォーカススタイル（primaryに合わせる） */
 *:focus-visible {
-  outline: 2px solid hsl(10 35% 48%);
-  outline-offset: 2px;
+	outline: 2px solid hsl(10 35% 48%);
+	outline-offset: 2px;
 }
 
 /* セレクションカラー（ピンクベージュ） */
 ::selection {
-  background-color: #e8d5d0;
-  color: #5c4033;
+	background-color: #e8d5d0;
+	color: #5c4033;
 }
 
 /* スクロールバーのスタイリング（Webkit） */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+	width: 8px;
+	height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+	background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c4a99e;
-  border-radius: 4px;
+	background: #c4a99e;
+	border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b8958a;
+	background: #b8958a;
 }
 
 /* アニメーション */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 @keyframes slideIn {
-  from {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+	from {
+		transform: translateY(-10px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
+	animation: fadeIn 0.2s ease-out;
 }
 
 .animate-slide-in {
-  animation: slideIn 0.3s ease-out;
+	animation: slideIn 0.3s ease-out;
+}
+
+.dark {
+	--sidebar: hsl(20 12% 10%); /* to'q jigarrang-qora fon */
+	--sidebar-foreground: hsl(25 20% 90%); /* och bej matn */
+	--sidebar-primary: hsl(10 40% 58%); /* dark modeda biroz yorqinroq primary */
+	--sidebar-primary-foreground: hsl(0 0% 98%);
+	--sidebar-accent: hsl(20 10% 16%); /* to'q hover holati */
+	--sidebar-accent-foreground: hsl(25 20% 85%);
+	--sidebar-border: hsl(20 10% 16%);
+	--sidebar-ring: hsl(10 40% 58%);
 }

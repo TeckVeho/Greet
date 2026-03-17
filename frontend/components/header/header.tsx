@@ -1,66 +1,11 @@
-export const Header: React.FC<{
-	setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
-	isMobileMenuOpen: boolean
-	isCollapsed: boolean
-	setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>
-	setIsSearchOpen: React.Dispatch<React.SetStateAction<boolean>>
-}> = ({ setIsMobileMenuOpen, isCollapsed, isMobileMenuOpen, setIsCollapsed, setIsSearchOpen }) => {
-	return (
-		<header className='sticky top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200 bg-white px-4 md:px-6'>
-			<button
-				onClick={() => {
-					// モバイルではメニュー開閉、PCではサイドバー折りたたみ
-					if (window.innerWidth < 768) {
-						setIsMobileMenuOpen(!isMobileMenuOpen)
-					} else {
-						setIsCollapsed(!isCollapsed)
-					}
-				}}
-				className='flex h-8 w-8 items-center justify-center rounded-md text-zinc-600 hover:bg-zinc-100'
-				aria-label='Toggle sidebar'
-			>
-				<svg
-					xmlns='http://www.w3.org/2000/svg'
-					width='20'
-					height='20'
-					viewBox='0 0 24 24'
-					fill='none'
-					stroke='currentColor'
-					strokeWidth='2'
-					strokeLinecap='round'
-					strokeLinejoin='round'
-				>
-					<line x1='3' y1='12' x2='21' y2='12' />
-					<line x1='3' y1='6' x2='21' y2='6' />
-					<line x1='3' y1='18' x2='21' y2='18' />
-				</svg>
-			</button>
+import { DialogGlobalSearch } from '@/components/dialogs'
+import { SidebarTrigger } from '../ui/sidebar'
 
-			<div className='flex items-center gap-2'>
-				<button
-					onClick={() => setIsSearchOpen(true)}
-					className='flex h-8 items-center gap-2 rounded-md px-3 text-sm text-zinc-600 hover:bg-zinc-100'
-				>
-					<svg
-						xmlns='http://www.w3.org/2000/svg'
-						width='16'
-						height='16'
-						viewBox='0 0 24 24'
-						fill='none'
-						stroke='currentColor'
-						strokeWidth='2'
-						strokeLinecap='round'
-						strokeLinejoin='round'
-					>
-						<circle cx='11' cy='11' r='8' />
-						<path d='m21 21-4.3-4.3' />
-					</svg>
-					<span>検索...</span>
-					<kbd className='hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-zinc-200 bg-zinc-50 px-1.5 font-mono text-xs text-zinc-500'>
-						<span className='text-xs'>⌘</span>K
-					</kbd>
-				</button>
-			</div>
+export const Header: React.FC = () => {
+	return (
+		<header className='sticky top-2 z-30 flex h-13 items-center justify-between border border-border bg-background/95 backdrop-blur-sm px-6 rounded-lg shadow-sm  w-full'>
+			<SidebarTrigger className='size-5 text-muted-foreground' />
+			<DialogGlobalSearch />
 		</header>
 	)
 }
