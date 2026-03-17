@@ -1,5 +1,28 @@
-// Prisma enum key → Japanese label mappings
+import { Coffee, MapPin, Star } from 'lucide-react'
 
+// Prisma enum key → Japanese label mappings
+export const menuItems = [
+	{
+		title: 'すべての飲食店リスト',
+		href: '/',
+		icon: <Coffee />,
+	},
+	{
+		title: 'エリア別',
+		href: '/area',
+		icon: <MapPin />,
+	},
+	{
+		title: 'ジャンル別',
+		href: '/genre',
+		icon: <Coffee />,
+	},
+	{
+		title: 'お気に入り',
+		href: '/favorites',
+		icon: <Star />,
+	},
+]
 export const AREA_LABELS: Record<string, string> = {
 	GINZA: '銀座',
 	AKASAKA: '赤坂',
