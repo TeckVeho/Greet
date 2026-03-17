@@ -176,19 +176,6 @@ export class UserService {
         throw new ApiError(StatusCodes.FORBIDDEN, '管理者ユーザーは削除できません')
       }
 
-      const ownedRestaurantCount = await prisma.restaurant.count({ where: { createdById: id } })
-      if (ownedRestaurantCount > 0) {
-        throw new ApiError(
-          StatusCodes.CONFLICT,
-          'このユーザーが作成した飲食店が残っているため削除できません。先に飲食店を削除してください',
-        )
-      }
-
-      // Review.author relation is not cascade, so remove authored reviews first.
-      await prisma.review.deleteMany({ where: { authorId: id } })
-      // Favorite.user relation is cascade in schema, but explicit cleanup keeps behavior stable.
-      await prisma.favorite.deleteMany({ where: { userId: id } })
-
       await prisma.user.delete({ where: { id } })
       return {
         success: true,

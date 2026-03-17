@@ -61,11 +61,11 @@ model Restaurant {
   coverImage     String?           @db.Text @map("cover_image")
   icon           String?           @db.VarChar(10)
   
-  createdById    String            @map("created_by")
+  createdById    String?           @map("created_by")
   companyId      String            @map("company_id")
   createdAt      DateTime          @default(now()) @map("created_at")
   updatedAt      DateTime          @updatedAt @map("updated_at")
-  createdBy      User              @relation(fields: [createdById], references: [id])
+  createdBy      User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
   company        Company           @relation(fields: [companyId], references: [id])
   genres         RestaurantGenre[]
   reviews        Review[]
@@ -119,7 +119,7 @@ enum Genre {
 model Review {
   id           String     @id @default(uuid())
   restaurantId String     @map("restaurant_id")
-  authorId     String     @map("author_id")
+  authorId     String?    @map("author_id")
 
   occasion     String     @db.VarChar(200)
   result       String     @db.Text
@@ -128,7 +128,7 @@ model Review {
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  author       User       @relation(fields: [authorId], references: [id])
+  author       User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@map("reviews")
 }

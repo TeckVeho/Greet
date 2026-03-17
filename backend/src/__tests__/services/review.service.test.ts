@@ -63,6 +63,7 @@ describe('ReviewService', () => {
         occasion: '取引先との接待',
         result: '大変好評でした。個室も広く雰囲気が良い。',
         rating: 5,
+        authorId,
         author: { id: authorId, name: 'テストユーザー', icon: '👤' },
         createdAt: new Date('2025-03-01'),
       })
@@ -148,6 +149,16 @@ describe('ReviewService', () => {
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
       expect(mockReviewDelete).toHaveBeenCalledWith({ where: { id: 'rev-1' } })
+    })
+
+    it('authorIdがnullのレビューはadminのみ削除できる', async () => {
+      mockReviewFindUnique.mockResolvedValue({ id: 'rev-3', authorId: null })
+      mockReviewDelete.mockResolvedValue({ id: 'rev-3' })
+
+      const result = await service.delete('rev-3', 'admin-user', 'admin')
+
+      expect(result.success).toBe(true)
+      expect(result.statusCode).toBe(StatusCodes.OK)
     })
 
     it('一般ユーザーは他人のレビューを削除できない', async () => {

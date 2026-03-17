@@ -125,8 +125,9 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 		},
 	},
 	{
-		accessorKey: 'createdBy.name',
+		accessorKey: 'createdBy',
 		header: '登録者',
+		cell: ({ row }) => row.original.createdBy?.name ?? '削除済みユーザー',
 	},
 	{
 		accessorKey: 'reviewCount',
@@ -148,7 +149,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 		accessorKey: 'reviews',
 		header: '利用者',
 		cell: ({ getValue, row }) => {
-			const reviews = getValue<{ author: { icon: string } }[]>() || []
+			const reviews = getValue<{ author: { icon?: string } | null }[]>() || []
 			const limit = 3
 			const displayReviews = reviews.slice(0, limit)
 			const remainingCount = reviews.length - limit
@@ -158,7 +159,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 					{displayReviews.map((review, index) => (
 						<Avatar className='shadow-sm hover:z-10 ' key={index}>
 							<AvatarFallback className='bg-muted text-[10px]'>
-								{review.author.icon ? review.author.icon : row.original.name.charAt(0)}
+								{review.author?.icon ? review.author.icon : review.author?.name?.charAt(0) ?? '退'}
 							</AvatarFallback>
 						</Avatar>
 					))}

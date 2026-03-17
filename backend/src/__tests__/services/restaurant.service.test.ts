@@ -369,6 +369,19 @@ describe('RestaurantService', () => {
       expect(mockRestaurantUpdate).not.toHaveBeenCalled()
     })
 
+    it('createdByIdがnullの飲食店はadminのみ更新できる', async () => {
+      mockRestaurantFindUnique.mockResolvedValue({
+        id: 'rest-1',
+        createdById: null,
+        coverImage: null,
+      })
+
+      const result = await service.update('rest-1', updatePayload, 'user-2', 'user')
+
+      expect(result.success).toBe(false)
+      expect(result.statusCode).toBe(StatusCodes.FORBIDDEN)
+    })
+
     it('adminは作成者でなくても更新できる', async () => {
       mockRestaurantFindUnique.mockResolvedValue({
         id: 'rest-1',

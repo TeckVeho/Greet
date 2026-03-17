@@ -13,6 +13,18 @@ type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; c
 type UpdateRestaurantInput = updateRestaurantBodySchema
 type ListQuery = listRestaurantsQueryBodySchema
 
+function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
+  if (!user) {
+    return null
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    icon: user.icon ?? undefined,
+  }
+}
+
 export class RestaurantService {
   async findAll(query: ListQuery) {
     const smokingAllowed = parseBoolean(query.smokingAllowed)
@@ -146,21 +158,14 @@ export class RestaurantService {
           reviews: r.reviews.map(review => ({
             id: review.id,
             occasion: review.occasion,
-            author: {
-              id: review.author.id,
-              name: review.author.name,
-              icon: review.author.icon ?? undefined,
-            },
+            authorId: review.authorId,
+            author: mapUserSummary(review.author),
             result: review.result,
             rating: review.rating,
             createdAt: review.createdAt,
           })),
           averageRating,
-          createdBy: {
-            id: r.createdBy.id,
-            name: r.createdBy.name,
-            icon: r.createdBy.icon ?? undefined,
-          },
+          createdBy: mapUserSummary(r.createdBy),
           createdAt: r.createdAt,
           updatedAt: r.updatedAt,
         }
@@ -254,21 +259,14 @@ export class RestaurantService {
       smokingAllowed: restaurant.smokingAllowed,
       coverImage: await resolveFileUrl(restaurant.coverImage),
       icon: await resolveFileUrl(restaurant.icon),
-      createdBy: {
-        id: restaurant.createdBy.id,
-        name: restaurant.createdBy.name,
-        icon: restaurant.createdBy.icon ?? undefined,
-      },
+      createdBy: mapUserSummary(restaurant.createdBy),
       reviews: restaurant.reviews.map(r => ({
         id: r.id,
         occasion: r.occasion,
         result: r.result,
         rating: r.rating,
-        author: {
-          id: r.author.id,
-          name: r.author.name,
-          icon: r.author.icon ?? undefined,
-        },
+        authorId: r.authorId,
+        author: mapUserSummary(r.author),
         createdAt: r.createdAt,
       })),
       isFavorite,

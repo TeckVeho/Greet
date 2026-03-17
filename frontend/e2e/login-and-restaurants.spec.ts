@@ -2,21 +2,24 @@ import { expect, test } from '@playwright/test'
 
 const nowIso = () => new Date().toISOString()
 
-function seedLoggedInSession(page: import('@playwright/test').Page) {
-  return page.addInitScript(() => {
+function seedLoggedInSession(
+  page: import('@playwright/test').Page,
+  role: 'admin' | 'user' = 'admin',
+) {
+  return page.addInitScript(({ role }) => {
     localStorage.setItem(
       'user',
       JSON.stringify({
         id: 'user-1',
-        email: 'admin@example.com',
-        name: '管理者ユーザー',
-        role: 'admin',
+        email: role === 'admin' ? 'admin@example.com' : 'user@example.com',
+        name: role === 'admin' ? '管理者ユーザー' : '一般ユーザー',
+        role,
         companyId: 'company-1',
         createdAt: new Date().toISOString(),
       }),
     )
     localStorage.setItem('token', 'e2e-valid-token')
-  })
+  }, { role })
 }
 
 test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', () => {
@@ -496,5 +499,442 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
     await expect(page.getByText('役員との会食')).toBeVisible()
     await expect(page.getByText('結果：')).toBeVisible()
     await expect(page.getByText('個室で落ち着いて会話でき、先方の評価も高かった。')).toBeVisible()
+  })
+})
+
+test.describe('E2E #7-#11: favorites, category pages, admin access, global search', () => {
+  test('7) お気に入り追加・削除・一覧確認', async ({ page }) => {
+    await seedLoggedInSession(page)
+
+    const restaurant = {
+      id: 'r-fav-1',
+      name: 'お気に入り確認店',
+      area: 'GINZA',
+      genres: ['SUSHI'],
+      hasPrivateRoom: true,
+      smokingAllowed: false,
+      priceRange: 'RANGE_10000',
+      address: '東京都中央区1-2-3',
+      phone: '03-9999-0000',
+      url: 'https://example.com/favorite',
+      icon: '🍣',
+      reviewCount: 0,
+      reviews: [],
+      averageRating: null,
+      createdBy: { id: 'user-1', name: '管理者ユーザー', icon: '👤' },
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+    }
+    let favoriteIds: string[] = []
+
+    await page.route('**/api/restaurants**', async route => {
+      const url = route.request().url()
+
+      if (url.endsWith('/api/restaurants/r-fav-1')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            data: restaurant,
+          }),
+        })
+        return
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [restaurant],
+          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+        }),
+      })
+    })
+
+    await page.route('**/api/favorites', async route => {
+      if (route.request().method() === 'POST') {
+        favoriteIds = ['r-fav-1']
+        await route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            data: {
+              id: 'fav-1',
+              userId: 'user-1',
+              restaurantId: 'r-fav-1',
+              createdAt: nowIso(),
+            },
+          }),
+        })
+        return
+      }
+
+      const items = favoriteIds.includes('r-fav-1')
+        ? [{ id: 'fav-1', restaurant, createdAt: nowIso() }]
+        : []
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: items }),
+      })
+    })
+
+    await page.route('**/api/favorites/r-fav-1', async route => {
+      favoriteIds = []
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: { message: 'お気に入りを解除しました' },
+        }),
+      })
+    })
+
+    await page.goto('/')
+    await page.getByRole('link', { name: /お気に入り確認店/ }).click()
+
+    const favoriteButton = page.getByTitle('お気に入りに追加')
+    await favoriteButton.click()
+    await expect(page.getByTitle('お気に入りから削除')).toBeVisible()
+
+    await page.goto('/favorites')
+    await expect(page.getByRole('heading', { name: 'お気に入り', level: 1 })).toBeVisible()
+    await expect(page.getByText('お気に入り確認店')).toBeVisible()
+
+    await page.goto('/restaurants/r-fav-1')
+    await page.getByTitle('お気に入りから削除').click()
+    await expect(page.getByTitle('お気に入りに追加')).toBeVisible()
+
+    await page.goto('/favorites')
+    await expect(page.getByText('お気に入りがありません')).toBeVisible()
+  })
+
+  test('8) エリア別・ジャンル別ページ', async ({ page }) => {
+    await seedLoggedInSession(page)
+
+    const restaurants = [
+      {
+        id: 'r-area-1',
+        name: '銀座テスト寿司',
+        area: 'GINZA',
+        genres: ['SUSHI'],
+        hasPrivateRoom: true,
+        smokingAllowed: false,
+        priceRange: 'RANGE_20000',
+        address: '東京都中央区',
+        phone: '03-1111-0001',
+        url: 'https://example.com/ginza-sushi',
+        icon: '🍣',
+        reviewCount: 2,
+        reviews: [],
+        averageRating: 4.5,
+        createdBy: { id: 'user-1', name: '管理者ユーザー', icon: '👤' },
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      },
+      {
+        id: 'r-area-2',
+        name: '赤坂イタリアン',
+        area: 'AKASAKA',
+        genres: ['ITALIAN'],
+        hasPrivateRoom: false,
+        smokingAllowed: false,
+        priceRange: 'RANGE_10000',
+        address: '東京都港区',
+        phone: '03-1111-0002',
+        url: 'https://example.com/akasaka-italian',
+        icon: '🍝',
+        reviewCount: 1,
+        reviews: [],
+        averageRating: 4,
+        createdBy: { id: 'user-1', name: '管理者ユーザー', icon: '👤' },
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      },
+    ]
+
+    await page.route('**/api/restaurants**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: restaurants,
+          meta: { total: restaurants.length, page: 1, limit: 10, total_pages: 1 },
+        }),
+      })
+    })
+
+    await page.route('**/api/favorites', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] }),
+      })
+    })
+
+    await page.goto('/area')
+    await expect(page.getByRole('heading', { name: 'エリア別' })).toBeVisible()
+    await page.getByRole('button', { name: /銀座/ }).click()
+    await expect(page.getByText('銀座テスト寿司')).toBeVisible()
+    await expect(page.getByText('赤坂イタリアン')).toHaveCount(0)
+
+    await page.goto('/genre')
+    await expect(page.getByRole('heading', { name: 'ジャンル別' })).toBeVisible()
+    await page.getByRole('button', { name: /イタリアン/ }).click()
+    await expect(page.getByText('赤坂イタリアン')).toBeVisible()
+    await expect(page.getByText('銀座テスト寿司')).toHaveCount(0)
+  })
+
+  test('9) 管理者: ユーザー管理ページアクセス', async ({ page }) => {
+    await seedLoggedInSession(page, 'admin')
+
+    await page.route('**/api/restaurants**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [],
+          meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+        }),
+      })
+    })
+
+    await page.route('**/api/favorites', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] }),
+      })
+    })
+
+    await page.route('**/api/users**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [
+            {
+              id: 'user-1',
+              name: '管理者ユーザー',
+              email: 'admin@example.com',
+              role: 'admin',
+              companyId: 'company-1',
+              company: { id: 'company-1', name: '管理会社' },
+              createdAt: nowIso(),
+              lastLoginAt: nowIso(),
+            },
+          ],
+          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+        }),
+      })
+    })
+
+    await page.route('**/api/companies', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [
+            {
+              id: 'company-1',
+              name: '管理会社',
+              code: 'ADMIN',
+              icon: '🏢',
+              userCount: 1,
+              createdAt: nowIso(),
+            },
+          ],
+        }),
+      })
+    })
+
+    await page.goto('/')
+    await expect(page.getByRole('link', { name: 'ユーザー管理' })).toBeVisible()
+    await page.getByRole('link', { name: 'ユーザー管理' }).click()
+
+    await expect(page).toHaveURL(/\/admin\/users$/)
+    await expect(page.getByRole('heading', { name: 'ユーザー管理' })).toBeVisible()
+    await expect(page.getByRole('cell', { name: '管理者ユーザー' })).toBeVisible()
+  })
+
+  test('10) 一般ユーザー: 管理者ページへのアクセス制御', async ({ page }) => {
+    await seedLoggedInSession(page, 'user')
+
+    await page.route('**/api/restaurants**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [
+            {
+              id: 'r-1',
+              name: '一般ユーザー閲覧店',
+              area: 'GINZA',
+              genres: ['SUSHI'],
+              hasPrivateRoom: false,
+              smokingAllowed: false,
+              priceRange: 'RANGE_10000',
+              address: '東京都中央区',
+              phone: '03-0000-1111',
+              url: 'https://example.com/visible',
+              icon: '🍣',
+              reviewCount: 0,
+              reviews: [],
+              averageRating: null,
+              createdBy: { id: 'user-1', name: '一般ユーザー', icon: '👤' },
+              createdAt: nowIso(),
+              updatedAt: nowIso(),
+            },
+          ],
+          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+        }),
+      })
+    })
+
+    await page.route('**/api/favorites', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] }),
+      })
+    })
+
+    await page.route('**/api/users**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [],
+          meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+        }),
+      })
+    })
+
+    await page.route('**/api/companies', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] }),
+      })
+    })
+
+    await page.goto('/')
+    await expect(page.getByRole('link', { name: 'ユーザー管理' })).toHaveCount(0)
+
+    await page.goto('/admin/users')
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.getByText('飲食店データベース')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'ユーザー管理' })).toHaveCount(0)
+  })
+
+  test('11) グローバル検索（Cmd+K）', async ({ page }) => {
+    await seedLoggedInSession(page)
+
+    const restaurants = [
+      {
+        id: 'r-search-1',
+        name: 'グローバル検索対象店',
+        area: 'GINZA',
+        genres: ['SUSHI'],
+        hasPrivateRoom: true,
+        smokingAllowed: false,
+        priceRange: 'RANGE_10000',
+        address: '東京都中央区5-5-5',
+        phone: '03-5555-5555',
+        url: 'https://example.com/search-target',
+        icon: '🍣',
+        reviewCount: 0,
+        reviews: [],
+        averageRating: null,
+        createdBy: { id: 'user-1', name: '管理者ユーザー', icon: '👤' },
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      },
+      {
+        id: 'r-search-2',
+        name: '別の店舗',
+        area: 'AKASAKA',
+        genres: ['FRENCH'],
+        hasPrivateRoom: false,
+        smokingAllowed: false,
+        priceRange: 'RANGE_20000',
+        address: '東京都港区6-6-6',
+        phone: '03-6666-6666',
+        url: 'https://example.com/search-other',
+        icon: '🍷',
+        reviewCount: 0,
+        reviews: [],
+        averageRating: null,
+        createdBy: { id: 'user-1', name: '管理者ユーザー', icon: '👤' },
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      },
+    ]
+
+    await page.route('**/api/restaurants**', async route => {
+      const url = route.request().url()
+
+      if (url.endsWith('/api/restaurants/r-search-1')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            data: restaurants[0],
+          }),
+        })
+        return
+      }
+
+      const parsed = new URL(url)
+      const search = (parsed.searchParams.get('search') ?? '').trim()
+      const items = search.length
+        ? restaurants.filter(item => item.name.includes(search))
+        : restaurants
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: items,
+          meta: { total: items.length, page: 1, limit: 10, total_pages: 1 },
+        }),
+      })
+    })
+
+    await page.route('**/api/favorites', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] }),
+      })
+    })
+
+    await page.goto('/')
+    await page.keyboard.press('Control+K')
+
+    const searchDialog = page.getByRole('dialog')
+    await expect(searchDialog).toBeVisible()
+    await expect(searchDialog.getByPlaceholder('店名、エリア、ジャンルで検索...')).toBeVisible()
+
+    await searchDialog.getByPlaceholder('店名、エリア、ジャンルで検索...').fill('グローバル')
+    await expect(searchDialog.getByText('グローバル検索対象店')).toBeVisible()
+    await expect(searchDialog.getByText('別の店舗')).toHaveCount(0)
+
+    await searchDialog.getByRole('button', { name: /グローバル検索対象店/ }).click()
+    await expect(page).toHaveURL(/\/restaurants\/r-search-1$/)
+    await expect(page.getByRole('heading', { name: 'グローバル検索対象店' })).toBeVisible()
   })
 })
