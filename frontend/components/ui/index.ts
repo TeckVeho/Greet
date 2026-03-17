@@ -91,6 +91,7 @@ export {
 } from './pagination'
 export { Popover, PopoverContent, PopoverTrigger } from './popover'
 export { ScrollArea, ScrollBar } from './scroll-area'
+export { Section } from './section'
 export {
 	Select,
 	SelectContent,

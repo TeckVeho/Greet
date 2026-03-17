@@ -51,7 +51,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { user } = useAuth()
 
 	const filteredNavMain = data.navMain.filter(item => {
-		// Agar URL '/admin' bilan boshlansa, faqat user.role 'admin' bo'lganda ko'rsatiladi
 		if (item.url.startsWith('/admin')) {
 			return user?.role === 'admin'
 		}
@@ -65,7 +64,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={filteredNavMain} />
-
 				{/* <NavProjects projects={data.projects} /> */}
 			</SidebarContent>
 			<SidebarFooter>

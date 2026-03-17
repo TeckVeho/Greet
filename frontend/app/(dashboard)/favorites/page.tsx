@@ -1,7 +1,7 @@
 'use client'
 
 import { DataCards, DataTable, RestaurantColumns } from '@/components/restaurants'
-import { Button } from '@/components/ui'
+import { Button, Section } from '@/components/ui'
 import { Callout } from '@/components/ui/callout'
 import { listFavorites } from '@/lib/api/favorites'
 import type { RestaurantListItem } from '@/lib/api/restaurants'
@@ -46,7 +46,7 @@ export default function FavoritesPage() {
 	}
 
 	return (
-		<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
+		<Section>
 			{/* ページヘッダー */}
 			<div className='mb-8'>
 				<div className='mb-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
@@ -114,6 +114,6 @@ export default function FavoritesPage() {
 					</div>
 				</>
 			)}
-		</div>
+		</Section>
 	)
 }

@@ -9,6 +9,7 @@ import {
 	Label,
 	Spinner,
 } from '@/components/ui'
+import { Section } from '@/components/ui/section'
 import { useAuth } from '@/lib/auth-context'
 import Image from 'next/image'
 
@@ -29,7 +30,7 @@ export default function Page() {
 		return <Spinner type='page-loading' />
 	}
 	return (
-		<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
+		<Section>
 			<div className='mb-8'>
 				<div className='mb-2 flex items-center gap-2'>
 					<span className='text-2xl md:text-3xl'>🙍</span>
@@ -84,6 +85,6 @@ export default function Page() {
 					</CardContent>
 				</Card>
 			</div>
-		</div>
+		</Section>
 	)
 }

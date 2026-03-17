@@ -6,7 +6,7 @@ import {
 	type FilterState,
 } from '@/components/dialogs'
 import { DataCards, DataTable, RestaurantColumns, SearchFilterBar } from '@/components/restaurants'
-import { Spinner } from '@/components/ui'
+import { Section, Spinner } from '@/components/ui'
 import { useRestaurants } from '@/hooks/use-restaurants'
 import { useAuth } from '@/lib/auth-context'
 import { type SortOption } from '@/lib/utils'
@@ -90,7 +90,7 @@ export default function Home() {
 
 	return (
 		<>
-			<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
+			<Section>
 				{/* ページヘッダー */}
 				<div className='mb-8'>
 					<div className='mb-2 flex items-center gap-2'>
@@ -135,7 +135,7 @@ export default function Home() {
 
 				{/* モバイル用CTAボタン（余白を確保） */}
 				<div className='h-20 md:hidden' />
-			</div>
+			</Section>
 
 			{/* モバイル用固定CTAボタン */}
 			<button

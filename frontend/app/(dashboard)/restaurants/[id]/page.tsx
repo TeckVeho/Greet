@@ -4,6 +4,7 @@ import { DialogWarning } from '@/components/dialogs'
 import { DialogRestaurantUpdate } from '@/components/dialogs/dialog-restaurant-update'
 import { Rating } from '@/components/rating'
 import { ReviewFormDialog } from '@/components/review-form-dialog'
+import { Section } from '@/components/ui'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Callout } from '@/components/ui/callout'
@@ -119,7 +120,7 @@ export default function RestaurantDetailPage() {
 			</div>
 
 			{/* メインコンテンツ */}
-			<div className='mx-auto max-w-4xl px-4 md:px-8 md:my-15'>
+			<Section>
 				{/* アイコンとタイトル */}
 				<div className=' mb-4'>
 					<div className='flex items-center justify-between'>
@@ -311,7 +312,7 @@ export default function RestaurantDetailPage() {
 						一覧に戻る
 					</Button>
 				</div>
-			</div>
+			</Section>
 
 			{/* レビュー投稿ダイアログ */}
 			{restaurant && (
