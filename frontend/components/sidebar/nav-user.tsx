@@ -48,10 +48,7 @@ export function NavUser({
 							<Avatar className='h-8 w-8 rounded-lg'>
 								<AvatarImage src={user.avatar} alt={user.name} />
 								<AvatarFallback
-									className={cn(
-										`text-sm bg-red-300 leading-none rounded-lg font-medium w-8`,
-										open && 'w-10',
-									)}
+									className={cn(`text-sm leading-none rounded-lg font-medium w-8`, open && 'w-10')}
 								>
 									{user.name.charAt(0)}
 								</AvatarFallback>

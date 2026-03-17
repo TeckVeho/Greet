@@ -1,6 +1,6 @@
 'use client'
 
-import { Coffee, MapPin, Star } from 'lucide-react'
+import { Coffee, MapPin, Star, Users } from 'lucide-react'
 import * as React from 'react'
 
 import { MainLogo } from '@/components/sidebar/main-logo'
@@ -45,6 +45,11 @@ const data = {
 			url: '/favorites',
 			icon: Star,
 		},
+		{
+			title: 'ユーザー管理',
+			url: '/admin/users',
+			icon: Users,
+		},
 	],
 }
 
@@ -66,7 +71,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			<SidebarContent>
 				<Separator />
 				<NavMain items={filteredNavMain} />
-				{/* <NavProjects projects={data.projects} /> */}
 			</SidebarContent>
 			<Separator />
 			<SidebarFooter>

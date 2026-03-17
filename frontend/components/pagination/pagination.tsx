@@ -131,7 +131,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 				</PaginationContent>
 			</PaginationComponent>
 			<Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
-				<SelectTrigger className='hidden gap-3 md:flex whitespace-nowrap'>
+				<SelectTrigger className='hidden gap-3 lg:flex whitespace-nowrap'>
 					<List className='text-brand-primary size-5' />
 					{pageSize} ページごとの
 				</SelectTrigger>

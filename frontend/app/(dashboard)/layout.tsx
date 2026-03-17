@@ -28,14 +28,16 @@ export default function Layout({ children }: AppLayoutProps) {
 		<SidebarProvider
 			style={
 				{
-					'--sidebar-width': '15rem',
+					'--sidebar-width': '16rem',
 					'--sidebar-width-mobile': '5rem',
 				} as React.CSSProperties
 			}
 		>
 			<AppSidebar variant='floating' />
-			<SidebarInset>
-				<Header />
+			<SidebarInset className='min-w-0'>
+				<div className='sticky top-0 z-30 px-0 md:px-2 md:pt-2'>
+					<Header />
+				</div>
 
 				{children}
 			</SidebarInset>
