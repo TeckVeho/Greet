@@ -90,7 +90,7 @@ export default function Home() {
 
 	return (
 		<>
-			<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8 no-scrollbar'>
+			<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
 				{/* ページヘッダー */}
 				<div className='mb-8'>
 					<div className='mb-2 flex items-center gap-2'>
