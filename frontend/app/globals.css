@@ -3,35 +3,38 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-	/* ピンクベージュ・グルメイメージ（明るめ） */
-	--background: 28 30% 98%;
-	--foreground: 20 15% 18%;
-	--card: 30 18% 100%;
-	--card-foreground: 20 15% 18%;
-	--popover: 30 18% 100%;
-	--popover-foreground: 20 15% 18%;
-	--primary: 10 35% 48%;
+	--background: 34 41% 97%;
+	--foreground: 23 24% 14%;
+	--card: 0 0% 100%;
+	--card-foreground: 23 24% 14%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 23 24% 14%;
+	--primary: 14 48% 43%;
 	--primary-foreground: 0 0% 98%;
-	--secondary: 25 20% 94%;
-	--secondary-foreground: 20 15% 18%;
-	--muted: 25 20% 94%;
-	--muted-foreground: 20 10% 45%;
-	--accent: 15 30% 92%;
-	--accent-foreground: 10 38% 35%;
+	--secondary: 38 34% 92%;
+	--secondary-foreground: 23 24% 18%;
+	--muted: 34 28% 93%;
+	--muted-foreground: 22 12% 37%;
+	--accent: 27 42% 88%;
+	--accent-foreground: 19 34% 28%;
 	--destructive: 0 84% 60%;
 	--destructive-foreground: 0 0% 98%;
-	--border: 25 15% 90%;
-	--input: 25 15% 90%;
-	--ring: 10 35% 48%;
-	--radius: 0.5rem;
-	--sidebar: hsl(28 30% 97%); /* background bilan deyarli bir xil, biroz issiqroq oq */
-	--sidebar-foreground: hsl(20 15% 18%); /* foreground — to'q jigarrang matn */
-	--sidebar-primary: hsl(10 35% 48%); /* primary — asosiy jigarrang-qizil */
-	--sidebar-primary-foreground: hsl(0 0% 98%); /* primary ustidagi matn — oq */
-	--sidebar-accent: hsl(15 30% 92%); /* accent — och pushti-bej hover */
-	--sidebar-accent-foreground: hsl(10 38% 35%); /* accent ustidagi matn — to'q jigarrang */
-	--sidebar-border: hsl(25 15% 88%); /* border — border bilan bir xil */
-	--sidebar-ring: hsl(10 35% 48%);
+	--border: 30 22% 86%;
+	--input: 30 22% 88%;
+	--ring: 14 48% 43%;
+	--radius: 0.9rem;
+	--sidebar: hsl(34 44% 96%);
+	--sidebar-foreground: hsl(23 24% 16%);
+	--sidebar-primary: hsl(14 48% 43%);
+	--sidebar-primary-foreground: hsl(0 0% 98%);
+	--sidebar-accent: hsl(29 44% 89%);
+	--sidebar-accent-foreground: hsl(19 34% 26%);
+	--sidebar-border: hsl(30 22% 85%);
+	--sidebar-ring: hsl(14 48% 43%);
+	--gradient-brand: linear-gradient(135deg, hsl(14 52% 50% / 0.95), hsl(28 58% 52% / 0.92));
+	--gradient-surface: linear-gradient(180deg, hsl(0 0% 100% / 0.92), hsl(34 44% 97% / 0.76));
+	--shadow-soft: 0 12px 30px hsl(20 33% 30% / 0.09);
+	--shadow-lift: 0 20px 55px hsl(20 40% 23% / 0.16);
 }
 
 @theme inline {
@@ -59,6 +62,7 @@
 	--radius-sm: calc(var(--radius) - 4px);
 	--font-sans: var(--font-geist-sans);
 	--font-mono: var(--font-geist-mono);
+	--font-display: var(--font-logo);
 	--color-sidebar-ring: var(--sidebar-ring);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -70,32 +74,33 @@
 }
 
 body {
-	background: hsl(var(--background));
+	background:
+		radial-gradient(circle at 5% 0%, hsl(28 72% 86% / 0.42) 0, transparent 35%),
+		radial-gradient(circle at 95% 5%, hsl(14 62% 84% / 0.32) 0, transparent 30%),
+		hsl(var(--background));
 	color: hsl(var(--foreground));
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: var(--font-sans), 'IBM Plex Sans', sans-serif;
+	line-height: 1.45;
+	min-height: 100dvh;
 }
 
-/* スムーズスクロール */
 html {
 	scroll-behavior: smooth;
 }
 
-/* フォーカススタイル（primaryに合わせる） */
 *:focus-visible {
-	outline: 2px solid hsl(10 35% 48%);
+	outline: 2px solid hsl(var(--ring));
 	outline-offset: 2px;
 }
 
-/* セレクションカラー（ピンクベージュ） */
 ::selection {
-	background-color: #e8d5d0;
-	color: #5c4033;
+	background-color: hsl(25 63% 82% / 0.72);
+	color: hsl(18 34% 22%);
 }
 
-/* スクロールバーのスタイリング（Webkit） */
 ::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+	width: 10px;
+	height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -103,16 +108,17 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-	background: #c4a99e;
-	border-radius: 4px;
+	background: hsl(20 34% 65% / 0.85);
+	border-radius: 999px;
+	border: 2px solid transparent;
+	background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: #b8958a;
+	background: hsl(20 35% 56% / 0.9);
 }
 
-/* アニメーション */
-@keyframes fadeIn {
+@keyframes pageFade {
 	from {
 		opacity: 0;
 	}
@@ -121,9 +127,9 @@ html {
 	}
 }
 
-@keyframes slideIn {
+@keyframes riseIn {
 	from {
-		transform: translateY(-10px);
+		transform: translateY(20px);
 		opacity: 0;
 	}
 	to {
@@ -132,21 +138,69 @@ html {
 	}
 }
 
-.animate-fade-in {
-	animation: fadeIn 0.2s ease-out;
+h1,
+h2,
+h3 {
+	font-family: var(--font-display), 'Cormorant Garamond', serif;
+	letter-spacing: 0.01em;
+	line-height: 1.15;
 }
 
-.animate-slide-in {
-	animation: slideIn 0.3s ease-out;
+.app-shell {
+	animation: pageFade 320ms ease-out;
+}
+
+.surface-glass {
+	background: var(--gradient-surface);
+	backdrop-filter: blur(9px);
+	box-shadow: var(--shadow-soft);
+}
+
+.page-section {
+	animation: riseIn 420ms cubic-bezier(0.17, 0.84, 0.44, 1) both;
+}
+
+.text-gradient-brand {
+	background: var(--gradient-brand);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
 }
 
 .dark {
-	--sidebar: hsl(20 12% 10%); /* to'q jigarrang-qora fon */
-	--sidebar-foreground: hsl(25 20% 90%); /* och bej matn */
-	--sidebar-primary: hsl(10 40% 58%); /* dark modeda biroz yorqinroq primary */
+	--background: 23 18% 10%;
+	--foreground: 32 23% 92%;
+	--card: 24 14% 14%;
+	--card-foreground: 32 23% 92%;
+	--popover: 24 14% 14%;
+	--popover-foreground: 32 23% 92%;
+	--primary: 20 63% 62%;
 	--sidebar-primary-foreground: hsl(0 0% 98%);
-	--sidebar-accent: hsl(20 10% 16%); /* to'q hover holati */
-	--sidebar-accent-foreground: hsl(25 20% 85%);
-	--sidebar-border: hsl(20 10% 16%);
-	--sidebar-ring: hsl(10 40% 58%);
+	--secondary: 25 14% 20%;
+	--secondary-foreground: 32 23% 92%;
+	--muted: 24 13% 18%;
+	--muted-foreground: 28 12% 71%;
+	--accent: 23 21% 24%;
+	--accent-foreground: 29 30% 88%;
+	--border: 24 10% 24%;
+	--input: 24 10% 24%;
+	--ring: 20 63% 62%;
+	--sidebar: hsl(24 17% 13%);
+	--sidebar-foreground: hsl(32 23% 90%);
+	--sidebar-primary: hsl(20 63% 62%);
+	--sidebar-accent: hsl(23 13% 20%);
+	--sidebar-accent-foreground: hsl(29 24% 88%);
+	--sidebar-border: hsl(23 10% 24%);
+	--sidebar-ring: hsl(20 63% 62%);
+	--gradient-brand: linear-gradient(135deg, hsl(20 70% 62% / 0.95), hsl(35 73% 60% / 0.92));
+	--gradient-surface: linear-gradient(180deg, hsl(25 17% 16% / 0.84), hsl(24 15% 12% / 0.82));
+	--shadow-soft: 0 14px 34px hsl(15 35% 5% / 0.45);
+	--shadow-lift: 0 24px 62px hsl(15 48% 5% / 0.58);
+}
+
+.dark body {
+	background:
+		radial-gradient(circle at 8% 0%, hsl(20 47% 22% / 0.45) 0, transparent 34%),
+		radial-gradient(circle at 94% 4%, hsl(30 52% 22% / 0.35) 0, transparent 30%),
+		hsl(var(--background));
 }

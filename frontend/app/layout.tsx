@@ -35,7 +35,7 @@ export default function RootLayout({
 	return (
 		<html lang='ja' suppressHydrationWarning>
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} antialiased`}
+				className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} app-shell antialiased`}
 				suppressHydrationWarning
 			>
 				<Toaster richColors position='top-center' />

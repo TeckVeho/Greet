@@ -35,11 +35,13 @@ export default function Layout({ children }: AppLayoutProps) {
 		>
 			<AppSidebar variant='floating' />
 			<SidebarInset className='min-w-0'>
-				<div className='sticky top-0 z-30 px-0 md:px-2 md:pt-2'>
+				<div className='sticky top-0 z-30 px-2 pt-2 md:px-3'>
 					<Header />
 				</div>
 
-				{children}
+				<div className='page-section flex-1 px-2 pb-4 pt-2 md:px-3 md:pb-6 md:pt-3'>
+					<div className='mx-auto w-full max-w-screen-2xl'>{children}</div>
+				</div>
 			</SidebarInset>
 		</SidebarProvider>
 	)
