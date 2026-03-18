@@ -34,7 +34,6 @@ interface DataTableProps<TData, TValue> {
 	pagination?: PaginationState
 	total?: number
 	isLoading?: boolean
-	totlaHidden?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -61,7 +60,7 @@ export function DataTable<TData, TValue>({
 	})
 	return (
 		<>
-			<div className='overflow-hidden border border-muted-foreground/30 rounded-lg relative'>
+			<div className='overflow-hidden  relative rounded-lg border border-zinc-200 bg-white'>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild className='absolute top-1 right-1 z-10'>
 						<Button variant='default' className='rounded-full' size={'icon'}>
@@ -146,7 +145,7 @@ export function DataTable<TData, TValue>({
 				typeof pagination?.pageSize === 'number' &&
 				setPagination && (
 					<div className='flex items-center justify-between mt-4'>
-						<span className='whitespace-nowrap'>飲食店数 {total}</span>
+						<span className='whitespace-nowrap'>{total} 件のお気に入り</span>
 						{typeof pagination?.pageIndex === 'number' &&
 							typeof pagination.pageSize === 'number' &&
 							setPagination && (

@@ -6,7 +6,7 @@ import type { User } from '../types'
 import { apiClient } from './client'
 import type { ApiResponse } from './types'
 
-export interface UsersListMeta {
+export interface ListMeta {
 	total: number
 	page: number
 	limit: number
@@ -15,7 +15,7 @@ export interface UsersListMeta {
 
 export interface UsersListResponse {
 	users: User[]
-	meta: UsersListMeta
+	meta: ListMeta
 }
 
 export async function listUsers({

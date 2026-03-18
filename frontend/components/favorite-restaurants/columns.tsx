@@ -10,7 +10,8 @@ import { Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { Rating } from '../rating'
 import { SheetReviewView } from '../sheets/sheet-review-view'
-export const RestaurantColumns: ColumnDef<Restaurant>[] = [
+
+export const favoriteRestaurantsColumns: ColumnDef<Restaurant>[] = [
 	{
 		id: 'rate',
 		header: 'お気に入り',
@@ -40,8 +41,20 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 			return (
 				<Avatar className='rounded-none'>
 					<AvatarImage src={avatarUrl} className='object-cover' />
-					<AvatarFallback>{row.original.name.charAt(0)}</AvatarFallback>
+					<AvatarFallback className='rounded-none'>{row.original.name.charAt(0)}</AvatarFallback>
 				</Avatar>
+			)
+		},
+	},
+	{
+		accessorKey: 'createdBy.name',
+		header: '登録者',
+		cell: ({ row }) => {
+			return (
+				<span className='whitespace-nowrap'>
+					{row.original.createdBy?.icon}
+					{row.original.createdBy?.name || '-'}
+				</span>
 			)
 		},
 	},
@@ -143,54 +156,6 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 				/>
 			) : (
 				0
-			)
-		},
-	},
-	{
-		accessorKey: 'reviews',
-		header: '利用者',
-		cell: ({ row }) => {
-			const reviews = row.original.reviews
-			const limit = 3
-			const displayReviews = reviews.slice(0, limit)
-			const remainingCount = reviews.length - limit
-			return displayReviews.length > 0 ? (
-				<div className='flex -space-x-4 overflow-hidden p-1'>
-					{reviews.map((review, index) => (
-						<Avatar className='shadow-sm hover:z-10 ' key={index}>
-							<AvatarFallback className='bg-muted text-[10px]'>
-								{review.author?.icon
-									? review.author.icon
-									: (review.author?.name?.charAt(0) ?? '退')}
-							</AvatarFallback>
-						</Avatar>
-					))}
-
-					{remainingCount > 0 && (
-						<div className='flex h-10 w-10 items-center justify-center rounded-full  bg-muted text-[12px] font-medium text-muted-foreground shadow-sm z-11'>
-							+{remainingCount}
-						</div>
-					)}
-				</div>
-			) : (
-				'-'
-			)
-		},
-	},
-	{
-		accessorKey: 'url',
-		header: 'URL',
-		cell: ({ getValue }) => {
-			const url = getValue<string>()
-			return (
-				<a
-					href={url}
-					target='_blank'
-					rel='noopener noreferrer'
-					className='font-medium underline text-blue-500'
-				>
-					Google Mapで見る
-				</a>
 			)
 		},
 	},

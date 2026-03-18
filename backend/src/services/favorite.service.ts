@@ -1,5 +1,6 @@
-import { prisma } from '../prisma'
 import { StatusCodes } from 'http-status-codes'
+import { prisma } from '../prisma'
+import { listFavoriteRestaurantsQuerySchema } from '../validators/favorite.validator'
 import { resolveFileUrl } from './file.service'
 
 function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
@@ -15,76 +16,89 @@ function mapUserSummary(user: { id: string; name: string; icon: string | null } 
 }
 
 export class FavoriteService {
-  async listForUser(userId: string) {
-    const favorites = await prisma.favorite.findMany({
-      where: { userId },
-      include: {
-        restaurant: {
-          include: {
-            genres: true,
-            reviews: {
-              select: {
-                rating: true,
+  async listForUser(query: listFavoriteRestaurantsQuerySchema, userId: string) {
+    const page = Math.max(1, Number(query.page) || 1)
+    const limit = Math.max(1, Number(query.limit) || 10)
+    const skip = (page - 1) * limit
+    const [favorites, totalCount] = await Promise.all([
+      await prisma.favorite.findMany({
+        where: { userId },
+        skip: skip,
+        take: limit,
+        include: {
+          restaurant: {
+            include: {
+              genres: true,
+              reviews: {
+                select: {
+                  rating: true,
+                },
               },
-            },
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-                icon: true,
+              createdBy: {
+                select: {
+                  id: true,
+                  name: true,
+                  icon: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      prisma.favorite.count({ where: { userId } }),
+    ])
 
     const data = await Promise.all(
       favorites.map(async f => {
-      const { restaurant, ...favorite } = f
-      const reviewCount = restaurant.reviews.length
-      const averageRating =
-        reviewCount === 0
-          ? null
-          : Number(
-              (
-                restaurant.reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) /
-                reviewCount
-              ).toFixed(1),
-            )
+        const { restaurant, ...favorite } = f
+        const reviewCount = restaurant.reviews.length
+        const averageRating =
+          reviewCount === 0
+            ? null
+            : Number(
+                (
+                  restaurant.reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviewCount
+                ).toFixed(1),
+              )
 
-      return {
-        id: favorite.id,
-        restaurant: {
-          id: restaurant.id,
-          name: restaurant.name,
-          area: restaurant.area,
-          genres: restaurant.genres.map(g => g.genre),
-          priceRange: restaurant.priceRange,
-          icon: await resolveFileUrl(restaurant.icon),
-          hasPrivateRoom: restaurant.hasPrivateRoom,
-          address: restaurant.address ?? undefined,
-          phone: restaurant.phone ?? undefined,
-          url: restaurant.url ?? undefined,
-          smokingAllowed: restaurant.smokingAllowed,
-          coverImage: await resolveFileUrl(restaurant.coverImage),
-          reviewCount,
-          averageRating,
-          createdBy: mapUserSummary(restaurant.createdBy),
-          createdAt: restaurant.createdAt.toISOString(),
-          updatedAt: restaurant.updatedAt.toISOString(),
-        },
-        createdAt: favorite.createdAt,
-      }
-    }),
+        return {
+          id: favorite.id,
+          restaurant: {
+            id: restaurant.id,
+            name: restaurant.name,
+            area: restaurant.area,
+            genres: restaurant.genres.map(g => g.genre),
+            priceRange: restaurant.priceRange,
+            icon: await resolveFileUrl(restaurant.icon),
+            hasPrivateRoom: restaurant.hasPrivateRoom,
+            address: restaurant.address ?? undefined,
+            phone: restaurant.phone ?? undefined,
+            url: restaurant.url ?? undefined,
+            smokingAllowed: restaurant.smokingAllowed,
+            coverImage: await resolveFileUrl(restaurant.coverImage),
+            reviewCount,
+            averageRating,
+            createdBy: mapUserSummary(restaurant.createdBy),
+            createdAt: restaurant.createdAt.toISOString(),
+            updatedAt: restaurant.updatedAt.toISOString(),
+          },
+          createdAt: favorite.createdAt,
+        }
+      }),
     )
 
     return {
       success: true,
       data,
+      meta: {
+        total: totalCount,
+        page,
+        limit,
+        total_pages: Math.ceil(totalCount / limit),
+      },
       statusCode: StatusCodes.OK,
     }
   }

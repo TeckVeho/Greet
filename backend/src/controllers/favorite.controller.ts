@@ -14,7 +14,7 @@ class FavoriteController {
       return
     }
 
-    const result = await favoriteService.listForUser(req.user.userId)
+    const result = await favoriteService.listForUser(req.query, req.user.userId)
     res.status(result.statusCode).json(result)
   }
 

@@ -35,8 +35,6 @@ export default function Home() {
 		priceRanges: [],
 	})
 	const [sortOption, setSortOption] = React.useState<SortOption>('createdAt_desc')
-	const [sortBy, setSortBy] = React.useState<string>('createdAt')
-	const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc')
 
 	// 認証チェック
 	React.useEffect(() => {
