@@ -60,7 +60,7 @@ export function DataTable<TData, TValue>({
 	})
 	return (
 		<>
-			<div className='overflow-hidden  relative rounded-lg border border-zinc-200 bg-white'>
+			<div className='relative overflow-hidden rounded-lg border border-border bg-card'>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild className='absolute top-1 right-1 z-10'>
 						<Button variant='default' className='rounded-full' size={'icon'}>

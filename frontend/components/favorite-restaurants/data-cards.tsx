@@ -57,7 +57,7 @@ export function DataCards({
 					Array.from({ length: pagination?.pageSize || 0 }).map((_, index) => (
 						<div
 							key={index}
-							className='rounded-lg border border-zinc-200 bg-white overflow-hidden shadow-sm'
+							className='rounded-lg border border-border bg-card overflow-hidden shadow-sm'
 						>
 							<Skeleton className='h-48 w-full' />
 							<div className='p-5 space-y-3'>
@@ -78,9 +78,9 @@ export function DataCards({
 							<div key={restaurant.id} className='relative group'>
 								<Link
 									href={`/restaurants/${restaurant.id}`}
-									className='block rounded-lg border border-zinc-200 bg-white overflow-hidden transition-all hover:shadow-md hover:scale-[1.01]'
+									className='block rounded-lg border border-border bg-card overflow-hidden transition-all hover:shadow-md hover:scale-[1.01]'
 								>
-									<div className='relative w-full h-48 bg-linear-to-br from-zinc-50 to-zinc-100'>
+									<div className='relative w-full h-48 bg-linear-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-700'>
 										{restaurant.coverImage ? (
 											<Image
 												src={restaurant.coverImage}
@@ -101,7 +101,7 @@ export function DataCards({
 												e.stopPropagation()
 												toggleFavorite(restaurant.id)
 											}}
-											className='absolute top-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 hover:bg-white shadow-sm transition-colors z-10'
+											className='absolute top-3 right-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 bg-card/90 shadow-sm transition-colors hover:bg-card'
 										>
 											<Rating
 												rate={isFav ? 1 : 0}
@@ -115,7 +115,7 @@ export function DataCards({
 									<div className='p-5'>
 										<div className='flex items-center gap-2 mb-3'>
 											<span className='text-2xl'>{restaurant.icon}</span>
-											<h3 className='text-lg font-semibold text-zinc-900 line-clamp-1'>
+											<h3 className='text-lg font-semibold text-foreground line-clamp-1'>
 												{restaurant.name}
 											</h3>
 										</div>
@@ -132,7 +132,7 @@ export function DataCards({
 											))}
 										</div>
 
-										<div className='mb-3 text-sm text-zinc-700 font-medium'>
+										<div className='mb-3 text-sm text-foreground font-medium'>
 											<span>予算:</span> {priceRangeLabel(restaurant.priceRange)}
 										</div>
 
@@ -143,19 +143,19 @@ export function DataCards({
 														✓ 個室あり
 													</span>
 												) : (
-													<span className='text-zinc-400'>個室なし</span>
+													<span className='text-muted-foreground'>個室なし</span>
 												)}
 											</div>
 
 											{restaurant.phone ? (
-												<div className='text-zinc-500'>{restaurant.phone}</div>
+												<div className='text-muted-foreground'>{restaurant.phone}</div>
 											) : (
 												<Badge variant={'danger'}>電話番号はなし</Badge>
 											)}
 										</div>
 
-										<div className='mt-3 border-t border-zinc-100 pt-3 text-xs flex justify-between items-center'>
-											<div className='text-zinc-500'>レビュー {restaurant.reviewCount} 件</div>
+										<div className='mt-3 flex items-center justify-between border-t border-border/70 pt-3 text-xs'>
+											<div className='text-muted-foreground'>レビュー {restaurant.reviewCount} 件</div>
 										</div>
 									</div>
 								</Link>

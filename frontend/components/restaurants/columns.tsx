@@ -25,7 +25,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 						e.stopPropagation()
 						toggleFavorite(restaurant.id)
 					}}
-					className=' h-8 w-8 items-center justify-center rounded-full bg-white/90 hover:bg-white shadow-sm transition-colors cursor-pointer'
+					className='h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-border/70 bg-card/90 shadow-sm transition-colors hover:bg-card'
 				>
 					<Rating rate={isFav ? 1 : 0} max={1} className='[&_svg]:size-5! [&>div]:size-5! ' />
 				</Badge>

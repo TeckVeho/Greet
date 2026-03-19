@@ -76,9 +76,9 @@ export default function AreaPage() {
 			<div className='mb-8'>
 				<div className='mb-2 flex items-center gap-2'>
 					<span className='text-2xl md:text-3xl'>📍</span>
-					<h1 className='text-2xl md:text-3xl font-bold text-zinc-900'>エリア別</h1>
+					<h1 className='text-2xl md:text-3xl font-bold text-foreground'>エリア別</h1>
 				</div>
-				<p className='text-sm text-zinc-500'>エリアごとに飲食店を絞り込んで表示</p>
+				<p className='text-sm text-muted-foreground'>エリアごとに飲食店を絞り込んで表示</p>
 			</div>
 
 			{/* エリアフィルターとビュー切り替え */}
@@ -89,8 +89,8 @@ export default function AreaPage() {
 							onClick={() => setSelectedArea('all')}
 							className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
 								selectedArea === 'all'
-									? 'bg-zinc-900 text-white'
-									: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+									? 'bg-zinc-900 text-white dark:bg-primary dark:text-primary-foreground'
+									: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700'
 							}`}
 						>
 							すべて
@@ -103,8 +103,8 @@ export default function AreaPage() {
 									onClick={() => setSelectedArea(area)}
 									className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
 										selectedArea === area
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+											? 'bg-zinc-900 text-white dark:bg-primary dark:text-primary-foreground'
+											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700'
 									}`}
 								>
 									{areaLabel(area)}
@@ -118,7 +118,7 @@ export default function AreaPage() {
 						<select
 							value={sortOption}
 							onChange={e => setSortOption(e.target.value as SortOption)}
-							className='h-9 rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-400'
+							className='h-9 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring'
 							aria-label='並び替え'
 						>
 							<option value='createdAt_desc'>登録日（新しい順）</option>
@@ -130,13 +130,13 @@ export default function AreaPage() {
 							<option value='reviews_desc'>レビュー件数（多い順）</option>
 							<option value='rating_desc'>平均評価（高い順）</option>
 						</select>
-						<div className='flex items-center border border-zinc-200 rounded-md overflow-hidden'>
+						<div className='flex items-center border border-border rounded-md overflow-hidden bg-card'>
 							<button
 								onClick={() => setViewMode('table')}
 								className={`px-3 py-2 text-sm transition-colors ${
 									viewMode === 'table'
-										? 'bg-zinc-900 text-white'
-										: 'bg-white text-zinc-600 hover:bg-zinc-50'
+										? 'bg-zinc-900 text-white dark:bg-primary dark:text-primary-foreground'
+										: 'bg-card text-muted-foreground hover:bg-muted'
 								}`}
 								title='テーブル表示'
 							>
@@ -161,8 +161,8 @@ export default function AreaPage() {
 								onClick={() => setViewMode('cards')}
 								className={`px-3 py-2 text-sm transition-colors ${
 									viewMode === 'cards'
-										? 'bg-zinc-900 text-white'
-										: 'bg-white text-zinc-600 hover:bg-zinc-50'
+										? 'bg-zinc-900 text-white dark:bg-primary dark:text-primary-foreground'
+										: 'bg-card text-muted-foreground hover:bg-muted'
 								}`}
 								title='カード表示'
 							>
@@ -196,7 +196,7 @@ export default function AreaPage() {
 						return (
 							<div key={area}>
 								<div className='mb-4 flex items-center gap-3'>
-									<h2 className='text-xl font-semibold text-zinc-900'>{areaLabel(area)}</h2>
+									<h2 className='text-xl font-semibold text-foreground'>{areaLabel(area)}</h2>
 									<Badge variant='default'>{restaurants.length}件</Badge>
 								</div>
 								{/* モバイルは常にカード表示 */}
@@ -204,7 +204,7 @@ export default function AreaPage() {
 								(typeof window !== 'undefined' && window.innerWidth < 768) ? (
 									<DataCards data={restaurants} />
 								) : (
-									<div className='rounded-lg border border-zinc-200 bg-white'>
+									<div className='rounded-lg border border-border bg-card'>
 										<DataTable columns={RestaurantColumns} data={restaurants} />
 									</div>
 								)}
@@ -218,13 +218,15 @@ export default function AreaPage() {
 					{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
 						<DataCards data={displayedRestaurants} />
 					) : (
-						<div className='rounded-lg border border-zinc-200 bg-white'>
+						<div className='rounded-lg border border-border bg-card'>
 							<DataTable columns={RestaurantColumns} data={displayedRestaurants} />
 						</div>
 					)}
 
 					{/* 件数表示 */}
-					<div className='mt-4 text-sm text-zinc-500'>{displayedRestaurants.length} 件の飲食店</div>
+					<div className='mt-4 text-sm text-muted-foreground'>
+						{displayedRestaurants.length} 件の飲食店
+					</div>
 				</>
 			)}
 		</Section>
