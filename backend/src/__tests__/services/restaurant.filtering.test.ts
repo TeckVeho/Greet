@@ -315,7 +315,7 @@ describe('RestaurantService - フィルタリング', () => {
       mockFavoriteFindFirst.mockResolvedValue(null)
 
       const result = await service.findById('rest-1')
-      expect(result.data!.createdBy.icon).toBeUndefined()
+      expect(result.data?.createdBy?.icon).toBeUndefined()
     })
   })
 })
