@@ -8,6 +8,11 @@ set -euo pipefail
 
 PROJECT_DIR="$HOME/Greet"
 DEPLOY_BRANCH="${1:-development}"
+PM2_CONFIG="ecosystem.config.js"
+
+if [ "$DEPLOY_BRANCH" = "main" ] && [ -f "$PROJECT_DIR/ecosystem.prod.config.js" ]; then
+	PM2_CONFIG="ecosystem.prod.config.js"
+fi
 
 cd "$PROJECT_DIR"
 
@@ -65,7 +70,7 @@ npm run build
 # ── Restart PM2 ──
 echo "[6/6] Restarting PM2 processes..."
 cd "$PROJECT_DIR"
-pm2 restart ecosystem.config.js 2>/dev/null || pm2 start ecosystem.config.js
+pm2 restart "$PM2_CONFIG" 2>/dev/null || pm2 start "$PM2_CONFIG"
 pm2 save
 
 echo "=== Deploy Complete ==="

@@ -7,6 +7,11 @@ set -euo pipefail
 
 DEPLOY_BRANCH="${1:-development}"
 APACHE_CONF_SOURCE="${2:-apache/greet.conf}"
+PM2_CONFIG="ecosystem.config.js"
+
+if [ "$DEPLOY_BRANCH" = "main" ] && [ -f "$HOME/Greet/ecosystem.prod.config.js" ]; then
+  PM2_CONFIG="ecosystem.prod.config.js"
+fi
 
 echo "=== Greet Server Setup ==="
 echo "Branch: ${DEPLOY_BRANCH}"
@@ -110,7 +115,7 @@ fi
 # ── Start PM2 ──
 echo "Starting PM2 processes..."
 cd "$PROJECT_DIR"
-pm2 start ecosystem.config.js
+pm2 start "$PM2_CONFIG"
 pm2 save
 
 echo ""
