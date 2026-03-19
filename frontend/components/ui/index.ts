@@ -44,6 +44,23 @@ export {
 	DialogTrigger,
 } from './dialog'
 export {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuPortal,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
+	DropdownMenuShortcut,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
+	DropdownMenuTrigger,
+} from './dropdown-menu'
+export {
 	Form,
 	FormControl,
 	FormDescription,
@@ -61,6 +78,7 @@ export {
 	InputGroupText,
 	InputGroupTextarea,
 } from './input-group'
+export { Kbd } from './kbd'
 export { Label } from './label'
 export {
 	Pagination,
@@ -73,6 +91,7 @@ export {
 } from './pagination'
 export { Popover, PopoverContent, PopoverTrigger } from './popover'
 export { ScrollArea, ScrollBar } from './scroll-area'
+export { Section } from './section'
 export {
 	Select,
 	SelectContent,
@@ -96,3 +115,13 @@ export {
 } from './sheet'
 export { Skeleton } from './skeleton'
 export { Spinner } from './spinner'
+export {
+	Table,
+	TableBody,
+	TableCaption,
+	TableCell,
+	TableFooter,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from './table'

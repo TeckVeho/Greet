@@ -6,6 +6,7 @@ import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupInput,
+	Section,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -67,7 +68,13 @@ export default function UsersPage() {
 	}
 
 	const handleSaveUser = async (userData: Partial<User> & { password?: string }) => {
-		if (!userData.name || !userData.email || !userData.role || !userData.password) {
+		if (
+			!userData.name ||
+			!userData.email ||
+			!userData.role ||
+			!userData.password ||
+			!userData.companyId
+		) {
 			return
 		}
 		setIsSaving(true)
@@ -76,6 +83,7 @@ export default function UsersPage() {
 				name: userData.name,
 				email: userData.email,
 				password: userData.password,
+				companyId: userData.companyId,
 				role: userData.role,
 				department: userData.department,
 			})
@@ -90,7 +98,7 @@ export default function UsersPage() {
 
 	return (
 		<>
-			<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
+			<Section>
 				{/* ページヘッダー */}
 				<div className='mb-8'>
 					<div className='mb-2 flex items-center gap-2'>
@@ -162,7 +170,7 @@ export default function UsersPage() {
 					total={usersData?.meta.total}
 					isLoading={isFetchingUsers}
 				/>
-			</div>
+			</Section>
 
 			<DialogUserCreate
 				open={isDialogOpen}

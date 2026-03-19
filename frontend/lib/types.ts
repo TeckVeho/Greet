@@ -12,22 +12,25 @@ export interface Restaurant {
 	coverImage?: string
 	icon: string
 	reviews: Review[]
+	createdBy: UserSummary | null
 	createdAt: Date
 	updatedAt: Date
 }
 
 export interface Review {
 	id: string
-	authorId: string // ユーザーID
-	author: {
-		name: string
-		icon: string
-		id: string
-	}
+	authorId?: string | null // ユーザーID
+	author: UserSummary | null
 	occasion: string // 誰と行ったか
 	result: string // 結果どうだったか
 	rating?: number
 	createdAt: Date
+}
+
+export interface UserSummary {
+	id: string
+	name: string
+	icon?: string
 }
 
 export type Area = '銀座' | '赤坂' | '六本木' | '新橋' | '麻布' | '恵比寿' | '表参道' | 'その他'

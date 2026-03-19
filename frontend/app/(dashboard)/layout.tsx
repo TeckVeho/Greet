@@ -1,18 +1,14 @@
 'use client'
 
-import { GlobalSearchDialog } from '@/components/dialogs/dialog-global-search'
 import { Header } from '@/components/header'
-import { Sidebar } from '@/components/sidebar'
-import { cn } from '@/lib/utils'
+import { AppSidebar } from '@/components/sidebar/app-sidebar'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import * as React from 'react'
-
 interface AppLayoutProps {
 	children: React.ReactNode
 }
 
 export default function Layout({ children }: AppLayoutProps) {
-	const [isCollapsed, setIsCollapsed] = React.useState(false)
-	const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
 	const [isSearchOpen, setIsSearchOpen] = React.useState(false)
 
 	// キーボードショートカット (Cmd+K / Ctrl+K) で検索を開く
@@ -29,35 +25,24 @@ export default function Layout({ children }: AppLayoutProps) {
 	}, [])
 
 	return (
-		<div className='relative min-h-screen bg-white'>
-			<Sidebar
-				isCollapsed={isCollapsed}
-				isMobileMenuOpen={isMobileMenuOpen}
-				onMobileMenuClose={() => setIsMobileMenuOpen(false)}
-			/>
+		<SidebarProvider
+			style={
+				{
+					'--sidebar-width': '16rem',
+					'--sidebar-width-mobile': '5rem',
+				} as React.CSSProperties
+			}
+		>
+			<AppSidebar variant='floating' />
+			<SidebarInset className='min-w-0'>
+				<div className='sticky top-0 z-30 px-2 pt-2 md:px-3'>
+					<Header />
+				</div>
 
-			{/* メインコンテンツエリア */}
-			<div
-				className={cn(
-					'transition-all duration-300',
-					isCollapsed ? 'ml-0 md:ml-16' : 'ml-0 md:ml-64',
-				)}
-			>
-				{/* トップバー */}
-				<Header
-					isCollapsed={isCollapsed}
-					setIsCollapsed={setIsCollapsed}
-					isMobileMenuOpen={isMobileMenuOpen}
-					setIsMobileMenuOpen={setIsMobileMenuOpen}
-					setIsSearchOpen={setIsSearchOpen}
-				/>
-
-				{/* ページコンテンツ */}
-				<main>{children}</main>
-			</div>
-
-			{/* グローバル検索ダイアログ */}
-			<GlobalSearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} />
-		</div>
+				<div className='page-section flex-1 px-2 pb-4 pt-2 md:px-3 md:pb-6 md:pt-3'>
+					<div className='mx-auto w-full max-w-screen-2xl'>{children}</div>
+				</div>
+			</SidebarInset>
+		</SidebarProvider>
 	)
 }

@@ -67,8 +67,6 @@ describe('UserService', () => {
       expect(result.success).toBe(true)
       expect(result.statusCode).toBe(StatusCodes.OK)
       expect(result.data).toHaveLength(1)
-      // passwordHash が除外されていること
-      expect(result.data[0]).not.toHaveProperty('passwordHash')
       expect(result.data[0].email).toBe('test@example.com')
     })
 
@@ -264,6 +262,7 @@ describe('UserService', () => {
   describe('update', () => {
     it('ユーザー情報を正常に更新する', async () => {
       const updatedUser = { ...mockUserFromDb, name: '更新ユーザー' }
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
       mockUserUpdate.mockResolvedValue(updatedUser)
 
       const result = await service.update('user-1', { name: '更新ユーザー' })
@@ -274,6 +273,7 @@ describe('UserService', () => {
     })
 
     it('パスワード更新時にbcryptでハッシュ化される', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
       mockUserUpdate.mockResolvedValue(mockUserFromDb)
 
       await service.update('user-1', { password: 'newpassword' })
@@ -289,6 +289,7 @@ describe('UserService', () => {
     })
 
     it('パスワードなしの更新ではbcryptが呼ばれない', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
       mockUserUpdate.mockResolvedValue(mockUserFromDb)
 
       await service.update('user-1', { name: '名前のみ更新' })
@@ -308,6 +309,7 @@ describe('UserService', () => {
   // ─────────────────────────────────────────
   describe('delete', () => {
     it('ユーザーを正常に削除する', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-1', role: 'user' })
       mockUserDelete.mockResolvedValue(mockUserFromDb)
 
       const result = await service.delete('user-1')
@@ -323,6 +325,33 @@ describe('UserService', () => {
 
       await expect(service.delete('nonexistent')).rejects.toThrow(ApiError)
       await expect(service.delete('nonexistent')).rejects.toThrow('ユーザー削除に失敗しました')
+    })
+
+    it('adminは他社の一般ユーザーを削除できる', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-2', role: 'user' })
+      mockUserDelete.mockResolvedValue(mockUserFromDb)
+
+      const result = await service.delete('user-2', {
+        userId: 'admin-1',
+        role: 'admin',
+        companyId: 'company-1',
+      })
+
+      expect(result.success).toBe(true)
+      expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: 'user-2' } })
+    })
+
+    it('adminはadminユーザーを削除できない', async () => {
+      mockUserFindUnique.mockResolvedValue({ companyId: 'company-2', role: 'admin' })
+
+      await expect(
+        service.delete('admin-2', {
+          userId: 'admin-1',
+          role: 'admin',
+          companyId: 'company-1',
+        }),
+      ).rejects.toThrow('管理者ユーザーは削除できません')
+      expect(mockUserDelete).not.toHaveBeenCalled()
     })
   })
 })

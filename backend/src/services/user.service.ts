@@ -162,12 +162,18 @@ export class UserService {
 
   async delete(id: string, requester?: Requester) {
     try {
-      const existing = await prisma.user.findUnique({ where: { id }, select: { companyId: true } })
+      const existing = await prisma.user.findUnique({
+        where: { id },
+        select: { companyId: true, role: true },
+      })
       if (!existing) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
       }
       if (requester && requester.role !== 'admin' && existing.companyId !== requester.companyId) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+      }
+      if (requester?.role === 'admin' && existing.role === 'admin') {
+        throw new ApiError(StatusCodes.FORBIDDEN, '管理者ユーザーは削除できません')
       }
 
       await prisma.user.delete({ where: { id } })
@@ -177,6 +183,9 @@ export class UserService {
         statusCode: StatusCodes.OK,
       }
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error
+      }
       throw new ApiError(StatusCodes.BAD_REQUEST, 'ユーザー削除に失敗しました')
     }
   }

@@ -1,6 +1,7 @@
 'use client'
 
-import { Review } from '../types'
+import { Review, UserSummary } from '../types'
+import { SortOption } from '../utils'
 import { apiClient } from './client'
 import type { ApiResponse } from './types'
 
@@ -20,11 +21,7 @@ export interface RestaurantListItem {
 	reviewCount: number
 	averageRating: number | null
 	reviews: Review[]
-	createdBy: {
-		id: string
-		name: string
-		icon?: string
-	}
+	createdBy: UserSummary | null
 	createdAt: Date
 	updatedAt: Date
 }
@@ -49,8 +46,7 @@ export interface ListRestaurantsParams {
 	hasPrivateRoom?: boolean
 	smokingAllowed?: boolean
 	priceRanges?: string[]
-	sortBy?: string
-	sortOrder?: 'asc' | 'desc'
+	sort?: SortOption
 }
 
 export async function listRestaurants(
@@ -151,6 +147,12 @@ export async function deleteRestaurantImage(url: string): Promise<void> {
 	}
 }
 
+export async function deleteRestaurant(id: string): Promise<void> {
+	const res = await apiClient.delete<ApiResponse<{ message: string }>>(`/restaurants/${id}`)
+	if (!res.data.success) {
+		throw new Error(res.data.error.message)
+	}
+}
 export async function updateRestaurant(
 	id: string,
 	payload: Partial<CreateRestaurantPayload>,

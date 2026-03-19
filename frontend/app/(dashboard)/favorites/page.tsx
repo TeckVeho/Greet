@@ -1,12 +1,13 @@
 'use client'
 
-import { DataCards, DataTable, RestaurantColumns } from '@/components/restaurants'
-import { Button } from '@/components/ui'
+import { DataCards, DataTable, favoriteRestaurantsColumns } from '@/components/favorite-restaurants'
+import { Rating } from '@/components/rating'
+import { Button, Section, Spinner } from '@/components/ui'
 import { Callout } from '@/components/ui/callout'
-import { listFavorites } from '@/lib/api/favorites'
+import { useFavoriteRestaurants } from '@/hooks/use-favorite-restaurants'
 import type { RestaurantListItem } from '@/lib/api/restaurants'
 import { useAuth } from '@/lib/auth-context'
-import { useQuery } from '@tanstack/react-query'
+import { PaginationState } from '@tanstack/react-table'
 import { LayoutGrid, Table } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
@@ -15,7 +16,10 @@ export default function FavoritesPage() {
 	const router = useRouter()
 	const { user, isLoading: isAuthLoading } = useAuth()
 	const [viewMode, setViewMode] = React.useState<'table' | 'cards'>('cards')
-
+	const [pagination, setPagination] = React.useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	})
 	// 認証チェック
 	React.useEffect(() => {
 		if (!isAuthLoading && !user) {
@@ -23,38 +27,40 @@ export default function FavoritesPage() {
 		}
 	}, [user, isAuthLoading, router])
 
-	const { data: favoriteItems, isPending: isFavoritesPending } = useQuery({
-		queryKey: ['favorites'],
-		queryFn: listFavorites,
-		enabled: !!user,
+	const {
+		data: favoriteItems,
+		isFetching: isFetchingFavoriteRestaurants,
+		isLoading: isLoadingFavoriteRestaurants,
+	} = useFavoriteRestaurants({
+		page: pagination.pageIndex + 1,
+		limit: pagination.pageSize,
 	})
-	const favoriteRestaurants = React.useMemo<RestaurantListItem[]>(
-		() => favoriteItems?.map(item => item.restaurant as RestaurantListItem) ?? [],
-		[favoriteItems],
-	)
 
 	if (isAuthLoading || !user) {
 		return null
 	}
 
-	if (isFavoritesPending) {
-		return (
-			<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
-				<p className='text-sm text-zinc-500'>お気に入りを読み込み中です...</p>
-			</div>
-		)
+	if (isFetchingFavoriteRestaurants) {
+		return <Spinner type='page-loading' />
 	}
 
 	return (
-		<div className='mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8'>
+		<Section>
 			{/* ページヘッダー */}
 			<div className='mb-8'>
 				<div className='mb-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
 					<div className='flex items-center gap-2'>
-						<span className='text-2xl md:text-3xl'>⭐</span>
-						<h1 className='text-2xl md:text-3xl font-bold text-zinc-900'>お気に入り</h1>
+						<Rating rate={1} max={1} className='[&_svg]:size-10! [&>div]:size-10!' />
+						<h1
+							className='text-2xl md:text-3xl font-bold text-zinc-900'
+							onClick={() => {
+								console.log(favoriteItems)
+							}}
+						>
+							お気に入り
+						</h1>
 					</div>
-					{favoriteRestaurants.length > 0 && (
+					{favoriteItems?.data?.length && favoriteItems?.data?.length > 0 && (
 						<div className='hidden md:flex items-center border border-zinc-200 rounded-md overflow-hidden self-end md:self-auto'>
 							<Button
 								onClick={() => setViewMode('cards')}
@@ -79,7 +85,7 @@ export default function FavoritesPage() {
 			</div>
 
 			{/* お気に入りが空の場合 */}
-			{favoriteRestaurants.length === 0 ? (
+			{favoriteItems?.data?.length === 0 ? (
 				<Callout icon='💡'>
 					<p className='font-medium'>お気に入りがありません</p>
 					<p className='mt-1 text-sm text-zinc-600'>
@@ -91,29 +97,24 @@ export default function FavoritesPage() {
 					{/* お気に入りレストランのテーブル/カード表示（モバイルは常にカード） */}
 					{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
 						<DataCards
-							data={favoriteItems?.map(item => item.restaurant as RestaurantListItem)!}
-							total={favoriteItems?.length}
-							isLoading={false}
-							totlaHidden={false}
+							data={favoriteItems?.data?.map(item => item.restaurant as RestaurantListItem)!}
+							total={favoriteItems?.meta?.total}
+							isLoading={isLoadingFavoriteRestaurants}
+							pagination={pagination}
+							setPagination={setPagination}
 						/>
 					) : (
-						<div className='rounded-lg border border-zinc-200 bg-white'>
-							<DataTable
-								columns={RestaurantColumns}
-								data={favoriteItems?.map(item => item.restaurant as RestaurantListItem)!}
-								total={favoriteItems?.length}
-								isLoading={false}
-								totlaHidden={false}
-							/>
-						</div>
+						<DataTable
+							columns={favoriteRestaurantsColumns}
+							data={favoriteItems?.data?.map(item => item.restaurant as RestaurantListItem)!}
+							isLoading={isLoadingFavoriteRestaurants}
+							pagination={pagination}
+							setPagination={setPagination}
+							total={favoriteItems?.meta?.total}
+						/>
 					)}
-
-					{/* 件数表示 */}
-					<div className='mt-4 text-sm text-zinc-500'>
-						{favoriteRestaurants.length} 件のお気に入り
-					</div>
 				</>
 			)}
-		</div>
+		</Section>
 	)
 }

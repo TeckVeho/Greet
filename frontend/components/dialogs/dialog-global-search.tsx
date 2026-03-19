@@ -1,14 +1,17 @@
 'use client'
 
 import {
+	Button,
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DialogTrigger,
 	InputGroup,
 	InputGroupAddon,
 	InputGroupInput,
+	Kbd,
 } from '@/components/ui'
 import { Badge } from '@/components/ui/badge'
 import { useRestaurants } from '@/hooks/use-restaurants'
@@ -17,16 +20,24 @@ import { Search, SearchIcon, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
-interface GlobalSearchDialogProps {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-}
-
-export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogProps) {
+export function DialogGlobalSearch() {
+	const [open, setOpen] = React.useState(false)
 	const router = useRouter()
 	const [searchQuery, setSearchQuery] = React.useState('')
 
 	const { data: restaurants, isPending } = useRestaurants({ search: searchQuery })
+
+	React.useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+				e.preventDefault()
+				setOpen(true)
+			}
+		}
+
+		document.addEventListener('keydown', handleKeyDown)
+		return () => document.removeEventListener('keydown', handleKeyDown)
+	}, [])
 
 	// ダイアログが閉じられたら検索クエリをリセット
 	React.useEffect(() => {
@@ -37,17 +48,24 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 
 	const handleResultClick = (restaurantId: string) => {
 		router.push(`/restaurants/${restaurantId}`)
-		onOpenChange(false)
+		setOpen(false)
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={setOpen}>
+			<DialogTrigger asChild>
+				<Button variant={'secondary'} className=' text-zinc-600 hover:bg-zinc-100'>
+					<Search className='size-4' />
+					<span>検索...</span>
+					<Kbd>⌘ K</Kbd>
+				</Button>
+			</DialogTrigger>
 			<DialogContent className='max-w-[95vw] md:max-w-2xl p-0' showClose={false}>
 				<DialogHeader className='px-6 pt-5 pb-4 border-b border-zinc-200'>
 					<DialogTitle className='sr-only'>レストラン検索</DialogTitle>
 					<InputGroup className='h-13'>
 						<InputGroupInput
-							placeholder='名前、メールアドレス、部署、会社名で検索...'
+							placeholder='店名、エリア、ジャンルで検索...'
 							className=''
 							onChange={e => setSearchQuery(e.target.value)}
 							value={searchQuery}
@@ -120,9 +138,9 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 					)}
 				</div>
 				<DialogFooter>
-					{restaurants && restaurants.meta.limit > 0 && (
+					{restaurants && restaurants?.data.length > 0 && (
 						<div className='px-6 py-3 border-t border-zinc-200 text-xs text-zinc-500 w-full'>
-							{restaurants?.meta.limit} 件の飲食店が見つかりました
+							{restaurants?.data.length} 件の飲食店が見つかりました
 						</div>
 					)}
 				</DialogFooter>

@@ -7,17 +7,29 @@ import type {
   listRestaurantsQueryBodySchema,
   updateRestaurantBodySchema,
 } from '../validators/restaurant.validator'
-import { deleteFile } from './file.service'
-import { resolveFileUrl } from './file.service'
+import { deleteFile, resolveFileUrl } from './file.service'
 
 type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; createdById: string }
 type UpdateRestaurantInput = updateRestaurantBodySchema
 type ListQuery = listRestaurantsQueryBodySchema
 
+function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
+  if (!user) {
+    return null
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    icon: user.icon ?? undefined,
+  }
+}
+
 export class RestaurantService {
-  async findAll(query: ListQuery, companyId: string) {
+  async findAll(query: ListQuery) {
     const smokingAllowed = parseBoolean(query.smokingAllowed)
     const hasPrivateRoom = parseBoolean(query.hasPrivateRoom)
+    const sort = query.sort
     let genres = cleanArray(query.genres)
     let areas = cleanArray(query.areas)
     let priceRanges = cleanArray(query.priceRanges)
@@ -42,10 +54,33 @@ export class RestaurantService {
     const matchedGenres = search
       ? Object.values(Genre).filter(genre => genre.toLowerCase().includes(search.toLowerCase()))
       : []
+    let orderBy: Prisma.RestaurantOrderByWithRelationInput = { createdAt: 'desc' }
 
+    if (sort) {
+      const [field, direction] = sort.split('_') as [string, 'asc' | 'desc']
+
+      switch (field) {
+        case 'createdAt':
+          orderBy = { createdAt: direction }
+          break
+        case 'name':
+          orderBy = { name: direction }
+          break
+        case 'price':
+          orderBy = { priceRange: direction }
+          break
+        case 'reviews':
+          orderBy = { reviews: { _count: direction } }
+          break
+        // case 'rating':
+        //   orderBy = { reviews: { rating: direction } }
+        //   break
+        default:
+          orderBy = { createdAt: 'desc' }
+      }
+    }
     const where: Prisma.RestaurantWhereInput = {
       AND: [
-        companyId ? { companyId: companyId } : {},
         smokingAllowed !== undefined ? { smokingAllowed } : {},
         hasPrivateRoom !== undefined ? { hasPrivateRoom } : {},
         genres && genres.length > 0
@@ -78,9 +113,7 @@ export class RestaurantService {
         where,
         skip,
         take: limit,
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: orderBy,
         include: {
           genres: true,
           reviews: {
@@ -98,52 +131,45 @@ export class RestaurantService {
 
     const data = await Promise.all(
       restaurants.map(async r => {
-      const reviewCount = r.reviews.length
-      const averageRating =
-        reviewCount === 0
-          ? null
-          : Number(
-              (
-                r.reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) / reviewCount
-              ).toFixed(1),
-            )
+        const reviewCount = r.reviews.length
+        const averageRating =
+          reviewCount === 0
+            ? null
+            : Number(
+                (
+                  r.reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) / reviewCount
+                ).toFixed(1),
+              )
 
-      return {
-        id: r.id,
-        name: r.name,
-        area: r.area,
-        genres: r.genres.map(g => g.genre),
-        hasPrivateRoom: r.hasPrivateRoom,
-        priceRange: r.priceRange,
-        address: r.address ?? undefined,
-        phone: r.phone ?? undefined,
-        url: r.url ?? undefined,
-        smokingAllowed: r.smokingAllowed,
-        coverImage: await resolveFileUrl(r.coverImage),
-        icon: await resolveFileUrl(r.icon),
-        reviewCount,
-        reviews: r.reviews.map(review => ({
-          id: review.id,
-          occasion: review.occasion,
-          author: {
-            id: review.author.id,
-            name: review.author.name,
-            icon: review.author.icon ?? undefined,
-          },
-          result: review.result,
-          rating: review.rating,
-          createdAt: review.createdAt,
-        })),
-        averageRating,
-        createdBy: {
-          id: r.createdBy.id,
-          name: r.createdBy.name,
-          icon: r.createdBy.icon ?? undefined,
-        },
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-      }
-    }),
+        return {
+          id: r.id,
+          name: r.name,
+          area: r.area,
+          genres: r.genres.map(g => g.genre),
+          hasPrivateRoom: r.hasPrivateRoom,
+          priceRange: r.priceRange,
+          address: r.address ?? undefined,
+          phone: r.phone ?? undefined,
+          url: r.url ?? undefined,
+          smokingAllowed: r.smokingAllowed,
+          coverImage: await resolveFileUrl(r.coverImage),
+          icon: await resolveFileUrl(r.icon),
+          reviewCount,
+          reviews: r.reviews.map(review => ({
+            id: review.id,
+            occasion: review.occasion,
+            authorId: review.authorId,
+            author: mapUserSummary(review.author),
+            result: review.result,
+            rating: review.rating,
+            createdAt: review.createdAt,
+          })),
+          averageRating,
+          createdBy: mapUserSummary(r.createdBy),
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+        }
+      }),
     )
 
     const totalPages = Math.max(1, Math.ceil(total / limit))
@@ -161,9 +187,9 @@ export class RestaurantService {
     }
   }
 
-  async findById(id: string, companyId: string, userId?: string) {
+  async findById(id: string, userId?: string) {
     const restaurant = await prisma.restaurant.findFirst({
-      where: { id, companyId },
+      where: { id },
       include: {
         genres: true,
         reviews: {
@@ -233,21 +259,14 @@ export class RestaurantService {
       smokingAllowed: restaurant.smokingAllowed,
       coverImage: await resolveFileUrl(restaurant.coverImage),
       icon: await resolveFileUrl(restaurant.icon),
-      createdBy: {
-        id: restaurant.createdBy.id,
-        name: restaurant.createdBy.name,
-        icon: restaurant.createdBy.icon ?? undefined,
-      },
+      createdBy: mapUserSummary(restaurant.createdBy),
       reviews: restaurant.reviews.map(r => ({
         id: r.id,
         occasion: r.occasion,
         result: r.result,
         rating: r.rating,
-        author: {
-          id: r.author.id,
-          name: r.author.name,
-          icon: r.author.icon ?? undefined,
-        },
+        authorId: r.authorId,
+        author: mapUserSummary(r.author),
         createdAt: r.createdAt,
       })),
       isFavorite,
@@ -278,16 +297,28 @@ export class RestaurantService {
 
   async update(
     id: string,
-    companyId: string,
     payload: UpdateRestaurantInput & { genres?: Genre[] },
+    callerId: string,
+    callerRole: 'admin' | 'user',
   ) {
-    // Verify the restaurant belongs to the caller's company before updating
-    const existing = await prisma.restaurant.findFirst({ where: { id, companyId } })
+    // Only the creator or an admin may update the restaurant.
+    const existing = await prisma.restaurant.findUnique({
+      where: { id },
+      select: { id: true, createdById: true, coverImage: true },
+    })
     if (!existing) {
       return {
         success: false,
         error: { code: 'NOT_FOUND', message: '飲食店が見つかりません' },
         statusCode: StatusCodes.NOT_FOUND,
+      }
+    }
+
+    if (callerRole !== 'admin' && existing.createdById !== callerId) {
+      return {
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'この飲食店を更新する権限がありません' },
+        statusCode: StatusCodes.FORBIDDEN,
       }
     }
 
@@ -325,9 +356,12 @@ export class RestaurantService {
     }
   }
 
-  async delete(id: string, companyId: string) {
+  async delete(id: string) {
     // Fetch the restaurant first to get the cover image URL
-    const existing = await prisma.restaurant.findFirst({ where: { id, companyId } })
+    const existing = await prisma.restaurant.findUnique({
+      where: { id },
+      select: { coverImage: true },
+    })
     if (!existing) {
       return {
         success: false,
@@ -336,7 +370,7 @@ export class RestaurantService {
       }
     }
 
-    await prisma.restaurant.deleteMany({ where: { id, companyId } })
+    await prisma.restaurant.delete({ where: { id } })
 
     // Delete cover image from S3 if it exists
     if (existing.coverImage) {

@@ -4,22 +4,21 @@ import { Star, StarHalf } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
-const MAX_STARS = 5
-
 interface RatingProps {
 	rate: number
 	className?: string
 	showScore?: boolean
 	description?: string
+	max?: number
 }
 
-const Rating = ({ rate, className, showScore, description }: RatingProps) => {
+const Rating = ({ rate, className, showScore, description, max = 5 }: RatingProps) => {
 	if (!rate) return
 
 	const renderStars = () => {
 		const fullStars = Math.floor(rate)
 		const hasHalfStar = rate % 1 >= 0.5
-		const emptyStars = MAX_STARS - fullStars - (hasHalfStar ? 1 : 0)
+		const emptyStars = max - fullStars - (hasHalfStar ? 1 : 0)
 
 		const stars = []
 

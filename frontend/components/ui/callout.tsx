@@ -12,7 +12,7 @@ const Callout = React.forwardRef<HTMLDivElement, CalloutProps>(
 			<div
 				ref={ref}
 				className={cn(
-					'my-4 flex gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-900 transition-colors hover:bg-zinc-100',
+					'my-4 flex gap-3 rounded-xl border border-border/80 bg-secondary/60 p-4 text-sm text-foreground shadow-sm transition-colors hover:bg-secondary/75',
 					className,
 				)}
 				{...props}

@@ -35,7 +35,7 @@ import {
 	useComboboxAnchor,
 } from '@/components/ui'
 import { createRestaurant, uploadRestaurantImage } from '@/lib/api/restaurants'
-import { AREA_OPTIONS, GENRE_OPTIONS, PRICE_RANGE_OPTIONS } from '@/lib/constants'
+import { AREA_OPTIONS, GENRE_OPTIONS, icons, PRICE_RANGE_OPTIONS } from '@/lib/constants'
 import { queryClient } from '@/lib/query-client'
 import { onError } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -51,11 +51,10 @@ interface RestaurantFormDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 }
-const frameworks = ['Next.js', 'SvelteKit', 'Nuxt.js', 'Remix', 'Astro'] as const
 const schema = z.object({
 	name: z.string().min(1, '店名は必須です'),
 	area: z.enum(AREA_OPTIONS.map(opt => opt.value)),
-	genre: z.array(z.enum(GENRE_OPTIONS.map(opt => opt.value))),
+	genres: z.array(z.enum(GENRE_OPTIONS.map(opt => opt.value))),
 	hasPrivateRoom: z.boolean(),
 	smokingAllowed: z.boolean(),
 	priceRange: z.enum(PRICE_RANGE_OPTIONS.map(opt => opt.value)),
@@ -66,30 +65,7 @@ const schema = z.object({
 	coverImage: z.instanceof(File).optional(),
 })
 type RestaurantFormData = z.infer<typeof schema>
-const icons = [
-	{ icon: '🍽️', label: '食器' },
-	{ icon: '🍣', label: '寿司' },
-	{ icon: '🥩', label: '肉' },
-	{ icon: '🍷', label: 'ワイン' },
-	{ icon: '🍝', label: 'パスタ' },
-	{ icon: '🍜', label: 'ラーメン' },
-	{
-		icon: '🥘',
-		label: '鍋',
-	},
-	{
-		icon: '🍱',
-		label: '和食',
-	},
-	{
-		icon: '🥟',
-		label: '中華',
-	},
-	{
-		icon: '🍔',
-		label: '洋食',
-	},
-]
+
 export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDialogProps) {
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
 	const anchor = useComboboxAnchor()
@@ -102,7 +78,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 			url: '',
 			icon: '🍽️',
 			area: 'GINZA',
-			genre: [GENRE_OPTIONS[0].value],
+			genres: [GENRE_OPTIONS[0].value],
 			coverImage: undefined,
 			hasPrivateRoom: false,
 			smokingAllowed: false,
@@ -122,7 +98,6 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 			const payload = {
 				...data,
 				coverImage: coverImageUrl || undefined,
-				genres: data.genre,
 			}
 
 			await createRestaurant(payload)
@@ -289,7 +264,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 										/>
 										<FormField
 											control={form.control}
-											name='genre'
+											name='genres'
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel>ジャンル *</FormLabel>
@@ -299,8 +274,6 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 															autoHighlight
 															items={GENRE_OPTIONS}
 															onValueChange={values => {
-																console.log(values)
-
 																field.onChange(values)
 															}}
 															value={field.value}
@@ -309,16 +282,16 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 																<ComboboxValue>
 																	{items => (
 																		<>
-																			{items.map((item: string) => (
-																				<ComboboxChip
-																					key={item}
-																					onClick={() => {
-																						console.log(items)
-																					}}
-																				>
-																					{item}
-																				</ComboboxChip>
-																			))}
+																			{items.map((item: string) => {
+																				const label =
+																					GENRE_OPTIONS.find(opt => opt.value === item)?.label ??
+																					item
+																				return (
+																					<ComboboxChip key={item} onClick={() => {}}>
+																						{label}
+																					</ComboboxChip>
+																				)
+																			})}
 																			<ComboboxChipsInput />
 																		</>
 																	)}
@@ -328,31 +301,13 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 																<ComboboxEmpty>No items found.</ComboboxEmpty>
 																<ComboboxList>
 																	{item => (
-																		<ComboboxItem
-																			key={item.value}
-																			value={item.value}
-																			onClick={() => {
-																				console.log('item:', item)
-																			}}
-																		>
+																		<ComboboxItem key={item.value} value={item.value}>
 																			{item.label}
 																		</ComboboxItem>
 																	)}
 																</ComboboxList>
 															</ComboboxContent>
 														</Combobox>
-														{/* <Select value={field.value} onValueChange={field.onChange}>
-															<SelectTrigger>
-																<SelectValue placeholder='ジャンルを選択' />
-															</SelectTrigger>
-															<SelectContent>
-																{GENRE_OPTIONS.map(opt => (
-																	<SelectItem key={opt.value} value={opt.value}>
-																		{opt.label}
-																	</SelectItem>
-																))}
-															</SelectContent>
-														</Select> */}
 													</FormControl>
 													<FormMessage />
 												</FormItem>

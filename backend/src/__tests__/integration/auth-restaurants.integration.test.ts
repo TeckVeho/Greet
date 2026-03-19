@@ -2,7 +2,6 @@ import express from 'express'
 import request from 'supertest'
 import { authRouter } from '../../routes/auth'
 import { authMiddleware } from '../../middleware/auth.middleware'
-import { tenantMiddleware } from '../../middleware/tenant.middleware'
 
 const mockLogin = jest.fn()
 
@@ -20,7 +19,7 @@ describe('Integration: auth and restaurants access control', () => {
 
     // Keep this endpoint contract aligned with production route behavior:
     // auth middleware runs first and must reject unauthenticated requests.
-    app.get('/api/restaurants', authMiddleware, tenantMiddleware, (_req, res) => {
+    app.get('/api/restaurants', authMiddleware, (_req, res) => {
       res.status(200).json({ success: true, data: [] })
     })
 

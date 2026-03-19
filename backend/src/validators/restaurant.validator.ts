@@ -31,6 +31,18 @@ export const listRestaurantsQuerySchema = z.object({
   hasPrivateRoom: z.enum(['true', 'false']).optional(),
   smokingAllowed: z.enum(['true', 'false']).optional(),
   priceRanges: z.array(z.nativeEnum(PriceRange)).optional(),
+  sort: z
+    .enum([
+      'createdAt_desc',
+      'createdAt_asc',
+      'rating_desc',
+      'reviews_desc',
+      'price_desc',
+      'price_asc',
+      'name_desc',
+      'name_asc',
+    ])
+    .optional(),
 })
 
 export const restaurantIdSchema = z.object({

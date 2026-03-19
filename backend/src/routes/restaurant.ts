@@ -4,7 +4,6 @@ import { reviewController } from '../controllers/review.controller'
 import { adminMiddleware } from '../middleware/admin.middleware'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { errorMiddleware } from '../middleware/error.middleware'
-import { tenantMiddleware } from '../middleware/tenant.middleware'
 import { upload } from '../middleware/upload.middleware'
 import { validateBody, validateParams } from '../middleware/validate.middleware'
 import {
@@ -16,7 +15,7 @@ import { createReviewSchema } from '../validators/review.validator'
 
 const router = Router()
 
-router.use(authMiddleware, tenantMiddleware)
+router.use(authMiddleware)
 
 // GET /api/restaurants
 router.get('/', restaurantController.getRestaurants)
