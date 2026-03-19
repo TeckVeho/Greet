@@ -64,6 +64,8 @@ jobs:
           script: |
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            nvm install 20
+            nvm use 20
 
             # Write production env files from secrets
             printf '%s\n' "$PRODUCTION_ENV_BACKEND" > ~/Greet/backend/.env

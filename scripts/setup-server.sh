@@ -13,17 +13,17 @@ echo "Branch: ${DEPLOY_BRANCH}"
 echo "Apache config: ${APACHE_CONF_SOURCE}"
 
 # ── Node.js (via nvm) ──
-if ! command -v node &>/dev/null; then
-  echo "Installing nvm + Node.js 20 LTS..."
+echo "Ensuring nvm + Node.js 20 LTS..."
+export NVM_DIR="$HOME/.nvm"
+if [ ! -s "$NVM_DIR/nvm.sh" ]; then
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-  export NVM_DIR="$HOME/.nvm"
-  # shellcheck source=/dev/null
-  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-  nvm install 20
-  nvm alias default 20
-else
-  echo "Node.js already installed: $(node -v)"
 fi
+# shellcheck source=/dev/null
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm install 20
+nvm alias default 20
+nvm use 20
+echo "Using Node.js: $(node -v)"
 
 # ── PM2 ──
 if ! command -v pm2 &>/dev/null; then

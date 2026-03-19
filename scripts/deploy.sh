@@ -11,6 +11,18 @@ DEPLOY_BRANCH="${1:-development}"
 
 cd "$PROJECT_DIR"
 
+if ! command -v node >/dev/null 2>&1; then
+	echo "Node.js is not installed. Please install Node.js 20+ before deploy."
+	exit 1
+fi
+
+NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
+if [ "$NODE_MAJOR" -lt 20 ]; then
+	echo "Node.js $(node -v) detected. Prisma requires Node.js 20+."
+	echo "Activate nvm Node 20 (e.g. 'nvm use 20') and retry."
+	exit 1
+fi
+
 echo "=== Deploying Greet (${DEPLOY_BRANCH}) ==="
 
 # ── Pull latest code ──
