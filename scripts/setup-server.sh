@@ -5,7 +5,12 @@
 # ──────────────────────────────────────────────
 set -euo pipefail
 
+DEPLOY_BRANCH="${1:-development}"
+APACHE_CONF_SOURCE="${2:-apache/greet.conf}"
+
 echo "=== Greet Server Setup ==="
+echo "Branch: ${DEPLOY_BRANCH}"
+echo "Apache config: ${APACHE_CONF_SOURCE}"
 
 # ── Node.js (via nvm) ──
 if ! command -v node &>/dev/null; then
@@ -35,12 +40,12 @@ if [ ! -d "$PROJECT_DIR" ]; then
   echo "Cloning repository..."
   git clone https://github.com/TeckVeho/Greet.git "$PROJECT_DIR"
   cd "$PROJECT_DIR"
-  git checkout development
+  git checkout "$DEPLOY_BRANCH"
 else
   echo "Project directory exists, pulling latest..."
   cd "$PROJECT_DIR"
-  git checkout development
-  git pull origin development
+  git checkout "$DEPLOY_BRANCH"
+  git pull origin "$DEPLOY_BRANCH"
 fi
 
 # ── Install dependencies ──
@@ -68,8 +73,20 @@ npx prisma migrate deploy
 
 # ── Configure Apache ──
 echo "Setting up Apache..."
-sudo cp "$PROJECT_DIR/apache/greet.conf" /etc/httpd/conf.d/greet.conf
-sudo systemctl reload httpd
+if [ ! -f "$PROJECT_DIR/$APACHE_CONF_SOURCE" ]; then
+  echo "Apache config not found: $PROJECT_DIR/$APACHE_CONF_SOURCE"
+  exit 1
+fi
+
+if sudo -n true 2>/dev/null; then
+  sudo cp "$PROJECT_DIR/$APACHE_CONF_SOURCE" /etc/httpd/conf.d/greet.conf
+  sudo systemctl reload httpd
+else
+  echo "Skipping Apache copy/reload (sudo password required)."
+  echo "Run manually:"
+  echo "  sudo cp $PROJECT_DIR/$APACHE_CONF_SOURCE /etc/httpd/conf.d/greet.conf"
+  echo "  sudo systemctl reload httpd"
+fi
 
 # ── Start PM2 ──
 echo "Starting PM2 processes..."

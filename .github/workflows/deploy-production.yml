@@ -40,7 +40,7 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         env:
-          NEXT_PUBLIC_API_URL: https://greet-api.vw-dev.com/api
+          NEXT_PUBLIC_API_URL: https://greet-api.d-dxlab.com/api
           S3_BUCKET_NAME: ${{ secrets.PROD_S3_BUCKET_NAME }}
           S3_REGION: ap-northeast-1
         run: npm run build
@@ -69,7 +69,7 @@ jobs:
             printf '%s\n' "$PROD_PRODUCTION_ENV_BACKEND" > ~/Greet/backend/.env
             printf '%s\n' "$PROD_PRODUCTION_ENV_FRONTEND" > ~/Greet/frontend/.env
 
-            cd ~/Greet && bash scripts/deploy.sh
+            cd ~/Greet && bash scripts/deploy.sh main
         env:
           PROD_PRODUCTION_ENV_BACKEND: ${{ secrets.PROD_PRODUCTION_ENV_BACKEND }}
           PROD_PRODUCTION_ENV_FRONTEND: ${{ secrets.PROD_PRODUCTION_ENV_FRONTEND }}

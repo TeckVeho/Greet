@@ -7,14 +7,16 @@
 set -euo pipefail
 
 PROJECT_DIR="$HOME/Greet"
+DEPLOY_BRANCH="${1:-development}"
+
 cd "$PROJECT_DIR"
 
-echo "=== Deploying Greet ==="
+echo "=== Deploying Greet (${DEPLOY_BRANCH}) ==="
 
 # ── Pull latest code ──
 echo "[1/6] Pulling latest code..."
-git fetch origin development
-git reset --hard origin/development
+git fetch origin "$DEPLOY_BRANCH"
+git reset --hard "origin/$DEPLOY_BRANCH"
 
 # ── Backend ──
 echo "[2/6] Installing backend dependencies..."
