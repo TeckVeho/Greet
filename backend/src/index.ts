@@ -15,6 +15,7 @@ const corsOptions = {
   origin: process.env.CORS_ORIGIN ?? '*',
   optionsSuccessStatus: 200,
 }
+
 const app = express()
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000
 
