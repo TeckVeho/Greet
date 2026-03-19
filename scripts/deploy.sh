@@ -23,6 +23,23 @@ if [ "$NODE_MAJOR" -lt 20 ]; then
 	exit 1
 fi
 
+npm_ci_with_retry() {
+	local dir="$1"
+	local label="$2"
+
+	cd "$dir"
+	echo "Installing ${label} dependencies..."
+	if npm ci --no-audit --no-fund; then
+		return 0
+	fi
+
+	echo "First npm ci failed for ${label}. Cleaning cache and retrying once..."
+	rm -rf node_modules
+	npm cache clean --force
+	npm cache verify
+	npm ci --no-audit --no-fund --prefer-online --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
+}
+
 echo "=== Deploying Greet (${DEPLOY_BRANCH}) ==="
 
 # ── Pull latest code ──
@@ -32,8 +49,7 @@ git reset --hard "origin/$DEPLOY_BRANCH"
 
 # ── Backend ──
 echo "[2/6] Installing backend dependencies..."
-cd "$PROJECT_DIR/backend"
-npm ci --no-audit --no-fund
+npm_ci_with_retry "$PROJECT_DIR/backend" "backend"
 
 echo "[3/6] Building backend..."
 npm run build
@@ -43,8 +59,7 @@ npx prisma migrate deploy 2>/dev/null || echo "No pending migrations"
 
 # ── Frontend ──
 echo "[5/6] Installing frontend dependencies & building..."
-cd "$PROJECT_DIR/frontend"
-npm ci --no-audit --no-fund
+npm_ci_with_retry "$PROJECT_DIR/frontend" "frontend"
 npm run build
 
 # ── Restart PM2 ──
