@@ -19,7 +19,7 @@ git reset --hard origin/development
 # ── Backend ──
 echo "[2/6] Installing backend dependencies..."
 cd "$PROJECT_DIR/backend"
-npm ci
+npm ci --no-audit --no-fund
 
 echo "[3/6] Building backend..."
 npm run build
@@ -30,7 +30,7 @@ npx prisma migrate deploy 2>/dev/null || echo "No pending migrations"
 # ── Frontend ──
 echo "[5/6] Installing frontend dependencies & building..."
 cd "$PROJECT_DIR/frontend"
-npm ci
+npm ci --no-audit --no-fund
 npm run build
 
 # ── Restart PM2 ──
