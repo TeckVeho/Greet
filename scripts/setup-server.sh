@@ -48,6 +48,13 @@ else
   git pull origin "$DEPLOY_BRANCH"
 fi
 
+# Validate expected monorepo structure before continuing.
+if [ ! -d "$PROJECT_DIR/backend" ] || [ ! -d "$PROJECT_DIR/frontend" ]; then
+  echo "Expected directories not found in $PROJECT_DIR for branch '$DEPLOY_BRANCH'."
+  echo "Make sure origin/$DEPLOY_BRANCH contains the monorepo (backend/ and frontend/), then retry."
+  exit 1
+fi
+
 # ── Install dependencies ──
 echo "Installing backend dependencies..."
 cd "$PROJECT_DIR/backend"
