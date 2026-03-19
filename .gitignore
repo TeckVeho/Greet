@@ -27,3 +27,9 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+#documents
+
+docs/DEPLOYMENT_FLOW.md
+docs/GITHUB_SECRETS_CHECKLIST.md
+docs/PRODUCTION_DEPLOYMENT_SETUP.md

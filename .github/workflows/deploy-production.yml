@@ -1,0 +1,75 @@
+name: Deploy to Production (Main Branch)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Build & Lint Check ──
+  build:
+    name: Build & Verify (Production)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: https://greet-api.vw-dev.com/api
+          S3_BUCKET_NAME: ${{ secrets.PROD_S3_BUCKET_NAME }}
+          S3_REGION: ap-northeast-1
+        run: npm run build
+
+  # ── Deploy (only on push to main, not PRs) ──
+  deploy:
+    name: Deploy to Production Server
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy via SSH to Production
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_EC2_HOST }}
+          username: ${{ secrets.PROD_EC2_USER }}
+          key: ${{ secrets.PROD_EC2_SSH_KEY }}
+          command_timeout: 40m
+          envs: PROD_PRODUCTION_ENV_BACKEND,PROD_PRODUCTION_ENV_FRONTEND
+          script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+            # Write production env files from secrets
+            printf '%s\n' "$PROD_PRODUCTION_ENV_BACKEND" > ~/Greet/backend/.env
+            printf '%s\n' "$PROD_PRODUCTION_ENV_FRONTEND" > ~/Greet/frontend/.env
+
+            cd ~/Greet && bash scripts/deploy.sh
+        env:
+          PROD_PRODUCTION_ENV_BACKEND: ${{ secrets.PROD_PRODUCTION_ENV_BACKEND }}
+          PROD_PRODUCTION_ENV_FRONTEND: ${{ secrets.PROD_PRODUCTION_ENV_FRONTEND }}
