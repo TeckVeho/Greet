@@ -60,7 +60,7 @@ export const UserColumns: ColumnDef<User>[] = [
 			const role = row.original.role
 			return (
 				<Badge variant={role === 'admin' ? 'chinese' : 'french'}>
-					{role === 'admin' ? '管理者' : '一般'}
+					{role === 'admin' ? '管理者' : '一般ユーザー'}
 				</Badge>
 			)
 		},
