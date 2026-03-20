@@ -3,7 +3,7 @@ import { prisma } from '../prisma'
 import { listFavoriteRestaurantsQuerySchema } from '../validators/favorite.validator'
 import { resolveFileUrl } from './file.service'
 
-function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
+function mapUserSummary(user: { id: string; name: string } | null) {
   if (!user) {
     return null
   }
@@ -11,7 +11,6 @@ function mapUserSummary(user: { id: string; name: string; icon: string | null } 
   return {
     id: user.id,
     name: user.name,
-    icon: user.icon ?? undefined,
   }
 }
 
@@ -38,7 +37,6 @@ export class FavoriteService {
                 select: {
                   id: true,
                   name: true,
-                  icon: true,
                 },
               },
             },

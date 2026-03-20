@@ -52,18 +52,18 @@ export async function listUsers({
 }
 
 export interface CreateUserPayload {
+	avatar?: File
 	email: string
 	password: string
 	name: string
 	companyId: string
 	role?: 'admin' | 'user'
 	department?: string
-	icon?: string
 }
 
 export type UpdateUserPayload = Partial<CreateUserPayload>
 
-export async function createUser(payload: CreateUserPayload): Promise<User> {
+export async function createUser(payload: FormData): Promise<User> {
 	const res = await apiClient.post<ApiResponse<User>>('/users', payload)
 
 	if (!res.data.success) {
@@ -73,7 +73,7 @@ export async function createUser(payload: CreateUserPayload): Promise<User> {
 	return res.data.data
 }
 
-export async function updateUser(id: string, payload: UpdateUserPayload): Promise<User> {
+export async function updateUser(id: string, payload: FormData): Promise<User> {
 	const res = await apiClient.put<ApiResponse<User>>(`/users/${id}`, payload)
 
 	if (!res.data.success) {

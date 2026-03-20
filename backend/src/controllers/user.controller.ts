@@ -16,14 +16,14 @@ class UserController {
   }
 
   public createUser = async (req: Request, res: Response) => {
-    const result = await userService.create(req.body)
+    const result = await userService.create(req.body, req.file)
     res.status(result.statusCode).json(result)
   }
 
   public updateUser = async (req: Request, res: Response) => {
     const rawUserId = req.params.userId
     const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId
-    const result = await userService.update(userId, req.body, req.user!)
+    const result = await userService.update(userId, req.body, req.user!, req.file)
     res.status(result.statusCode).json(result)
   }
 

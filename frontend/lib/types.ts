@@ -1,5 +1,3 @@
-import { CompanyListItem } from './api/companies'
-
 export interface Restaurant {
 	id: string
 	name: string
@@ -66,16 +64,11 @@ export interface User {
 	company?: Company // 所属会社情報（結合用）
 	department?: string
 	avatar?: string // アバター画像URL
-	icon?: string // アイコン絵文字
 	createdAt: Date
 	lastLogin?: Date
 }
 export interface UserFormDialogProps {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-	mode: 'create' | 'edit'
+	mode: 'create' | 'update'
 	user?: User
-	onSave: (user: Partial<User> & { password?: string }) => void
-	companies?: CompanyListItem[]
-	isSaving?: boolean
+	trigger?: React.ReactNode
 }

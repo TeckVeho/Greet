@@ -1,6 +1,6 @@
 'use client'
 
-import { DialogUpdateUser, DialogWarning } from '@/components/dialogs'
+import { DialogUserCreateOrUpdate as DialogUpdateUser, DialogWarning } from '@/components/dialogs'
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui'
 import { deleteUser } from '@/lib/api/users'
 import { User } from '@/lib/types'
@@ -19,7 +19,7 @@ export const UserColumns: ColumnDef<User>[] = [
 			return (
 				<div className='flex items-center gap-2'>
 					<Avatar>
-						<AvatarImage src={avatarUrl} />
+						<AvatarImage src={avatarUrl} className='object-cover' />
 						<AvatarFallback>{row.original.name.charAt(0)}</AvatarFallback>
 					</Avatar>
 					{row.original.name}
@@ -59,7 +59,7 @@ export const UserColumns: ColumnDef<User>[] = [
 		cell: ({ row }) => {
 			const role = row.original.role
 			return (
-				<Badge variant={role === 'admin' ? 'chinese' : 'french'}>
+				<Badge variant={role === 'admin' ? 'chinese' : 'french'} className='whitespace-nowrap'>
 					{role === 'admin' ? '管理者' : '一般ユーザー'}
 				</Badge>
 			)
@@ -134,7 +134,8 @@ export const UserColumns: ColumnDef<User>[] = [
 								編集
 							</Button>
 						}
-						user_data={row.original}
+						user={row.original}
+						mode='update'
 					/>
 
 					<DialogWarning

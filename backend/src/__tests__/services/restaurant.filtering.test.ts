@@ -1,6 +1,5 @@
-import { RestaurantService } from '../../services/restaurant.service'
 import { prisma } from '../../prisma'
-import { StatusCodes } from 'http-status-codes'
+import { RestaurantService } from '../../services/restaurant.service'
 
 /**
  * restaurant.service.ts - フィルタリング（データ変換・集計ロジック）
@@ -60,9 +59,11 @@ function makeRestaurant(overrides: Record<string, unknown> = {}) {
       result: (review.result as string | undefined) ?? '好評',
       rating: review.rating as number | null | undefined,
       createdAt: (review.createdAt as Date | undefined) ?? new Date('2025-02-01'),
-      author:
-        (review.author as { id: string; name: string; icon?: string | null } | undefined) ??
-        { id: `author-${index + 1}`, name: `著者${index + 1}`, icon: null },
+      author: (review.author as { id: string; name: string; icon?: string | null } | undefined) ?? {
+        id: `author-${index + 1}`,
+        name: `著者${index + 1}`,
+        icon: null,
+      },
     })),
   }
 }
@@ -93,9 +94,7 @@ describe('RestaurantService - フィルタリング', () => {
 
     it('小数点が出る平均値を正しく1桁に丸める', async () => {
       mockCount.mockResolvedValue(1)
-      mockFindMany.mockResolvedValue([
-        makeRestaurant({ reviews: [{ rating: 3 }, { rating: 5 }] }),
-      ])
+      mockFindMany.mockResolvedValue([makeRestaurant({ reviews: [{ rating: 3 }, { rating: 5 }] })])
 
       const result = await service.findAll({})
       // (3 + 5) / 2 = 4.0
@@ -104,9 +103,7 @@ describe('RestaurantService - フィルタリング', () => {
 
     it('rating: 1と2のレビューで平均1.5を返す', async () => {
       mockCount.mockResolvedValue(1)
-      mockFindMany.mockResolvedValue([
-        makeRestaurant({ reviews: [{ rating: 1 }, { rating: 2 }] }),
-      ])
+      mockFindMany.mockResolvedValue([makeRestaurant({ reviews: [{ rating: 1 }, { rating: 2 }] })])
 
       const result = await service.findAll({})
       expect(result.data[0].averageRating).toBe(1.5)
@@ -304,18 +301,6 @@ describe('RestaurantService - フィルタリング', () => {
       // (5 + 3) / 2 = 4.0
       expect(result.data!.averageRating).toBe(4)
       expect(result.data!.reviewCount).toBe(2)
-    })
-
-    it('createdByのiconがnullの場合undefinedに変換される', async () => {
-      mockFindFirst.mockResolvedValue({
-        ...makeRestaurant(),
-        reviews: [],
-        createdBy: { id: 'user-1', name: 'テスト', icon: null },
-      })
-      mockFavoriteFindFirst.mockResolvedValue(null)
-
-      const result = await service.findById('rest-1')
-      expect(result.data?.createdBy?.icon).toBeUndefined()
     })
   })
 })

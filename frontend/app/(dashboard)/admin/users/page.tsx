@@ -1,6 +1,6 @@
 'use client'
 
-import { DialogUserCreate } from '@/components/dialogs'
+import { DialogUserCreateOrUpdate } from '@/components/dialogs'
 import {
 	Button,
 	InputGroup,
@@ -17,16 +17,11 @@ import {
 import { DataTable, UserColumns } from '@/components/users'
 import { useCompanies } from '@/hooks/use-companies'
 import { useUsers } from '@/hooks/use-users'
-import { createUser } from '@/lib/api/users'
 import { useAuth } from '@/lib/auth-context'
-import type { User } from '@/lib/types'
-import { useQueryClient } from '@tanstack/react-query'
 import { PaginationState } from '@tanstack/react-table'
-import axios from 'axios'
 import { Plus, SearchIcon, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
-import { toast } from 'sonner'
 
 export default function UsersPage() {
 	const router = useRouter()
@@ -48,9 +43,6 @@ export default function UsersPage() {
 		companyId: companyIdQuery === 'all' ? undefined : companyIdQuery,
 	})
 	const { data: companiesData, isPending: isPendingCompanies } = useCompanies()
-	const queryClient = useQueryClient()
-	const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-	const [isSaving, setIsSaving] = React.useState(false)
 	const companies = companiesData?.companies ?? []
 
 	// 管理者権限チェック
@@ -67,42 +59,6 @@ export default function UsersPage() {
 	// 管理者以外は表示しない
 	if (!currentUser || currentUser.role !== 'admin') {
 		return null
-	}
-
-	const handleSaveUser = async (userData: Partial<User> & { password?: string }) => {
-		if (
-			!userData.name ||
-			!userData.email ||
-			!userData.role ||
-			!userData.password ||
-			!userData.companyId
-		) {
-			return
-		}
-		setIsSaving(true)
-		try {
-			await createUser({
-				name: userData.name,
-				email: userData.email,
-				password: userData.password,
-				companyId: userData.companyId,
-				role: userData.role,
-				department: userData.department,
-				icon: userData.icon,
-			})
-			await queryClient.invalidateQueries({ queryKey: ['users'] })
-			setIsDialogOpen(false)
-		} catch (e) {
-			console.error('Failed to create user', e)
-			if (axios.isAxiosError(e)) {
-				const message = e.response?.data?.error?.message
-				toast.error(message || 'ユーザー登録に失敗しました。')
-			} else {
-				toast.error('ユーザー登録に失敗しました。')
-			}
-		} finally {
-			setIsSaving(false)
-		}
 	}
 
 	return (
@@ -163,10 +119,16 @@ export default function UsersPage() {
 								))}
 							</SelectContent>
 						</Select>
-						<Button onClick={() => setIsDialogOpen(true)}>
-							<Plus />
-							新規ユーザー
-						</Button>
+						<DialogUserCreateOrUpdate
+							mode='create'
+							companies={companies}
+							trigger={
+								<Button>
+									<Plus />
+									新規ユーザー
+								</Button>
+							}
+						/>
 					</div>
 				</div>
 
@@ -180,15 +142,6 @@ export default function UsersPage() {
 					isLoading={isFetchingUsers}
 				/>
 			</Section>
-
-			<DialogUserCreate
-				open={isDialogOpen}
-				onOpenChange={setIsDialogOpen}
-				mode='create'
-				companies={companies}
-				onSave={handleSaveUser}
-				isSaving={isSaving}
-			/>
 		</>
 	)
 }

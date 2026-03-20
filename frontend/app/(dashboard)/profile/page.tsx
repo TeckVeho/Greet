@@ -48,13 +48,11 @@ export default function Page() {
 					</CardHeader>
 					<CardContent className='space-y-4'>
 						<div className='flex items-center gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-3'>
-							<div className='flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl shadow-sm'>
-								{user?.avatar ? (
+							{user?.avatar && (
+								<div className='flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl shadow-sm'>
 									<Image src={user?.avatar} alt='Avatar' width={48} height={48} />
-								) : (
-									user?.icon
-								)}
-							</div>
+								</div>
+							)}
 							<div>
 								<p className='font-medium text-zinc-900'>{user?.name}</p>
 								<p className='text-sm text-zinc-500'>{user?.email}</p>
@@ -74,7 +72,6 @@ export default function Page() {
 					<CardContent className='grid gap-4 md:grid-cols-2'>
 						<ProfileField label='名前' value={user?.name} />
 						<ProfileField label='メールアドレス' value={user?.email} />
-						<ProfileField label='アイコン' value={user?.icon} />
 						<ProfileField label='会社コード' value={user?.company?.code} />
 						<div className='md:col-span-2'>
 							<ProfileField label='会社名' value={user?.company?.name} />

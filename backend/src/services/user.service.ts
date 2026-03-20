@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
 import { ApiError } from '../utils/utils'
 import { createUserBody, listUserQuery } from '../validators/user.validator'
+import { uploadFile } from './file.service'
 
 type Requester = {
   userId: string
@@ -101,7 +102,7 @@ export class UserService {
     }
   }
 
-  async create(userData: createUserBody & { companyId: string }) {
+  async create(userData: createUserBody & { companyId: string }, file?: Express.Multer.File) {
     try {
       const [existingUser, company] = await Promise.all([
         prisma.user.findUnique({
@@ -124,10 +125,15 @@ export class UserService {
 
       const { password, ...rest } = userData
       const hashedPassword = await bcrypt.hash(password, 12)
+      let avatarUrl = undefined
+      if (file) {
+        avatarUrl = await uploadFile(file)
+      }
       const user = await prisma.user.create({
         data: {
           ...rest,
           passwordHash: hashedPassword,
+          avatar: avatarUrl,
         },
         include: {
           company: {
@@ -154,7 +160,12 @@ export class UserService {
     }
   }
 
-  async update(id: string, userData: Partial<createUserBody>, requester?: Requester) {
+  async update(
+    id: string,
+    userData: Partial<createUserBody>,
+    requester?: Requester,
+    file?: Express.Multer.File,
+  ) {
     try {
       const existing = await prisma.user.findUnique({ where: { id }, select: { companyId: true } })
       if (!existing) {
@@ -188,6 +199,13 @@ export class UserService {
       const data: any = { ...rest }
       if (password) {
         data.passwordHash = await bcrypt.hash(password, 12)
+      }
+      if (file) {
+        data.avatar = await uploadFile(file)
+      } else if (userData.avatar === 'null' || userData.avatar === null) {
+        data.avatar = null
+      } else {
+        delete data.avatar
       }
       const user = await prisma.user.update({
         where: { id },

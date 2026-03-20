@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import multer from 'multer'
 import { userController } from '../controllers/user.controller'
 import { adminMiddleware } from '../middleware/admin.middleware'
 import { authMiddleware } from '../middleware/auth.middleware'
@@ -6,12 +7,12 @@ import { errorMiddleware } from '../middleware/error.middleware'
 import { tenantMiddleware } from '../middleware/tenant.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware'
 import {
-	createUserSchema,
-	listUserQuerySchema,
-	updateUserSchema,
-	userIdSchema,
+  createUserSchema,
+  listUserQuerySchema,
+  updateUserSchema,
+  userIdSchema,
 } from '../validators/user.validator'
-
+const upload = multer()
 const router = Router()
 
 router.use(authMiddleware, tenantMiddleware)
@@ -19,16 +20,23 @@ router.use(authMiddleware, tenantMiddleware)
 // get users
 router.get('/', adminMiddleware, validateQuery(listUserQuerySchema), userController.getUsers)
 // create user
-router.post('/', adminMiddleware, validateBody(createUserSchema), userController.createUser)
+router.post(
+  '/',
+  adminMiddleware,
+  upload.single('avatar'),
+  validateBody(createUserSchema),
+  userController.createUser,
+)
 // get user by id
 router.get('/:userId', adminMiddleware, validateParams(userIdSchema), userController.getUserById)
 // update user
 router.put(
-	'/:userId',
-	adminMiddleware,
-	validateParams(userIdSchema),
-	validateBody(updateUserSchema),
-	userController.updateUser,
+  '/:userId',
+  adminMiddleware,
+  upload.single('avatar'),
+  validateParams(userIdSchema),
+  validateBody(updateUserSchema),
+  userController.updateUser,
 )
 // delete user
 router.delete('/:userId', adminMiddleware, validateParams(userIdSchema), userController.deleteUser)

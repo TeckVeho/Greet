@@ -13,7 +13,7 @@ type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; c
 type UpdateRestaurantInput = updateRestaurantBodySchema
 type ListQuery = listRestaurantsQueryBodySchema
 
-function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
+function mapUserSummary(user: { id: string; name: string } | null) {
   if (!user) {
     return null
   }
@@ -21,7 +21,6 @@ function mapUserSummary(user: { id: string; name: string; icon: string | null } 
   return {
     id: user.id,
     name: user.name,
-    icon: user.icon ?? undefined,
   }
 }
 
@@ -133,7 +132,7 @@ export class RestaurantService {
           },
 
           createdBy: {
-            select: { id: true, name: true, icon: true },
+            select: { id: true, name: true },
           },
         },
       }),
@@ -208,7 +207,6 @@ export class RestaurantService {
               select: {
                 id: true,
                 name: true,
-                icon: true,
               },
             },
           },
@@ -220,7 +218,6 @@ export class RestaurantService {
           select: {
             id: true,
             name: true,
-            icon: true,
           },
         },
       },
@@ -268,7 +265,6 @@ export class RestaurantService {
       url: restaurant.url ?? undefined,
       smokingAllowed: restaurant.smokingAllowed,
       coverImage: await resolveFileUrl(restaurant.coverImage),
-      icon: await resolveFileUrl(restaurant.icon),
       createdBy: mapUserSummary(restaurant.createdBy),
       reviews: restaurant.reviews.map(r => ({
         id: r.id,

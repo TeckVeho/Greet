@@ -1,6 +1,7 @@
 import z from 'zod'
 
 export const schemaCreate = z.object({
+	avatar: z.any().optional(),
 	name: z.string().min(1, '名前は必須です').max(100, '名前は100文字以内で入力してください'),
 	email: z
 		.string()
@@ -15,6 +16,7 @@ export const schemaCreate = z.object({
 	companyId: z.string().min(1, '所属会社は必須です'),
 })
 export const schemaUpdate = z.object({
+	avatar: z.any().optional(),
 	name: z.string().min(1, '名前は必須です').max(100, '名前は100文字以内で入力してください'),
 	email: z
 		.string()
