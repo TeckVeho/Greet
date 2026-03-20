@@ -78,6 +78,7 @@ export {
 	InputGroupText,
 	InputGroupTextarea,
 } from './input-group'
+export { InputPassword } from './input-password'
 export { Kbd } from './kbd'
 export { Label } from './label'
 export {

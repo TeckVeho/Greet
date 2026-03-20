@@ -12,23 +12,22 @@ import { SheetCompanyView } from '../sheets/sheet-company-view'
 
 export const UserColumns: ColumnDef<User>[] = [
 	{
-		accessorKey: 'name',
-		header: '名前',
-		cell: ({ row, getValue }) => {
-			const name = getValue<string>()
-			const avatarUrl = row.original.avatar || undefined
-
+		accessorKey: 'avatar',
+		header: 'お名前',
+		cell: ({ getValue, row }) => {
+			const avatarUrl = getValue<string>()
 			return (
-				<div className='flex items-center gap-3'>
-					<Avatar className='h-9 w-9'>
-						<AvatarImage src={avatarUrl} alt={name} />
-						<AvatarFallback>{name?.charAt(0) || '?'}</AvatarFallback>
+				<div className='flex items-center gap-2'>
+					<Avatar>
+						<AvatarImage src={avatarUrl} />
+						<AvatarFallback>{row.original.name.charAt(0)}</AvatarFallback>
 					</Avatar>
-					<span>{name}</span>
+					{row.original.name}
 				</div>
 			)
 		},
 	},
+
 	{
 		accessorKey: 'email',
 		header: 'メールアドレス',
@@ -40,7 +39,11 @@ export const UserColumns: ColumnDef<User>[] = [
 			const value = getValue<string>()
 			return (
 				<SheetCompanyView
-					trigger={<span className='text-blue-500 underline cursor-pointer'>{value}</span>}
+					trigger={
+						<span className=' hover:underline cursor-pointer'>
+							{row.original.company?.icon} {value}
+						</span>
+					}
 					company_data={row.original.company || null}
 				/>
 			)
@@ -53,15 +56,16 @@ export const UserColumns: ColumnDef<User>[] = [
 	{
 		accessorKey: 'role',
 		header: '権限',
-		cell: ({ getValue }) => {
-			const role = getValue<string>()
+		cell: ({ row }) => {
+			const role = row.original.role
 			return (
 				<Badge variant={role === 'admin' ? 'chinese' : 'french'}>
-					{role === 'admin' ? '管理者' : '一般ユーザー'}
+					{role === 'admin' ? '管理者' : '一般'}
 				</Badge>
 			)
 		},
 	},
+
 	{
 		accessorKey: 'createdAt',
 		header: '登録日',
@@ -78,8 +82,7 @@ export const UserColumns: ColumnDef<User>[] = [
 
 			return (
 				<div className='flex flex-col'>
-					<span>{format(date, 'MM/dd/yyyy')}</span>
-					<span>{format(date, 'HH:mm')}</span>
+					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
 				</div>
 			)
 		},
@@ -147,7 +150,7 @@ export const UserColumns: ColumnDef<User>[] = [
 								削除
 							</Button>
 						}
-						actionButtonText={'削除'}
+						actionButtonText='削除'
 						deletingText='削除中...'
 					/>
 				</div>

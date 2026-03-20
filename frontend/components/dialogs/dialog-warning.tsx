@@ -53,7 +53,7 @@ export const DialogWarning: React.FC<DialogDeleteItemProps> = ({
 						{deleting ? <Spinner text={deletingText} /> : actionButtonText}
 					</Button>
 					<DialogClose asChild>
-						<Button>{cancelButtonText}</Button>
+						<Button variant='secondary'>{cancelButtonText}</Button>
 					</DialogClose>
 				</DialogFooter>
 			</DialogContent>

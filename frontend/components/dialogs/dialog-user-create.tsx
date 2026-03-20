@@ -8,8 +8,14 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+	Form as FormUi,
 	Input,
-	Label,
+	InputPassword,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -17,23 +23,15 @@ import {
 	SelectValue,
 } from '@/components/ui'
 
-import { type CompanyListItem } from '@/lib/api/companies'
-import { User } from '@/lib/types'
+import { UserFormDialogProps } from '@/lib/types'
+import { onError } from '@/lib/utils'
+import { schemaCreate, schemaUpdate } from '@/schemas/user.schemas'
+import { zodResolver } from '@hookform/resolvers/zod'
 import * as React from 'react'
-import { toast } from 'sonner'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import z from 'zod'
 
-const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).+$/
-
-interface UserFormDialogProps {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-	mode: 'create' | 'edit'
-	user?: User
-	onSave: (user: Partial<User> & { password?: string }) => void
-	companies?: CompanyListItem[]
-	isSaving?: boolean
-}
-
+type UserFormData = z.infer<typeof schemaCreate | typeof schemaUpdate>
 export function DialogUserCreate({
 	open,
 	onOpenChange,
@@ -43,210 +41,200 @@ export function DialogUserCreate({
 	companies = [],
 	isSaving = false,
 }: UserFormDialogProps) {
-	const [formData, setFormData] = React.useState<Partial<User> & { password?: string }>({
-		name: '',
-		email: '',
-		password: '',
-		role: 'user',
-		department: '',
-		icon: '',
-		companyId: '',
+	const formCreateUser = useForm<UserFormData>({
+		mode: 'onChange',
+		defaultValues: {
+			name: '',
+			email: '',
+			password: '',
+			role: 'user',
+			department: '',
+			companyId: '',
+		},
+		resolver: zodResolver(mode === 'create' ? schemaCreate : schemaUpdate),
+	})
+	const formUpdateUser = useForm<UserFormData>({
+		mode: 'onChange',
+		defaultValues: {
+			name: '',
+			email: '',
+			role: 'user',
+			department: '',
+			companyId: '',
+		},
+		resolver: zodResolver(mode === 'create' ? schemaCreate : schemaUpdate),
 	})
 
 	React.useEffect(() => {
 		if (mode === 'edit' && user) {
-			setFormData({
+			formUpdateUser.reset({
 				name: user.name,
 				email: user.email,
 				password: '',
 				role: user.role,
 				department: user.department,
-				icon: user.icon,
 				companyId: user.companyId,
 			})
 		} else {
-			setFormData({
+			formCreateUser.reset({
 				name: '',
 				email: '',
 				password: '',
 				role: 'user',
 				department: '',
-				icon: '',
 				companyId: '',
 			})
 		}
 	}, [mode, user, open])
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault()
-
-		if (!formData.name || !formData.email || !formData.role || !formData.companyId) {
-			toast.error('必須項目を全て入力してください')
-			return
-		}
-
-		if (formData.name.length > 100) {
-			toast.error('名前は100文字以内で入力してください')
-			return
-		}
-
-		if (formData.icon && formData.icon.length > 10) {
-			toast.error('アイコンは10文字以内で入力してください')
-			return
-		}
-
-		if (mode === 'create' && !formData.password) {
-			toast.error('パスワードを入力してください')
-			return
-		}
-
-		if (mode === 'create' && formData.password) {
-			if (formData.password.length < 8) {
-				toast.error('パスワードは8文字以上で入力してください')
-				return
-			}
-
-			if (!passwordRegex.test(formData.password)) {
-				toast.error('パスワードは英字と数字を含める必要があります')
-				return
-			}
-		}
-
-		if (formData.department && formData.department.length > 100) {
-			toast.error('部署名は100文字以内で入力してください')
-			return
-		}
-
-		onSave(formData)
+	const onSubmit: SubmitHandler<UserFormData> = data => {
+		onSave(data)
 	}
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
+			<DialogContent aria-describedby={undefined}>
 				<DialogHeader>
 					<DialogTitle>{mode === 'create' ? '新規ユーザー登録' : 'ユーザー情報編集'}</DialogTitle>
 				</DialogHeader>
-
-				<form onSubmit={handleSubmit}>
-					<DialogBody>
-						<div className='space-y-4'>
-							{/* 名前 */}
-							<div className='space-y-2'>
-								<Label htmlFor='name'>名前 *</Label>
-								<Input
-									id='name'
-									value={formData.name || ''}
-									onChange={e => setFormData({ ...formData, name: e.target.value })}
-									placeholder='例: 山田太郎'
-									required
+				<FormUi {...(mode === 'edit' ? formUpdateUser : formCreateUser)}>
+					<form
+						onSubmit={
+							mode === 'edit'
+								? formUpdateUser.handleSubmit(onSubmit, onError)
+								: formCreateUser.handleSubmit(onSubmit, onError)
+						}
+					>
+						<DialogBody>
+							<div className='space-y-4'>
+								{/* 名前 */}
+								<FormField
+									control={mode === 'edit' ? formUpdateUser.control : formCreateUser.control}
+									name='name'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>名前</FormLabel>
+											<FormControl>
+												<Input {...field} placeholder='例: 山田太郎' required />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
 								/>
-							</div>
-
-							{/* メールアドレス */}
-							<div className='space-y-2'>
-								<Label htmlFor='email'>メールアドレス *</Label>
-								<Input
-									id='email'
-									type='email'
-									value={formData.email || ''}
-									onChange={e => setFormData({ ...formData, email: e.target.value })}
-									placeholder='yamada@example.com'
-									required
+								{/* メールアドレス */}
+								<FormField
+									control={mode === 'edit' ? formUpdateUser.control : formCreateUser.control}
+									name='email'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>メールアドレス</FormLabel>
+											<FormControl>
+												<Input {...field} type='email' placeholder='yamada@example.com' required />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
 								/>
-							</div>
 
-							{/* パスワード（新規作成時のみ） */}
-							{mode === 'create' && (
-								<div className='space-y-2'>
-									<Label htmlFor='password'>パスワード *</Label>
-									<Input
-										id='password'
-										type='password'
-										value={formData.password || ''}
-										onChange={e => setFormData({ ...formData, password: e.target.value })}
-										placeholder='8文字以上'
-										required
+								<div className='flex items-center gap-4'>
+									{/* 所属会社 */}
+									<FormField
+										control={mode === 'edit' ? formUpdateUser.control : formCreateUser.control}
+										name='companyId'
+										render={({ field }) => (
+											<FormItem className='flex-1'>
+												<FormLabel required>所属会社</FormLabel>
+												<FormControl>
+													<Select value={field.value} onValueChange={field.onChange}>
+														<SelectTrigger className='mb-0'>
+															<SelectValue placeholder='会社を選択' />
+														</SelectTrigger>
+														<SelectContent>
+															{companies.map(company => (
+																<SelectItem key={company.id} value={company.id}>
+																	{company.icon} {company.name}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+
+									{/* 部署 */}
+									<FormField
+										control={mode === 'edit' ? formUpdateUser.control : formCreateUser.control}
+										name='department'
+										render={({ field }) => (
+											<FormItem className='flex-1'>
+												<FormLabel>部署</FormLabel>
+												<FormControl>
+													<Input {...field} type='text' placeholder='営業部' />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
 									/>
 								</div>
-							)}
-
-							{/* 部署 */}
-							<div className='space-y-2'>
-								<Label htmlFor='department'>部署</Label>
-								<Input
-									id='department'
-									value={formData.department || ''}
-									onChange={e => setFormData({ ...formData, department: e.target.value })}
-									placeholder='営業部'
+								{/* 権限 */}
+								<FormField
+									control={mode === 'edit' ? formUpdateUser.control : formCreateUser.control}
+									name='role'
+									render={({ field }) => (
+										<FormItem className='flex-1'>
+											<FormLabel required>ユーザー権限</FormLabel>
+											<FormControl>
+												<Select value={field.value} onValueChange={field.onChange}>
+													<SelectTrigger>
+														<SelectValue placeholder='権限を選択' />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value='user'>一般ユーザー</SelectItem>
+														<SelectItem value='admin'>管理者</SelectItem>
+													</SelectContent>
+												</Select>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
 								/>
-							</div>
 
-							{/* アイコン */}
-							<div className='space-y-2'>
-								<Label htmlFor='icon'>アイコン</Label>
-								<Input
-									id='icon'
-									value={formData.icon || ''}
-									onChange={e => setFormData({ ...formData, icon: e.target.value })}
-									placeholder='例: 👤'
-								/>
+								{/* パスワード（新規作成時のみ） */}
+								{mode === 'create' && (
+									<FormField
+										control={formCreateUser.control}
+										name='password'
+										render={({ field }) => (
+											<FormItem className='flex-1'>
+												<FormLabel required>パスワード</FormLabel>
+												<FormControl>
+													<InputPassword {...field} placeholder='6文字以上' required />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								)}
 							</div>
+						</DialogBody>
 
-							{/* 権限 */}
-							<div className='space-y-2'>
-								<Label htmlFor='role'>ユーザー権限 *</Label>
-								<Select
-									value={formData.role}
-									onValueChange={(value: 'admin' | 'user') =>
-										setFormData({ ...formData, role: value })
-									}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder='権限を選択' />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value='user'>一般ユーザー</SelectItem>
-										<SelectItem value='admin'>管理者</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
-
-							{/* 所属会社 */}
-							<div className='space-y-2'>
-								<Label htmlFor='companyId'>所属会社 *</Label>
-								<Select
-									value={formData.companyId || ''}
-									onValueChange={value => setFormData({ ...formData, companyId: value })}
-								>
-									<SelectTrigger id='companyId'>
-										<SelectValue placeholder='会社を選択' />
-									</SelectTrigger>
-									<SelectContent>
-										{companies.map(company => (
-											<SelectItem key={company.id} value={company.id}>
-												{company.icon} {company.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
-					</DialogBody>
-
-					<DialogFooter>
-						<Button
-							type='button'
-							variant='secondary'
-							onClick={() => onOpenChange(false)}
-							disabled={isSaving}
-						>
-							キャンセル
-						</Button>
-						<Button type='submit' disabled={isSaving}>
-							{isSaving ? '保存中...' : mode === 'create' ? '登録' : '更新'}
-						</Button>
-					</DialogFooter>
-				</form>
+						<DialogFooter>
+							<Button
+								type='button'
+								variant='secondary'
+								onClick={() => onOpenChange(false)}
+								disabled={isSaving}
+							>
+								キャンセル
+							</Button>
+							<Button type='submit' disabled={isSaving}>
+								{isSaving ? '保存中...' : mode === 'create' ? '登録' : '更新'}
+							</Button>
+						</DialogFooter>
+					</form>
+				</FormUi>
 			</DialogContent>
 		</Dialog>
 	)

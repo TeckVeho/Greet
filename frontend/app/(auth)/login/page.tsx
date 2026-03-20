@@ -1,5 +1,6 @@
 'use client'
 
+import { InputPassword } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import {
 	Card,
@@ -97,9 +98,8 @@ export default function LoginPage() {
 							<Label htmlFor='password' className='text-foreground'>
 								パスワード
 							</Label>
-							<Input
+							<InputPassword
 								id='password'
-								type='password'
 								value={password}
 								onChange={e => setPassword(e.target.value)}
 								required
@@ -123,11 +123,6 @@ export default function LoginPage() {
 								'ログイン'
 							)}
 						</Button>
-						{/* <div className='text-sm text-muted-foreground'>
-							<p className='mb-1 font-medium text-foreground'>テストアカウント:</p>
-							<p>管理者: admin@example.com / admin123</p>
-							<p>一般: user@example.com / user123</p>
-						</div> */}
 					</CardFooter>
 				</form>
 			</Card>

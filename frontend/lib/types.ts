@@ -1,3 +1,5 @@
+import { CompanyListItem } from './api/companies'
+
 export interface Restaurant {
 	id: string
 	name: string
@@ -67,4 +69,13 @@ export interface User {
 	icon?: string // アイコン絵文字
 	createdAt: Date
 	lastLogin?: Date
+}
+export interface UserFormDialogProps {
+	open: boolean
+	onOpenChange: (open: boolean) => void
+	mode: 'create' | 'edit'
+	user?: User
+	onSave: (user: Partial<User> & { password?: string }) => void
+	companies?: CompanyListItem[]
+	isSaving?: boolean
 }
