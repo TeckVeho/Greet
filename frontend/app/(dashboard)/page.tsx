@@ -114,7 +114,7 @@ export default function Home() {
 				{/* テーブル/カード表示（モバイルは常にカード） */}
 				{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
 					<DataCards
-						data={restaurants?.data!}
+						data={restaurants?.data ?? []}
 						pagination={pagination}
 						setPagination={setPagination}
 						total={restaurants?.meta?.total}
@@ -123,7 +123,7 @@ export default function Home() {
 				) : (
 					<DataTable
 						columns={RestaurantColumns}
-						data={restaurants?.data!}
+						data={restaurants?.data ?? []}
 						pagination={pagination}
 						setPagination={setPagination}
 						total={restaurants?.meta?.total}

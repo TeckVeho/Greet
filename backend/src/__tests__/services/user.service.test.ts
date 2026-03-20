@@ -6,6 +6,9 @@ import bcrypt from 'bcrypt'
 
 jest.mock('../../prisma', () => ({
   prisma: {
+    company: {
+      findUnique: jest.fn(),
+    },
     user: {
       findMany: jest.fn(),
       count: jest.fn(),
@@ -24,6 +27,7 @@ jest.mock('bcrypt', () => ({
 const mockUserFindMany = prisma.user.findMany as jest.Mock
 const mockUserCount = prisma.user.count as jest.Mock
 const mockUserFindUnique = prisma.user.findUnique as jest.Mock
+const mockCompanyFindUnique = prisma.company.findUnique as jest.Mock
 const mockUserCreate = prisma.user.create as jest.Mock
 const mockUserUpdate = prisma.user.update as jest.Mock
 const mockUserDelete = prisma.user.delete as jest.Mock
@@ -52,6 +56,7 @@ describe('UserService', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     service = new UserService()
+    mockCompanyFindUnique.mockResolvedValue({ id: 'company-1' })
   })
 
   // ─────────────────────────────────────────

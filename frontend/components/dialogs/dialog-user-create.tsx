@@ -20,6 +20,9 @@ import {
 import { type CompanyListItem } from '@/lib/api/companies'
 import { User } from '@/lib/types'
 import * as React from 'react'
+import { toast } from 'sonner'
+
+const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).+$/
 
 interface UserFormDialogProps {
 	open: boolean
@@ -46,6 +49,7 @@ export function DialogUserCreate({
 		password: '',
 		role: 'user',
 		department: '',
+		icon: '',
 		companyId: '',
 	})
 
@@ -57,6 +61,7 @@ export function DialogUserCreate({
 				password: '',
 				role: user.role,
 				department: user.department,
+				icon: user.icon,
 				companyId: user.companyId,
 			})
 		} else {
@@ -66,6 +71,7 @@ export function DialogUserCreate({
 				password: '',
 				role: 'user',
 				department: '',
+				icon: '',
 				companyId: '',
 			})
 		}
@@ -75,11 +81,39 @@ export function DialogUserCreate({
 		e.preventDefault()
 
 		if (!formData.name || !formData.email || !formData.role || !formData.companyId) {
-			alert('必須項目を全て入力してください')
+			toast.error('必須項目を全て入力してください')
 			return
 		}
+
+		if (formData.name.length > 100) {
+			toast.error('名前は100文字以内で入力してください')
+			return
+		}
+
+		if (formData.icon && formData.icon.length > 10) {
+			toast.error('アイコンは10文字以内で入力してください')
+			return
+		}
+
 		if (mode === 'create' && !formData.password) {
-			alert('パスワードを入力してください')
+			toast.error('パスワードを入力してください')
+			return
+		}
+
+		if (mode === 'create' && formData.password) {
+			if (formData.password.length < 8) {
+				toast.error('パスワードは8文字以上で入力してください')
+				return
+			}
+
+			if (!passwordRegex.test(formData.password)) {
+				toast.error('パスワードは英字と数字を含める必要があります')
+				return
+			}
+		}
+
+		if (formData.department && formData.department.length > 100) {
+			toast.error('部署名は100文字以内で入力してください')
 			return
 		}
 
@@ -144,6 +178,17 @@ export function DialogUserCreate({
 									value={formData.department || ''}
 									onChange={e => setFormData({ ...formData, department: e.target.value })}
 									placeholder='営業部'
+								/>
+							</div>
+
+							{/* アイコン */}
+							<div className='space-y-2'>
+								<Label htmlFor='icon'>アイコン</Label>
+								<Input
+									id='icon'
+									value={formData.icon || ''}
+									onChange={e => setFormData({ ...formData, icon: e.target.value })}
+									placeholder='例: 👤'
 								/>
 							</div>
 

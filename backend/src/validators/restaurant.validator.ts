@@ -1,36 +1,79 @@
 import { Area, Genre, PriceRange } from '@prisma/client'
 import z from 'zod'
 
+const phoneRegex = /^[0-9()+\-\s]{8,20}$/
+
+const enumArrayOrSingle = <T extends z.ZodTypeAny>(itemSchema: T) =>
+  z.preprocess(value => {
+    if (value === undefined || value === null || value === '') {
+      return undefined
+    }
+    return Array.isArray(value) ? value : [value]
+  }, z.array(itemSchema).optional())
+
 // createdById / companyId are injected server-side from JWT — never accepted from the client body
 export const createRestaurantSchema = z.object({
   name: z
     .string()
-    .min(2, { message: 'レストラン名は2文字以上である必要があります' })
+    .min(1, { message: 'レストラン名は1文字以上である必要があります' })
     .max(200, { message: 'レストラン名は200文字以内である必要があります' }),
   area: z.nativeEnum(Area),
-  hasPrivateRoom: z.boolean(),
-  smokingAllowed: z.boolean(),
-  priceRange: z.nativeEnum(PriceRange),
-  address: z.string().optional(),
-  phone: z.string().optional(),
-  url: z.string().optional(),
+  hasPrivateRoom: z.boolean().optional().default(false),
+  smokingAllowed: z.boolean().optional().default(false),
+  priceRange: z.nativeEnum(PriceRange).optional().default(PriceRange.UNKNOWN),
+  address: z.string().max(300, { message: '住所は300文字以内である必要があります' }).optional(),
+  phone: z
+    .string()
+    .regex(phoneRegex, { message: '電話番号の形式が正しくありません' })
+    .optional(),
+  url: z.string().url({ message: '有効なURLを指定してください' }).optional(),
   coverImage: z.string().optional(),
   icon: z.string().optional(),
-  genres: z.array(z.nativeEnum(Genre)).optional(),
+  genres: z.array(z.nativeEnum(Genre)).min(1, {
+    message: 'ジャンルは1件以上選択してください',
+  }),
 })
 
 // companyId and createdById are never updatable by the client
-export const updateRestaurantSchema = createRestaurantSchema.partial()
+export const updateRestaurantSchema = z.object({
+  name: z
+    .string()
+    .min(1, { message: 'レストラン名は1文字以上である必要があります' })
+    .max(200, { message: 'レストラン名は200文字以内である必要があります' })
+    .optional(),
+  area: z.nativeEnum(Area).optional(),
+  hasPrivateRoom: z.boolean().optional(),
+  smokingAllowed: z.boolean().optional(),
+  priceRange: z.nativeEnum(PriceRange).optional(),
+  address: z.string().max(300, { message: '住所は300文字以内である必要があります' }).optional(),
+  phone: z
+    .string()
+    .regex(phoneRegex, { message: '電話番号の形式が正しくありません' })
+    .optional(),
+  url: z.string().url({ message: '有効なURLを指定してください' }).optional(),
+  coverImage: z.string().optional(),
+  icon: z.string().optional(),
+  genres: z.array(z.nativeEnum(Genre)).min(1, {
+    message: 'ジャンルは1件以上選択してください',
+  }).optional(),
+})
 
 export const listRestaurantsQuerySchema = z.object({
-  limit: z.number().int().positive().max(100).optional(),
-  page: z.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(100).optional(),
+  page: z.coerce.number().int().positive().optional(),
   search: z.string().optional(),
-  areas: z.array(z.nativeEnum(Area)).optional(),
-  genres: z.array(z.nativeEnum(Genre)).optional(),
+  // docs keys
+  area: enumArrayOrSingle(z.nativeEnum(Area)),
+  genre: enumArrayOrSingle(z.nativeEnum(Genre)),
+  priceRange: enumArrayOrSingle(z.nativeEnum(PriceRange)),
+  sortBy: z.enum(['createdAt', 'name', 'priceRange', 'reviewCount', 'rating']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+  // existing client keys (kept for compatibility)
+  areas: enumArrayOrSingle(z.nativeEnum(Area)),
+  genres: enumArrayOrSingle(z.nativeEnum(Genre)),
   hasPrivateRoom: z.enum(['true', 'false']).optional(),
   smokingAllowed: z.enum(['true', 'false']).optional(),
-  priceRanges: z.array(z.nativeEnum(PriceRange)).optional(),
+  priceRanges: enumArrayOrSingle(z.nativeEnum(PriceRange)),
   sort: z
     .enum([
       'createdAt_desc',

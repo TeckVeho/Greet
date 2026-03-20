@@ -29,10 +29,20 @@ export class RestaurantService {
   async findAll(query: ListQuery) {
     const smokingAllowed = parseBoolean(query.smokingAllowed)
     const hasPrivateRoom = parseBoolean(query.hasPrivateRoom)
-    const sort = query.sort
-    let genres = cleanArray(query.genres)
-    let areas = cleanArray(query.areas)
-    let priceRanges = cleanArray(query.priceRanges)
+    const sort =
+      query.sort ??
+      (query.sortBy
+        ? `${
+            query.sortBy === 'priceRange'
+              ? 'price'
+              : query.sortBy === 'reviewCount'
+                ? 'reviews'
+                : query.sortBy
+          }_${query.sortOrder ?? 'desc'}`
+        : undefined)
+    let genres = cleanArray(query.genres?.length ? query.genres : query.genre)
+    let areas = cleanArray(query.areas?.length ? query.areas : query.area)
+    let priceRanges = cleanArray(query.priceRanges?.length ? query.priceRanges : query.priceRange)
     const search = query.search?.trim()
     const page = Math.max(1, Number(query.page) || 1)
     const limit = Math.max(1, Number(query.limit) || 10)

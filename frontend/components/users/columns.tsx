@@ -12,45 +12,30 @@ import { SheetCompanyView } from '../sheets/sheet-company-view'
 
 export const UserColumns: ColumnDef<User>[] = [
 	{
-		accessorKey: 'avatar',
-		header: 'アバター',
-		cell: ({ getValue, row }) => {
-			const avatarUrl = getValue<string>()
-			return (
-				<Avatar>
-					<AvatarImage src={avatarUrl} />
-					<AvatarFallback>{row.original.name.charAt(0)}</AvatarFallback>
-				</Avatar>
-			)
-		},
-	},
-	{
 		accessorKey: 'name',
 		header: '名前',
+		cell: ({ row, getValue }) => {
+			const name = getValue<string>()
+			const avatarUrl = row.original.avatar || undefined
+
+			return (
+				<div className='flex items-center gap-3'>
+					<Avatar className='h-9 w-9'>
+						<AvatarImage src={avatarUrl} alt={name} />
+						<AvatarFallback>{name?.charAt(0) || '?'}</AvatarFallback>
+					</Avatar>
+					<span>{name}</span>
+				</div>
+			)
+		},
 	},
 	{
 		accessorKey: 'email',
 		header: 'メールアドレス',
 	},
 	{
-		accessorKey: 'department',
-		header: '部署',
-	},
-	{
-		accessorKey: 'role',
-		header: 'ロール',
-		cell: ({ getValue }) => {
-			const role = getValue<string>()
-			return <Badge variant={role === 'admin' ? 'chinese' : 'french'}>{role.toUpperCase()}</Badge>
-		},
-	},
-	{
-		accessorKey: 'icon',
-		header: 'アイコン',
-	},
-	{
 		accessorKey: 'company.name',
-		header: '会社名',
+		header: '会社',
 		cell: ({ getValue, row }) => {
 			const value = getValue<string>()
 			return (
@@ -62,13 +47,39 @@ export const UserColumns: ColumnDef<User>[] = [
 		},
 	},
 	{
-		accessorKey: 'createdAt',
-		header: '作成日',
+		accessorKey: 'department',
+		header: '部署',
+	},
+	{
+		accessorKey: 'role',
+		header: '権限',
 		cell: ({ getValue }) => {
+			const role = getValue<string>()
+			return (
+				<Badge variant={role === 'admin' ? 'chinese' : 'french'}>
+					{role === 'admin' ? '管理者' : '一般ユーザー'}
+				</Badge>
+			)
+		},
+	},
+	{
+		accessorKey: 'createdAt',
+		header: '登録日',
+		cell: ({ getValue }) => {
+			const value = getValue<string | Date | null>()
+			if (!value) {
+				return <span className='text-muted-foreground'>-</span>
+			}
+
+			const date = new Date(value)
+			if (Number.isNaN(date.getTime())) {
+				return <span className='text-muted-foreground'>-</span>
+			}
+
 			return (
 				<div className='flex flex-col'>
-					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
-					<span>{format(getValue<Date>(), 'HH:mm')}</span>
+					<span>{format(date, 'MM/dd/yyyy')}</span>
+					<span>{format(date, 'HH:mm')}</span>
 				</div>
 			)
 		},
@@ -77,10 +88,20 @@ export const UserColumns: ColumnDef<User>[] = [
 		accessorKey: 'lastLoginAt',
 		header: '最終ログイン',
 		cell: ({ getValue }) => {
+			const value = getValue<string | Date | null>()
+			if (!value) {
+				return <span className='text-muted-foreground'>未ログイン</span>
+			}
+
+			const date = new Date(value)
+			if (Number.isNaN(date.getTime())) {
+				return <span className='text-muted-foreground'>未ログイン</span>
+			}
+
 			return (
 				<div className='flex flex-col'>
-					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
-					<span>{format(getValue<Date>(), 'HH:mm')}</span>
+					<span>{format(date, 'MM/dd/yyyy')}</span>
+					<span>{format(date, 'HH:mm')}</span>
 				</div>
 			)
 		},
@@ -88,7 +109,7 @@ export const UserColumns: ColumnDef<User>[] = [
 
 	{
 		id: 'actions',
-		header: 'アクション',
+		header: '操作',
 		cell: ({ row }) => {
 			const [isLoading, setIsloading] = useState<boolean>(false)
 			const user_id = row.original.id

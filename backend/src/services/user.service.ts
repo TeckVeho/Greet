@@ -103,6 +103,25 @@ export class UserService {
 
   async create(userData: createUserBody & { companyId: string }) {
     try {
+      const [existingUser, company] = await Promise.all([
+        prisma.user.findUnique({
+          where: { email: userData.email },
+          select: { id: true },
+        }),
+        prisma.company.findUnique({
+          where: { id: userData.companyId },
+          select: { id: true },
+        }),
+      ])
+
+      if (existingUser) {
+        throw new ApiError(StatusCodes.CONFLICT, '同じメールアドレスのユーザーが既に存在します')
+      }
+
+      if (!company) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, '有効な会社IDを指定してください')
+      }
+
       const { password, ...rest } = userData
       const hashedPassword = await bcrypt.hash(password, 12)
       const user = await prisma.user.create({
@@ -122,6 +141,15 @@ export class UserService {
       const { passwordHash, ...safeUser } = user
       return { success: true, data: safeUser, statusCode: StatusCodes.CREATED }
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error
+      }
+
+      const prismaError = error as { code?: string }
+      if (prismaError.code === 'P2002') {
+        throw new ApiError(StatusCodes.CONFLICT, '同じメールアドレスのユーザーが既に存在します')
+      }
+
       throw new ApiError(StatusCodes.BAD_REQUEST, 'ユーザー作成に失敗しました')
     }
   }
@@ -134,6 +162,26 @@ export class UserService {
       }
       if (requester && requester.role !== 'admin' && existing.companyId !== requester.companyId) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+      }
+
+      if (userData.email) {
+        const existingEmailUser = await prisma.user.findUnique({
+          where: { email: userData.email },
+          select: { id: true },
+        })
+        if (existingEmailUser && existingEmailUser.id !== id) {
+          throw new ApiError(StatusCodes.CONFLICT, '同じメールアドレスのユーザーが既に存在します')
+        }
+      }
+
+      if (userData.companyId) {
+        const company = await prisma.company.findUnique({
+          where: { id: userData.companyId },
+          select: { id: true },
+        })
+        if (!company) {
+          throw new ApiError(StatusCodes.BAD_REQUEST, '有効な会社IDを指定してください')
+        }
       }
 
       const { password, ...rest } = userData
@@ -156,6 +204,15 @@ export class UserService {
       const { passwordHash, ...safeUser } = user
       return { success: true, data: safeUser, statusCode: StatusCodes.OK }
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error
+      }
+
+      const prismaError = error as { code?: string }
+      if (prismaError.code === 'P2002') {
+        throw new ApiError(StatusCodes.CONFLICT, '同じメールアドレスのユーザーが既に存在します')
+      }
+
       throw new ApiError(StatusCodes.BAD_REQUEST, 'ユーザー更新に失敗しました')
     }
   }

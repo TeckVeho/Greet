@@ -22,9 +22,11 @@ import { useAuth } from '@/lib/auth-context'
 import type { User } from '@/lib/types'
 import { useQueryClient } from '@tanstack/react-query'
 import { PaginationState } from '@tanstack/react-table'
+import axios from 'axios'
 import { Plus, SearchIcon, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
+import { toast } from 'sonner'
 
 export default function UsersPage() {
 	const router = useRouter()
@@ -86,11 +88,18 @@ export default function UsersPage() {
 				companyId: userData.companyId,
 				role: userData.role,
 				department: userData.department,
+				icon: userData.icon,
 			})
 			await queryClient.invalidateQueries({ queryKey: ['users'] })
 			setIsDialogOpen(false)
 		} catch (e) {
 			console.error('Failed to create user', e)
+			if (axios.isAxiosError(e)) {
+				const message = e.response?.data?.error?.message
+				toast.error(message || 'ユーザー登録に失敗しました。')
+			} else {
+				toast.error('ユーザー登録に失敗しました。')
+			}
 		} finally {
 			setIsSaving(false)
 		}

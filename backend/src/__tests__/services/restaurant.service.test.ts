@@ -250,6 +250,7 @@ describe('RestaurantService', () => {
     const createPayload = {
       name: '新規レストラン',
       area: 'AKASAKA' as const,
+      genres: ['SUSHI' as const],
       hasPrivateRoom: false,
       smokingAllowed: false,
       priceRange: 'RANGE_10000' as const,
@@ -267,7 +268,15 @@ describe('RestaurantService', () => {
       expect(result.statusCode).toBe(StatusCodes.CREATED)
       expect(result.data.id).toBe('rest-new')
       expect(mockRestaurantCreate).toHaveBeenCalledWith({
-        data: createPayload,
+        data: {
+          name: '新規レストラン',
+          area: 'AKASAKA',
+          hasPrivateRoom: false,
+          smokingAllowed: false,
+          priceRange: 'RANGE_10000',
+          companyId,
+          createdById: userId,
+        },
       })
     })
 
@@ -291,10 +300,16 @@ describe('RestaurantService', () => {
     })
 
     it('ジャンルなしの場合、genreのcreateは呼ばれない', async () => {
-      const created = { id: 'rest-new', ...createPayload, createdAt: new Date(), updatedAt: new Date() }
+      const payloadWithoutGenres = { ...createPayload, genres: [] as any[] }
+      const created = {
+        id: 'rest-new',
+        ...payloadWithoutGenres,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
       mockRestaurantCreate.mockResolvedValue(created)
 
-      await service.create(createPayload)
+      await service.create(payloadWithoutGenres as any)
 
       expect(mockGenreCreateMany).not.toHaveBeenCalled()
     })

@@ -3,11 +3,18 @@ import z from 'zod'
 export const createUserSchema = z.object({
   name: z
     .string()
-    .min(2, { message: 'ユーザー名は2文字以上である必要があります' })
+    .min(1, { message: 'ユーザー名は1文字以上である必要があります' })
     .max(100, { message: 'ユーザー名は100文字以内である必要があります' }),
   email: z.string().email({ message: '有効なメールアドレスを指定してください' }),
-  password: z.string().min(6, { message: 'パスワードは6文字以上である必要があります' }),
-  role: z.enum(['user', 'admin'], { message: '役割は"user"または"admin"である必要があります' }),
+  password: z
+    .string()
+    .min(8, { message: 'パスワードは8文字以上である必要があります' })
+    .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, {
+      message: 'パスワードは英字と数字を含める必要があります',
+    }),
+  role: z
+    .enum(['user', 'admin'], { message: '役割は"user"または"admin"である必要があります' })
+    .default('user'),
   department: z
     .string()
     .max(100, { message: '部署名は100文字以内である必要があります' })
@@ -16,11 +23,11 @@ export const createUserSchema = z.object({
   icon: z.string().max(10, { message: 'アイコンは10文字以内である必要があります' }).optional(),
   companyId: z.string().uuid({ message: '有効な会社IDを指定してください' }),
 })
-const updateUserSchema = createUserSchema.partial()
+export const updateUserSchema = createUserSchema.partial()
 
 export const listUserQuerySchema = z.object({
-  limit: z.number().int().positive().max(100).optional(),
-  page: z.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(100).optional(),
+  page: z.coerce.number().int().positive().optional(),
   search: z
     .string()
     .max(100, { message: '検索クエリは100文字以内である必要があります' })

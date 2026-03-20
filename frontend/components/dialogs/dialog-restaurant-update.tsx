@@ -52,6 +52,28 @@ import {
 	Spinner,
 	useComboboxAnchor,
 } from '../ui'
+
+const optionalText = z.preprocess(value => {
+	if (typeof value === 'string' && value.trim() === '') {
+		return undefined
+	}
+	return value
+}, z.string().optional())
+
+const optionalPhone = z.preprocess(value => {
+	if (typeof value === 'string' && value.trim() === '') {
+		return undefined
+	}
+	return value
+}, z.string().regex(/^[0-9()+\-\s]{8,20}$/, '電話番号の形式が正しくありません').optional())
+
+const optionalUrl = z.preprocess(value => {
+	if (typeof value === 'string' && value.trim() === '') {
+		return undefined
+	}
+	return value
+}, z.string().url().optional())
+
 const schema = z.object({
 	name: z.string().min(1, '店名は必須です'),
 	area: z.enum(AREA_OPTIONS.map(opt => opt.value)),
@@ -59,10 +81,10 @@ const schema = z.object({
 	hasPrivateRoom: z.boolean(),
 	smokingAllowed: z.boolean(),
 	priceRange: z.enum(PRICE_RANGE_OPTIONS.map(opt => opt.value)),
-	address: z.string().optional(),
-	phone: z.string().optional(),
-	url: z.string().url().optional(),
-	icon: z.string().optional(),
+	address: optionalText,
+	phone: optionalPhone,
+	url: optionalUrl,
+	icon: optionalText,
 	coverImage: z.instanceof(File).optional(),
 })
 type FormValues = z.infer<typeof schema>

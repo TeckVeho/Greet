@@ -11,6 +11,7 @@ export interface ListMeta {
 	page: number
 	limit: number
 	total_pages: number
+	totalPages?: number
 }
 
 export interface UsersListResponse {
@@ -46,7 +47,8 @@ export async function listUsers({
 			total: meta?.total ?? 0,
 			page: meta?.page ?? page,
 			limit: meta?.limit ?? limit,
-			total_pages: meta?.total_pages ?? 0,
+			total_pages: meta?.total_pages ?? meta?.totalPages ?? 0,
+			totalPages: meta?.totalPages ?? meta?.total_pages ?? 0,
 		},
 	}
 }

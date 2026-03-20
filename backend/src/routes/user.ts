@@ -4,21 +4,32 @@ import { adminMiddleware } from '../middleware/admin.middleware'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { errorMiddleware } from '../middleware/error.middleware'
 import { tenantMiddleware } from '../middleware/tenant.middleware'
-import { validateBody, validateParams } from '../middleware/validate.middleware'
-import { createUserSchema, userIdSchema } from '../validators/user.validator'
+import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware'
+import {
+	createUserSchema,
+	listUserQuerySchema,
+	updateUserSchema,
+	userIdSchema,
+} from '../validators/user.validator'
 
 const router = Router()
 
 router.use(authMiddleware, tenantMiddleware)
 
 // get users
-router.get('/', adminMiddleware, userController.getUsers)
+router.get('/', adminMiddleware, validateQuery(listUserQuerySchema), userController.getUsers)
 // create user
 router.post('/', adminMiddleware, validateBody(createUserSchema), userController.createUser)
 // get user by id
 router.get('/:userId', adminMiddleware, validateParams(userIdSchema), userController.getUserById)
 // update user
-router.put('/:userId', adminMiddleware, validateParams(userIdSchema), userController.updateUser)
+router.put(
+	'/:userId',
+	adminMiddleware,
+	validateParams(userIdSchema),
+	validateBody(updateUserSchema),
+	userController.updateUser,
+)
 // delete user
 router.delete('/:userId', adminMiddleware, validateParams(userIdSchema), userController.deleteUser)
 

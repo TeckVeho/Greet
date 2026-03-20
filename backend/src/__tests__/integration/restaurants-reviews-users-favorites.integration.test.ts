@@ -89,7 +89,7 @@ const mockFavRemove = favoriteService.remove as jest.Mock
 // ---------------------------------------------------------------------------
 
 const TEST_SECRET = 'test-jwt-secret'
-const VALID_UUID = '11111111-1111-1111-1111-111111111111'
+const VALID_UUID = '11111111-1111-4111-8111-111111111111'
 
 function makeToken(role: 'user' | 'admin' = 'user') {
   return jwt.sign(
@@ -190,6 +190,7 @@ describe('Integration: restaurants CRUD (IT #4-9)', () => {
       .send({
         name: 'New Restaurant',
         area: 'GINZA',
+        genres: ['SUSHI'],
         hasPrivateRoom: false,
         smokingAllowed: false,
         priceRange: 'RANGE_10000',
@@ -426,7 +427,7 @@ describe('Integration: favorites (IT #13)', () => {
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    expect(mockFavList).toHaveBeenCalledWith('user-1')
+    expect(mockFavList).toHaveBeenCalledWith(expect.any(Object), 'user-1')
   })
 
   it('IT #13 POST /favorites - お気に入り追加 (201)', async () => {

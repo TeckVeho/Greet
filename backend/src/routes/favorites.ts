@@ -1,15 +1,19 @@
 import { Router } from 'express'
 import { authMiddleware } from '../middleware/auth.middleware'
-import { validateBody, validateParams } from '../middleware/validate.middleware'
+import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware'
 import { errorMiddleware } from '../middleware/error.middleware'
 import { favoriteController } from '../controllers/favorite.controller'
-import { addFavoriteSchema, favoriteRestaurantIdSchema } from '../validators/favorite.validator'
+import {
+  addFavoriteSchema,
+  favoriteRestaurantIdSchema,
+  listFavoriteRestaurantsQuerySchema,
+} from '../validators/favorite.validator'
 
 const router = Router()
 
 router.use(authMiddleware)
 
-router.get('/', favoriteController.listFavorites)
+router.get('/', validateQuery(listFavoriteRestaurantsQuerySchema), favoriteController.listFavorites)
 
 router.post('/', validateBody(addFavoriteSchema), favoriteController.addFavorite)
 

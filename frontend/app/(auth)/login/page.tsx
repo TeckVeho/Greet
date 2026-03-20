@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/lib/auth-context'
+import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -46,7 +47,12 @@ export default function LoginPage() {
 				setError('メールアドレスまたはパスワードが正しくありません')
 			}
 		} catch (err) {
-			setError('ログインに失敗しました。もう一度お試しください。')
+			// Keep login failure UX consistent across backend error variants.
+			if (axios.isAxiosError(err)) {
+				setError('ログインに失敗しました。もう一度お試しください。')
+			} else {
+				setError('ログインに失敗しました。もう一度お試しください。')
+			}
 		} finally {
 			setIsLoading(false)
 		}

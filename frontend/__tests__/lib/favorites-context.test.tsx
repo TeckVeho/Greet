@@ -77,10 +77,10 @@ describe('FavoritesContext', () => {
 
   it('ログイン済みユーザーの favorites を API から読み込む', async () => {
     localStorage.setItem('token', 'token-1')
-    mockListFavorites.mockResolvedValue([
-      createFavoriteItem('fav-1', 'rest-1'),
-      createFavoriteItem('fav-2', 'rest-2'),
-    ])
+    mockListFavorites.mockResolvedValue({
+      data: [createFavoriteItem('fav-1', 'rest-1'), createFavoriteItem('fav-2', 'rest-2')],
+      meta: { total: 2, page: 1, limit: 100, total_pages: 1 },
+    })
 
     const { result } = renderHook(() => useFavorites(), { wrapper: createWrapper() })
 
@@ -129,7 +129,10 @@ describe('FavoritesContext', () => {
 
   it('addFavorite は楽観的更新を行う', async () => {
     localStorage.setItem('token', 'token-1')
-    mockListFavorites.mockResolvedValue([])
+    mockListFavorites.mockResolvedValue({
+      data: [],
+      meta: { total: 0, page: 1, limit: 100, total_pages: 0 },
+    })
     let resolveAdd!: (value: Awaited<ReturnType<typeof addFavorite>>) => void
     mockAddFavorite.mockReturnValue(
       new Promise(resolve => {
@@ -158,7 +161,10 @@ describe('FavoritesContext', () => {
 
   it('addFavorite 失敗時はロールバックする', async () => {
     localStorage.setItem('token', 'token-1')
-    mockListFavorites.mockResolvedValue([])
+    mockListFavorites.mockResolvedValue({
+      data: [],
+      meta: { total: 0, page: 1, limit: 100, total_pages: 0 },
+    })
     mockAddFavorite.mockRejectedValue(new Error('failed'))
 
     const { result } = renderHook(() => useFavorites(), { wrapper: createWrapper() })
@@ -177,7 +183,10 @@ describe('FavoritesContext', () => {
 
   it('removeFavorite は楽観的更新を行う', async () => {
     localStorage.setItem('token', 'token-1')
-    mockListFavorites.mockResolvedValue([createFavoriteItem('fav-1', 'rest-1')])
+    mockListFavorites.mockResolvedValue({
+      data: [createFavoriteItem('fav-1', 'rest-1')],
+      meta: { total: 1, page: 1, limit: 100, total_pages: 1 },
+    })
     mockRemoveFavorite.mockResolvedValue(undefined)
 
     const { result } = renderHook(() => useFavorites(), { wrapper: createWrapper() })
@@ -192,7 +201,10 @@ describe('FavoritesContext', () => {
 
   it('removeFavorite 失敗時はロールバックする', async () => {
     localStorage.setItem('token', 'token-1')
-    mockListFavorites.mockResolvedValue([createFavoriteItem('fav-1', 'rest-1')])
+    mockListFavorites.mockResolvedValue({
+      data: [createFavoriteItem('fav-1', 'rest-1')],
+      meta: { total: 1, page: 1, limit: 100, total_pages: 1 },
+    })
     mockRemoveFavorite.mockRejectedValue(new Error('failed'))
 
     const { result } = renderHook(() => useFavorites(), { wrapper: createWrapper() })
@@ -211,7 +223,10 @@ describe('FavoritesContext', () => {
 
   it('toggleFavorite は未登録なら追加、登録済みなら削除する', async () => {
     localStorage.setItem('token', 'token-1')
-    mockListFavorites.mockResolvedValue([])
+    mockListFavorites.mockResolvedValue({
+      data: [],
+      meta: { total: 0, page: 1, limit: 100, total_pages: 0 },
+    })
     mockAddFavorite.mockResolvedValue({
       id: 'fav-1',
       userId: 'user-1',

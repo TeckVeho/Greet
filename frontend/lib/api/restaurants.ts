@@ -31,6 +31,7 @@ export interface RestaurantListMeta {
 	page: number
 	limit: number
 	total_pages: number
+	totalPages?: number
 }
 export interface RestaurantListResponse {
 	data: RestaurantListItem[]
@@ -57,10 +58,15 @@ export async function listRestaurants(
 		paramsSerializer: params => {
 			const searchParams = new URLSearchParams()
 			for (const [key, value] of Object.entries(params)) {
+				if (value === undefined || value === null || value === '') {
+					continue
+				}
 				if (Array.isArray(value)) {
-					value.forEach(v => searchParams.append(key, v))
+					value
+						.filter(v => v !== undefined && v !== null && v !== '')
+						.forEach(v => searchParams.append(key, String(v)))
 				} else {
-					searchParams.set(key, value)
+					searchParams.set(key, String(value))
 				}
 			}
 			return searchParams.toString()
@@ -79,7 +85,8 @@ export async function listRestaurants(
 			total: meta?.total ?? 0,
 			page: meta?.page ?? params.page ?? 1,
 			limit: meta?.limit ?? params.limit ?? 10,
-			total_pages: meta?.total_pages ?? 0,
+			total_pages: meta?.total_pages ?? meta?.totalPages ?? 0,
+			totalPages: meta?.totalPages ?? meta?.total_pages ?? 0,
 		},
 	}
 }
