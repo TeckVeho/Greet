@@ -30,8 +30,7 @@ export interface RestaurantListMeta {
 	total: number
 	page: number
 	limit: number
-	total_pages: number
-	totalPages?: number
+	totalPages: number
 }
 export interface RestaurantListResponse {
 	data: RestaurantListItem[]
@@ -85,8 +84,7 @@ export async function listRestaurants(
 			total: meta?.total ?? 0,
 			page: meta?.page ?? params.page ?? 1,
 			limit: meta?.limit ?? params.limit ?? 10,
-			total_pages: meta?.total_pages ?? meta?.totalPages ?? 0,
-			totalPages: meta?.totalPages ?? meta?.total_pages ?? 0,
+			totalPages: meta?.totalPages ?? 0,
 		},
 	}
 }

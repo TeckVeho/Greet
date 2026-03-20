@@ -64,7 +64,7 @@ export class UserService {
           total: totalCount,
           page,
           limit,
-          total_pages: Math.ceil(totalCount / limit),
+          totalPages: Math.ceil(totalCount / limit),
         },
         statusCode: StatusCodes.OK,
       }

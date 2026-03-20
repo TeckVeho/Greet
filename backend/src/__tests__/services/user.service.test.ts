@@ -84,7 +84,7 @@ describe('UserService', () => {
       expect(result.meta.total).toBe(25)
       expect(result.meta.page).toBe(2)
       expect(result.meta.limit).toBe(10)
-      expect(result.meta.total_pages).toBe(3)
+      expect(result.meta.totalPages).toBe(3)
       expect(mockUserFindMany).toHaveBeenCalledWith(
         expect.objectContaining({ skip: 10, take: 10 }),
       )

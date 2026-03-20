@@ -2,7 +2,7 @@ export interface Meta {
 	total: number
 	page: number
 	limit: number
-	total_pages: number
+	totalPages: number
 }
 export interface ApiSuccess<T> {
 	success: true

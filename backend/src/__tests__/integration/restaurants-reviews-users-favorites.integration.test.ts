@@ -334,7 +334,7 @@ describe('Integration: users (IT #11-12)', () => {
     mockUsFindAll.mockResolvedValue({
       success: true,
       data: [],
-      meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
       statusCode: 200,
     })
 

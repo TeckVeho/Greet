@@ -72,7 +72,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
               updatedAt: new Date().toISOString(),
             },
           ],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -169,7 +169,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
         body: JSON.stringify({
           success: true,
           data: items,
-          meta: { total: items.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: items.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -265,7 +265,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
         body: JSON.stringify({
           success: true,
           data: items,
-          meta: { total: items.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: items.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -359,7 +359,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
         body: JSON.stringify({
           success: true,
           data: restaurants,
-          meta: { total: restaurants.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: restaurants.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -414,7 +414,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
         body: JSON.stringify({
           success: true,
           data: [restaurant],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -548,7 +548,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: [restaurant],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -665,7 +665,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: restaurants,
-          meta: { total: restaurants.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: restaurants.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -701,7 +701,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: [],
-          meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+          meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
         }),
       })
     })
@@ -732,7 +732,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
               lastLoginAt: nowIso(),
             },
           ],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -796,7 +796,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
               updatedAt: nowIso(),
             },
           ],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -816,7 +816,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: [],
-          meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+          meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
         }),
       })
     })
@@ -909,7 +909,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: items,
-          meta: { total: items.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: items.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })

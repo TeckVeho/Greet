@@ -33,8 +33,7 @@ export async function listFavorites({
 			total: meta?.total ?? 0,
 			page: meta?.page ?? page,
 			limit: meta?.limit ?? limit,
-			total_pages: meta?.total_pages ?? meta?.totalPages ?? 0,
-			totalPages: meta?.totalPages ?? meta?.total_pages ?? 0,
+			totalPages: meta?.totalPages ?? 0,
 		},
 	}
 }

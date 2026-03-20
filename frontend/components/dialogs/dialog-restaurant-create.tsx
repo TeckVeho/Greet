@@ -52,26 +52,39 @@ interface RestaurantFormDialogProps {
 	onOpenChange: (open: boolean) => void
 }
 
-const optionalText = z.preprocess(value => {
-	if (typeof value === 'string' && value.trim() === '') {
-		return undefined
-	}
-	return value
-}, z.string().optional())
+const optionalText = z
+	.union([z.string(), z.undefined()])
+	.transform(value => {
+		if (typeof value !== 'string') return undefined
+		const trimmed = value.trim()
+		return trimmed.length > 0 ? trimmed : undefined
+	})
 
-const optionalPhone = z.preprocess(value => {
-	if (typeof value === 'string' && value.trim() === '') {
-		return undefined
-	}
-	return value
-}, z.string().regex(/^[0-9()+\-\s]{8,20}$/, '電話番号の形式が正しくありません').optional())
+const optionalPhone = z
+	.union([z.string(), z.undefined()])
+	.refine(value => {
+		if (typeof value !== 'string') return true
+		if (value.trim().length === 0) return true
+		return /^[0-9()+\-\s]{8,20}$/.test(value)
+	}, '電話番号の形式が正しくありません')
+	.transform(value => {
+		if (typeof value !== 'string') return undefined
+		const trimmed = value.trim()
+		return trimmed.length > 0 ? trimmed : undefined
+	})
 
-const optionalUrl = z.preprocess(value => {
-	if (typeof value === 'string' && value.trim() === '') {
-		return undefined
-	}
-	return value
-}, z.string().url().optional())
+const optionalUrl = z
+	.union([z.string(), z.undefined()])
+	.refine(value => {
+		if (typeof value !== 'string') return true
+		if (value.trim().length === 0) return true
+		return z.string().url().safeParse(value).success
+	}, '有効なURLを入力してください')
+	.transform(value => {
+		if (typeof value !== 'string') return undefined
+		const trimmed = value.trim()
+		return trimmed.length > 0 ? trimmed : undefined
+	})
 
 const schema = z.object({
 	name: z.string().min(1, '店名は必須です'),
@@ -87,11 +100,12 @@ const schema = z.object({
 	coverImage: z.instanceof(File).optional(),
 })
 type RestaurantFormData = z.infer<typeof schema>
+type RestaurantFormInput = z.input<typeof schema>
 
 export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDialogProps) {
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
 	const anchor = useComboboxAnchor()
-	const form = useForm({
+	const form = useForm<RestaurantFormInput, any, RestaurantFormData>({
 		resolver: zodResolver(schema),
 		mode: 'onChange',
 		defaultValues: {

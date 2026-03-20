@@ -79,7 +79,7 @@ describe('FavoritesContext', () => {
     localStorage.setItem('token', 'token-1')
     mockListFavorites.mockResolvedValue({
       data: [createFavoriteItem('fav-1', 'rest-1'), createFavoriteItem('fav-2', 'rest-2')],
-      meta: { total: 2, page: 1, limit: 100, total_pages: 1 },
+      meta: { total: 2, page: 1, limit: 100, totalPages: 1 },
     })
 
     const { result } = renderHook(() => useFavorites(), { wrapper: createWrapper() })
@@ -131,7 +131,7 @@ describe('FavoritesContext', () => {
     localStorage.setItem('token', 'token-1')
     mockListFavorites.mockResolvedValue({
       data: [],
-      meta: { total: 0, page: 1, limit: 100, total_pages: 0 },
+      meta: { total: 0, page: 1, limit: 100, totalPages: 0 },
     })
     let resolveAdd!: (value: Awaited<ReturnType<typeof addFavorite>>) => void
     mockAddFavorite.mockReturnValue(
@@ -163,7 +163,7 @@ describe('FavoritesContext', () => {
     localStorage.setItem('token', 'token-1')
     mockListFavorites.mockResolvedValue({
       data: [],
-      meta: { total: 0, page: 1, limit: 100, total_pages: 0 },
+      meta: { total: 0, page: 1, limit: 100, totalPages: 0 },
     })
     mockAddFavorite.mockRejectedValue(new Error('failed'))
 
@@ -185,7 +185,7 @@ describe('FavoritesContext', () => {
     localStorage.setItem('token', 'token-1')
     mockListFavorites.mockResolvedValue({
       data: [createFavoriteItem('fav-1', 'rest-1')],
-      meta: { total: 1, page: 1, limit: 100, total_pages: 1 },
+      meta: { total: 1, page: 1, limit: 100, totalPages: 1 },
     })
     mockRemoveFavorite.mockResolvedValue(undefined)
 
@@ -203,7 +203,7 @@ describe('FavoritesContext', () => {
     localStorage.setItem('token', 'token-1')
     mockListFavorites.mockResolvedValue({
       data: [createFavoriteItem('fav-1', 'rest-1')],
-      meta: { total: 1, page: 1, limit: 100, total_pages: 1 },
+      meta: { total: 1, page: 1, limit: 100, totalPages: 1 },
     })
     mockRemoveFavorite.mockRejectedValue(new Error('failed'))
 
@@ -225,7 +225,7 @@ describe('FavoritesContext', () => {
     localStorage.setItem('token', 'token-1')
     mockListFavorites.mockResolvedValue({
       data: [],
-      meta: { total: 0, page: 1, limit: 100, total_pages: 0 },
+      meta: { total: 0, page: 1, limit: 100, totalPages: 0 },
     })
     mockAddFavorite.mockResolvedValue({
       id: 'fav-1',
