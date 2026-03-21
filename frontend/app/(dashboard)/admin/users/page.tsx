@@ -68,9 +68,9 @@ export default function UsersPage() {
 				<div className='mb-8'>
 					<div className='mb-2 flex items-center gap-2'>
 						<span className='text-2xl md:text-3xl'>👥</span>
-						<h1 className='text-2xl md:text-3xl font-bold text-zinc-900'>ユーザー管理</h1>
+						<h1 className='text-2xl md:text-3xl font-bold'>ユーザー管理</h1>
 					</div>
-					<p className='text-sm text-zinc-500'>システムを利用するユーザーの管理</p>
+					<p className='text-sm text-muted-foreground'>システムを利用するユーザーの管理</p>
 				</div>
 
 				{/* 検索・フィルター・追加バー */}

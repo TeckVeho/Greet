@@ -53,13 +53,11 @@ import {
 	useComboboxAnchor,
 } from '../ui'
 
-const optionalText = z
-	.union([z.string(), z.undefined()])
-	.transform(value => {
-		if (typeof value !== 'string') return undefined
-		const trimmed = value.trim()
-		return trimmed.length > 0 ? trimmed : undefined
-	})
+const optionalText = z.union([z.string(), z.undefined()]).transform(value => {
+	if (typeof value !== 'string') return undefined
+	const trimmed = value.trim()
+	return trimmed.length > 0 ? trimmed : undefined
+})
 
 const optionalPhone = z
 	.union([z.string(), z.undefined()])
@@ -235,11 +233,11 @@ export const DialogRestaurantUpdate: React.FC<{
 																onClick={() =>
 																	document.getElementById('cover-image-input')?.click()
 																}
-																className='flex w-full h-32 items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer'
+																className='flex w-full h-32 rounded-lg border border-dashed bg-accent transition-colors cursor-pointer items-center justify-center'
 															>
 																<div className='text-center'>
 																	<div className='text-2xl mb-1'>📷</div>
-																	<div className='text-sm text-zinc-500'>
+																	<div className='text-sm text-muted-foreground'>
 																		クリックして画像をアップロード
 																	</div>
 																	<div className='text-xs text-zinc-400 mt-1'>
@@ -260,7 +258,7 @@ export const DialogRestaurantUpdate: React.FC<{
 										name='name'
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>店名 *</FormLabel>
+												<FormLabel required>店名</FormLabel>
 												<FormControl>
 													<Input {...field} placeholder='例: 銀座 鮨 さいとう' />
 												</FormControl>
@@ -274,7 +272,7 @@ export const DialogRestaurantUpdate: React.FC<{
 										name='icon'
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>アイコン *</FormLabel>
+												<FormLabel required>アイコン</FormLabel>
 												<FormControl>
 													<Select value={field.value} onValueChange={field.onChange}>
 														<SelectTrigger>
@@ -299,7 +297,7 @@ export const DialogRestaurantUpdate: React.FC<{
 											name='area'
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>エリア *</FormLabel>
+													<FormLabel required>エリア</FormLabel>
 													<FormControl>
 														<Select value={field.value} onValueChange={field.onChange}>
 															<SelectTrigger>
@@ -323,7 +321,7 @@ export const DialogRestaurantUpdate: React.FC<{
 											name='genres'
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>ジャンル *</FormLabel>
+													<FormLabel required>ジャンル</FormLabel>
 													<FormControl>
 														<Combobox
 															multiple
@@ -417,7 +415,7 @@ export const DialogRestaurantUpdate: React.FC<{
 										name='priceRange'
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>価格帯 *</FormLabel>
+												<FormLabel required>価格帯</FormLabel>
 												<FormControl>
 													<Select value={field.value} onValueChange={field.onChange}>
 														<SelectTrigger>

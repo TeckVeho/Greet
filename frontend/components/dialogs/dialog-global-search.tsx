@@ -56,17 +56,16 @@ export function DialogGlobalSearch() {
 			<DialogTrigger asChild>
 				<Button variant={'secondary'} className=' text-zinc-600 hover:bg-zinc-100'>
 					<Search className='size-4' />
-					<span>検索...</span>
+					<span className='text-muted-foreground'>検索...</span>
 					<Kbd>⌘ K</Kbd>
 				</Button>
 			</DialogTrigger>
 			<DialogContent className='max-w-[95vw] md:max-w-2xl p-0' showClose={false}>
-				<DialogHeader className='px-6 pt-5 pb-4 border-b border-zinc-200'>
+				<DialogHeader className='px-6 pt-5 pb-4 border-b border-zinc-300'>
 					<DialogTitle className='sr-only'>レストラン検索</DialogTitle>
 					<InputGroup className='h-13'>
 						<InputGroupInput
 							placeholder='店名、エリア、ジャンルで検索...'
-							className=''
 							onChange={e => setSearchQuery(e.target.value)}
 							value={searchQuery}
 						/>
@@ -91,7 +90,7 @@ export function DialogGlobalSearch() {
 
 				<div className='overflow-y-auto max-h-[calc(80vh-8rem)] px-2 py-2'>
 					{isPending ? (
-						<div className='text-center py-12 text-zinc-500'>
+						<div className='text-center py-12 '>
 							<p className='text-sm'>飲食店を読み込み中です...</p>
 						</div>
 					) : restaurants?.data.length === 0 ? (
@@ -105,15 +104,15 @@ export function DialogGlobalSearch() {
 								<button
 									key={restaurant.id}
 									onClick={() => handleResultClick(restaurant.id)}
-									className='w-full text-left px-4 py-3 rounded-lg hover:bg-zinc-50 transition-colors group'
+									className='w-full text-left px-4 py-3 rounded-lg  transition-colors group'
 								>
 									<div className='flex items-start gap-3'>
 										<span className='text-2xl shrink-0'>{restaurant.icon}</span>
 										<div className='flex-1 min-w-0'>
-											<div className='font-medium text-zinc-900 group-hover:text-blue-600 transition-colors'>
+											<div className='font-medium group-hover:text-blue-600 transition-colors'>
 												{restaurant.name}
 											</div>
-											<div className='flex items-center gap-2 mt-1 text-sm text-zinc-500'>
+											<div className='flex items-center gap-2 mt-1 text-sm text-muted-foreground flex-wrap'>
 												<span>{areaLabel(restaurant.area)}</span>
 												<span>•</span>
 												<span>{priceRangeLabel(restaurant.priceRange)}</span>
@@ -139,7 +138,7 @@ export function DialogGlobalSearch() {
 				</div>
 				<DialogFooter>
 					{restaurants && restaurants?.data.length > 0 && (
-						<div className='px-6 py-3 border-t border-zinc-200 text-xs text-zinc-500 w-full'>
+						<div className='px-6 py-3 border-t border-zinc-200 text-xs text-muted-foreground w-full'>
 							{restaurants?.data.length} 件の飲食店が見つかりました
 						</div>
 					)}

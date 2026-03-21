@@ -51,17 +51,10 @@ export default function FavoritesPage() {
 				<div className='mb-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
 					<div className='flex items-center gap-2'>
 						<Rating rate={1} max={1} className='[&_svg]:size-10! [&>div]:size-10!' />
-						<h1
-							className='text-2xl md:text-3xl font-bold text-zinc-900'
-							onClick={() => {
-								console.log(favoriteItems)
-							}}
-						>
-							お気に入り
-						</h1>
+						<h1 className='text-2xl md:text-3xl font-bold '>お気に入り</h1>
 					</div>
 					{favoriteItems?.data?.length && favoriteItems?.data?.length > 0 && (
-						<div className='hidden md:flex items-center border border-zinc-200 rounded-md overflow-hidden self-end md:self-auto'>
+						<div className='hidden md:flex items-center rounded-md overflow-hidden self-end md:self-auto'>
 							<Button
 								onClick={() => setViewMode('cards')}
 								variant={viewMode === 'table' ? 'secondary' : 'default'}
@@ -81,7 +74,7 @@ export default function FavoritesPage() {
 						</div>
 					)}
 				</div>
-				<p className='text-sm text-zinc-500'>お気に入りに登録した飲食店を表示</p>
+				<p className='text-sm text-muted-foreground'>お気に入りに登録した飲食店を表示</p>
 			</div>
 
 			{/* お気に入りが空の場合 */}

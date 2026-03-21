@@ -155,7 +155,9 @@ export function DataCards({
 										</div>
 
 										<div className='mt-3 flex items-center justify-between border-t border-border/70 pt-3 text-xs'>
-											<div className='text-muted-foreground'>レビュー {restaurant.reviewCount} 件</div>
+											<div className='text-muted-foreground'>
+												レビュー {restaurant.reviewCount} 件
+											</div>
 										</div>
 									</div>
 								</Link>
@@ -171,7 +173,7 @@ export function DataCards({
 
 			{/* Paginatsiya (DataTable kabi) */}
 			<div className='flex items-center justify-between mt-4'>
-				<span className='whitespace-nowrap text-sm font-medium'>飲食店数: {total}</span>
+				<span className='whitespace-nowrap text-sm font-medium'>{total} 件の飲食店</span>
 
 				{typeof pagination?.pageSize === 'number' &&
 					typeof pagination?.pageIndex === 'number' &&

@@ -40,7 +40,7 @@ export const UserColumns: ColumnDef<User>[] = [
 			return (
 				<SheetCompanyView
 					trigger={
-						<span className=' hover:underline cursor-pointer'>
+						<span className=' hover:underline cursor-pointer whitespace-nowrap'>
 							{row.original.company?.icon} {value}
 						</span>
 					}

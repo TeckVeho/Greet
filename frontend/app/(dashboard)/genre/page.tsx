@@ -104,39 +104,34 @@ export default function GenrePage() {
 			<div className='mb-8'>
 				<div className='mb-2 flex items-center gap-2'>
 					<span className='text-2xl md:text-3xl'>🍴</span>
-					<h1 className='text-2xl md:text-3xl font-bold text-zinc-900'>ジャンル別</h1>
+					<h1 className='text-2xl md:text-3xl font-bold'>ジャンル別</h1>
 				</div>
-				<p className='text-sm text-zinc-500'>料理ジャンルごとに飲食店を絞り込んで表示</p>
+				<p className='text-sm text-muted-foreground'>料理ジャンルごとに飲食店を絞り込んで表示</p>
 			</div>
 
 			{/* ジャンルフィルターとビュー切り替え */}
 			<div className='mb-6'>
 				<div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3'>
 					<div className='flex flex-wrap gap-2'>
-						<button
+						<Button
 							onClick={() => setSelectedGenre('all')}
-							className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-								selectedGenre === 'all'
-									? 'bg-zinc-900 text-white'
-									: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-							}`}
+							variant={selectedGenre === 'all' ? 'default' : 'secondary'}
 						>
 							すべて
-						</button>
+						</Button>
 						{genres.map(genre => {
 							const count = restaurantsByGenre.get(genre)?.length || 0
 							const colorClass = genreColors[genre] ?? genreColors['OTHER']
 							return (
-								<button
+								<Button
 									key={genre}
 									onClick={() => setSelectedGenre(genre)}
-									className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-										selectedGenre === genre ? 'bg-zinc-900 text-white' : colorClass
-									}`}
+									className={colorClass}
+									variant={selectedGenre === genre ? 'default' : 'ghost'}
 								>
 									{genreLabel(genre)}
 									<span className='ml-1.5 text-xs opacity-70'>({count})</span>
-								</button>
+								</Button>
 							)
 						})}
 					</div>
@@ -156,7 +151,7 @@ export default function GenrePage() {
 								</SelectGroup>
 							</SelectContent>
 						</Select>
-						<div className='hidden md:flex items-center border border-zinc-200 rounded-md overflow-hidden'>
+						<div className='hidden md:flex items-center rounded-md overflow-hidden'>
 							<Button
 								onClick={() => setViewMode('table')}
 								variant={viewMode === 'table' ? 'default' : 'secondary'}
@@ -189,17 +184,19 @@ export default function GenrePage() {
 						return (
 							<div key={genre}>
 								<div className='mb-4 flex items-center gap-3'>
-									<h2 className='text-xl font-semibold text-zinc-900'>{genreLabel(genre)}</h2>
+									<h2 className='text-xl font-semibold'>{genreLabel(genre)}</h2>
 									<Badge variant='default'>{genreRestaurants.length}件</Badge>
 								</div>
 								{/* モバイルは常にカード表示 */}
 								{viewMode === 'cards' ||
 								(typeof window !== 'undefined' && window.innerWidth < 768) ? (
-									<DataCards data={genreRestaurants} />
+									<DataCards data={genreRestaurants} total={genreRestaurants.length} />
 								) : (
-									<div className='rounded-lg border border-zinc-200 bg-white'>
-										<DataTable columns={RestaurantColumns} data={genreRestaurants} />
-									</div>
+									<DataTable
+										columns={RestaurantColumns}
+										data={genreRestaurants}
+										total={genreRestaurants.length}
+									/>
 								)}
 							</div>
 						)
@@ -209,15 +206,14 @@ export default function GenrePage() {
 				<>
 					{/* 特定ジャンルのテーブル/カード表示（モバイルは常にカード） */}
 					{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
-						<DataCards data={displayedRestaurants} />
+						<DataCards data={displayedRestaurants} total={displayedRestaurants.length} />
 					) : (
-						<div className='rounded-lg border border-zinc-200 bg-white'>
-							<DataTable columns={RestaurantColumns} data={displayedRestaurants} />
-						</div>
+						<DataTable
+							columns={RestaurantColumns}
+							data={displayedRestaurants}
+							total={displayedRestaurants.length}
+						/>
 					)}
-
-					{/* 件数表示 */}
-					<div className='mt-4 text-sm text-zinc-500'>{displayedRestaurants.length} 件の飲食店</div>
 				</>
 			)}
 		</Section>

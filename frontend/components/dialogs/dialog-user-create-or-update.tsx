@@ -156,7 +156,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 													/>
 													{/* uploaded image */}
 													{field.value instanceof File ? (
-														<div className='relative flex items-center justify-center w-full h-32 rounded-lg overflow-hidden bg-zinc-100'>
+														<div className='relative flex items-center justify-center w-full h-32 rounded-lg overflow-hidden'>
 															<Image
 																src={URL.createObjectURL(field.value)}
 																alt='image restaourant'
@@ -196,11 +196,11 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 														<button
 															type='button'
 															onClick={() => document.getElementById('avatar-input')?.click()}
-															className='flex w-full h-32 items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer'
+															className='flex w-full h-32 rounded-lg border border-dashed bg-accent transition-colors cursor-pointer items-center justify-center'
 														>
 															<div className='text-center'>
 																<div className='text-2xl mb-1'>📷</div>
-																<div className='text-sm text-zinc-500'>
+																<div className='text-sm text-muted-foreground'>
 																	クリックして画像をアップロード
 																</div>
 																<div className='text-xs text-zinc-400 mt-1'>
@@ -245,28 +245,15 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 								/>
 
 								<div className='flex items-center gap-4'>
-									{/* 所属会社 */}
+									{/* 権限 */}
 									<FormField
 										control={form.control}
-										name='companyId'
+										name='icon'
 										render={({ field }) => (
 											<FormItem className='flex-1'>
-												<FormLabel required>所属会社</FormLabel>
+												<FormLabel>アイコン</FormLabel>
 												<FormControl>
-													<Select value={field.value} onValueChange={field.onChange}>
-														<SelectTrigger className='mb-0'>
-															<SelectValue placeholder='会社を選択' />
-														</SelectTrigger>
-														<SelectContent>
-															{isPendingCompanies
-																? 'Loading...'
-																: companiesData?.companies.map(company => (
-																		<SelectItem key={company.id} value={company.id}>
-																			{company.icon} {company.name}
-																		</SelectItem>
-																	))}
-														</SelectContent>
-													</Select>
+													<Input {...field} type='text' placeholder='例: 🧑‍💼' maxLength={10} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -289,20 +276,34 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 									/>
 								</div>
 								<div className='flex items-center gap-4'>
-									{/* 権限 */}
+									{/* 所属会社 */}
 									<FormField
 										control={form.control}
-										name='icon'
+										name='companyId'
 										render={({ field }) => (
 											<FormItem className='flex-1'>
-												<FormLabel>アイコン</FormLabel>
+												<FormLabel required>所属会社</FormLabel>
 												<FormControl>
-													<Input {...field} type='text' placeholder='例: 🧑‍💼' maxLength={10} />
+													<Select value={field.value} onValueChange={field.onChange}>
+														<SelectTrigger className='m-0'>
+															<SelectValue placeholder='会社を選択' />
+														</SelectTrigger>
+														<SelectContent className='max-h-70'>
+															{isPendingCompanies
+																? 'Loading...'
+																: companiesData?.companies.map(company => (
+																		<SelectItem key={company.id} value={company.id}>
+																			{company.icon} {company.name}
+																		</SelectItem>
+																	))}
+														</SelectContent>
+													</Select>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
 										)}
 									/>
+
 									<FormField
 										control={form.control}
 										name='role'
@@ -311,7 +312,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 												<FormLabel required>ユーザー権限</FormLabel>
 												<FormControl>
 													<Select value={field.value} onValueChange={field.onChange}>
-														<SelectTrigger>
+														<SelectTrigger className='mb-0'>
 															<SelectValue placeholder='権限を選択' />
 														</SelectTrigger>
 														<SelectContent>
@@ -332,7 +333,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 										control={formCreateUser.control}
 										name='password'
 										render={({ field }) => (
-											<FormItem className='flex-1'>
+											<FormItem>
 												<FormLabel required>パスワード</FormLabel>
 												<FormControl>
 													<InputPassword {...field} placeholder='6文字以上' required />

@@ -34,7 +34,6 @@ interface DataTableProps<TData, TValue> {
 	pagination?: PaginationState
 	total?: number
 	isLoading?: boolean
-	totlaHidden?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -63,7 +62,7 @@ export function DataTable<TData, TValue>({
 	const rows = table.getRowModel()?.rows ?? []
 	return (
 		<>
-			<div className='overflow-x-auto border border-muted-foreground/30 rounded-lg relative'>
+			<div className='overflow-x-auto border border-muted-foreground/30 rounded-lg relative '>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild className='absolute top-1 right-1 z-10'>
 						<Button variant='default' className='rounded-full' size={'icon'}>
@@ -144,24 +143,21 @@ export function DataTable<TData, TValue>({
 					</TableBody>
 				</Table>
 			</div>
-			{typeof pagination?.pageIndex === 'number' &&
-				typeof pagination?.pageSize === 'number' &&
-				setPagination && (
-					<div className='flex items-center justify-between mt-4'>
-						<span className='whitespace-nowrap'>飲食店数 {total}</span>
-						{typeof pagination?.pageIndex === 'number' &&
-							typeof pagination.pageSize === 'number' &&
-							setPagination && (
-								<Pagination
-									totalPages={table.getPageCount()}
-									pageIndex={pagination.pageIndex}
-									pageSize={pagination.pageSize}
-									onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
-									onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
-								/>
-							)}
-					</div>
-				)}
+
+			<div className='flex items-center justify-between mt-4'>
+				<span className='whitespace-nowrap'>{total} 件の飲食店</span>
+				{typeof pagination?.pageIndex === 'number' &&
+					typeof pagination.pageSize === 'number' &&
+					setPagination && (
+						<Pagination
+							totalPages={table.getPageCount()}
+							pageIndex={pagination.pageIndex}
+							pageSize={pagination.pageSize}
+							onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
+							onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
+						/>
+					)}
+			</div>
 		</>
 	)
 }
