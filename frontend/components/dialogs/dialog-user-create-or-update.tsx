@@ -52,6 +52,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 			role: 'user',
 			department: '',
 			companyId: '',
+			icon: undefined,
 		},
 		resolver: zodResolver(schemaCreate),
 	})
@@ -63,6 +64,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 			role: 'user',
 			department: '',
 			companyId: '',
+			icon: undefined,
 		},
 		resolver: zodResolver(schemaUpdate),
 	})
@@ -76,6 +78,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 				role: user.role,
 				department: user.department,
 				companyId: user.companyId,
+				icon: user.icon ?? '',
 			})
 		} else {
 			formCreateUser.reset({
@@ -85,6 +88,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 				role: 'user',
 				department: '',
 				companyId: '',
+				icon: undefined,
 			})
 		}
 	}, [mode, user])
@@ -284,28 +288,43 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 										)}
 									/>
 								</div>
-								{/* 権限 */}
-								<FormField
-									control={form.control}
-									name='role'
-									render={({ field }) => (
-										<FormItem className='flex-1'>
-											<FormLabel required>ユーザー権限</FormLabel>
-											<FormControl>
-												<Select value={field.value} onValueChange={field.onChange}>
-													<SelectTrigger>
-														<SelectValue placeholder='権限を選択' />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value='user'>一般ユーザー</SelectItem>
-														<SelectItem value='admin'>管理者</SelectItem>
-													</SelectContent>
-												</Select>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+								<div className='flex items-center gap-4'>
+									{/* 権限 */}
+									<FormField
+										control={form.control}
+										name='icon'
+										render={({ field }) => (
+											<FormItem className='flex-1'>
+												<FormLabel>アイコン</FormLabel>
+												<FormControl>
+													<Input {...field} type='text' placeholder='例: 🧑‍💼' maxLength={10} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name='role'
+										render={({ field }) => (
+											<FormItem className='flex-1'>
+												<FormLabel required>ユーザー権限</FormLabel>
+												<FormControl>
+													<Select value={field.value} onValueChange={field.onChange}>
+														<SelectTrigger>
+															<SelectValue placeholder='権限を選択' />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value='user'>一般ユーザー</SelectItem>
+															<SelectItem value='admin'>管理者</SelectItem>
+														</SelectContent>
+													</Select>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
 
 								{/* パスワード（新規作成時のみ） */}
 								{mode === 'create' && (

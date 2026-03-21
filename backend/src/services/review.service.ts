@@ -28,6 +28,7 @@ export class ReviewService {
           select: {
             id: true,
             name: true,
+            icon: true,
           },
         },
       },
@@ -44,6 +45,7 @@ export class ReviewService {
         ? {
             id: review.author.id,
             name: review.author.name,
+            icon: review.author.icon ?? undefined,
           }
         : null,
       createdAt: review.createdAt,

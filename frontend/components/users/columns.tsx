@@ -54,6 +54,10 @@ export const UserColumns: ColumnDef<User>[] = [
 		header: '部署',
 	},
 	{
+		accessorKey: 'icon',
+		header: 'アイコン',
+	},
+	{
 		accessorKey: 'role',
 		header: '権限',
 		cell: ({ row }) => {
@@ -65,7 +69,6 @@ export const UserColumns: ColumnDef<User>[] = [
 			)
 		},
 	},
-
 	{
 		accessorKey: 'createdAt',
 		header: '登録日',

@@ -59,6 +59,7 @@ export interface CreateUserPayload {
 	companyId: string
 	role?: 'admin' | 'user'
 	department?: string
+	icon?: string
 }
 
 export type UpdateUserPayload = Partial<CreateUserPayload>

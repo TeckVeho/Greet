@@ -13,7 +13,7 @@ type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; c
 type UpdateRestaurantInput = updateRestaurantBodySchema
 type ListQuery = listRestaurantsQueryBodySchema
 
-function mapUserSummary(user: { id: string; name: string } | null) {
+function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
   if (!user) {
     return null
   }
@@ -21,6 +21,7 @@ function mapUserSummary(user: { id: string; name: string } | null) {
   return {
     id: user.id,
     name: user.name,
+    icon: user.icon ?? undefined,
   }
 }
 
@@ -132,7 +133,7 @@ export class RestaurantService {
           },
 
           createdBy: {
-            select: { id: true, name: true },
+            select: { id: true, name: true, icon: true },
           },
         },
       }),
@@ -207,6 +208,7 @@ export class RestaurantService {
               select: {
                 id: true,
                 name: true,
+                icon: true,
               },
             },
           },
@@ -218,6 +220,7 @@ export class RestaurantService {
           select: {
             id: true,
             name: true,
+            icon: true,
           },
         },
       },
@@ -256,6 +259,7 @@ export class RestaurantService {
     const data = {
       id: restaurant.id,
       name: restaurant.name,
+      icon: await resolveFileUrl(restaurant.icon),
       area: restaurant.area,
       genres: restaurant.genres.map(g => g.genre),
       hasPrivateRoom: restaurant.hasPrivateRoom,

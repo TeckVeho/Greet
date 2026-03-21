@@ -63,6 +63,7 @@ export interface User {
 	companyId: string // 所属会社ID
 	company?: Company // 所属会社情報（結合用）
 	department?: string
+	icon?: string
 	avatar?: string // アバター画像URL
 	createdAt: Date
 	lastLogin?: Date
