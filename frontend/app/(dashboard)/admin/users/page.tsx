@@ -110,7 +110,7 @@ export default function UsersPage() {
 									placeholder={isPendingCompanies ? '読み込み中...' : '会社で絞り込み'}
 								/>
 							</SelectTrigger>
-							<SelectContent>
+							<SelectContent className='max-h-70' position='popper'>
 								<SelectItem value='all'>全ての会社</SelectItem>
 								{companies.map(company => (
 									<SelectItem key={company.id} value={company.id}>
@@ -121,7 +121,6 @@ export default function UsersPage() {
 						</Select>
 						<DialogUserCreateOrUpdate
 							mode='create'
-							companies={companies}
 							trigger={
 								<Button>
 									<Plus />

@@ -12,6 +12,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui'
+import { sortOptions } from '@/lib/constants'
 import type { SortOption } from '@/lib/utils'
 import { Filter, LayoutGrid, Plus, SearchIcon, Table, X } from 'lucide-react'
 interface SearchFilterBarProps {
@@ -25,16 +26,7 @@ interface SearchFilterBarProps {
 	sortOption?: SortOption
 	onSortChange?: (sort: SortOption) => void
 }
-const sortOptions = [
-	{ value: 'createdAt_desc', label: '登録日（新しい順）' },
-	{ value: 'createdAt_asc', label: '登録日（古い順）' },
-	{ value: 'name_asc', label: '店名（あいうえお順）' },
-	{ value: 'name_desc', label: '店名（逆順）' },
-	{ value: 'price_asc', label: '価格帯（低い順）' },
-	{ value: 'price_desc', label: '価格帯（高い順）' },
-	{ value: 'reviews_desc', label: 'レビュー件数（多い順）' },
-	{ value: 'rating_desc', label: '平均評価（高い順）' },
-]
+
 export function SearchFilterBar({
 	onSearchChange,
 	onFilterClick,
