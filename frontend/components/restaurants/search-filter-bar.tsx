@@ -93,7 +93,7 @@ export function SearchFilterBar({
 
 			{/* ビュー切り替えボタン (モバイルでは非表示) */}
 			{onViewModeChange && (
-				<div className='hidden md:flex items-center border border-zinc-200 rounded-md overflow-hidden'>
+				<div className='hidden md:flex items-center rounded-md overflow-hidden'>
 					<Button
 						onClick={() => onViewModeChange('cards')}
 						variant={viewMode === 'cards' ? 'default' : 'secondary'}

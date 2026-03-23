@@ -24,12 +24,12 @@ export default function RestaurantDetailPage() {
 	const restaurantId = params.id as string
 	const router = useRouter()
 	const { user, isLoading } = useAuth()
-
 	const {
 		data: restaurant,
 		isPending: isRestaurantPending,
 		refetch,
 	} = useRestaurantsById(restaurantId)
+	const isValidDelete = user?.role === 'admin' || restaurant?.createdBy?.id === user?.id
 	const { mutateAsync: deleteRestaurant, isPending: isDeletePending } =
 		useDeleteRestaurant(restaurantId)
 	const { isFavorite, toggleFavorite } = useFavorites()
@@ -127,31 +127,33 @@ export default function RestaurantDetailPage() {
 						<div className='mb-4 flex h-16 w-16 md:h-24 md:w-24 items-center justify-center rounded-lg border border-border bg-card text-4xl shadow-md md:text-5xl'>
 							{restaurant.icon}
 						</div>
-						<div className='flex items-center gap-3'>
-							<DialogWarning
-								deleteAction={deleteRestaurant}
-								deleting={isDeletePending}
-								trigger={
-									<Button size={'icon'} variant={'denger'}>
-										<Trash2 className='size-4' />
-									</Button>
-								}
-								actionButtonText='削除'
-								deletingText=''
-								description='本当に削除したいですか？'
-								title={`${restaurant.name}を削除`}
-							/>
-							<DialogRestaurantUpdate
-								trigger={
-									<Button>
-										<Edit className='size-4' />
-										変更
-									</Button>
-								}
-								restaurant={restaurant}
-								id={restaurantId}
-							/>
-						</div>
+						{isValidDelete && (
+							<div className='flex items-center gap-3'>
+								<DialogWarning
+									deleteAction={deleteRestaurant}
+									deleting={isDeletePending}
+									trigger={
+										<Button size={'icon'} variant={'danger'}>
+											<Trash2 className='size-4' />
+										</Button>
+									}
+									actionButtonText='削除'
+									deletingText=''
+									description='本当に削除したいですか？'
+									title={`${restaurant.name}を削除`}
+								/>
+								<DialogRestaurantUpdate
+									trigger={
+										<Button>
+											<Edit className='size-4' />
+											変更
+										</Button>
+									}
+									restaurant={restaurant}
+									id={restaurantId}
+								/>
+							</div>
+						)}
 					</div>
 					<div className='mb-2 flex items-center gap-3'>
 						<h1 className='text-2xl md:text-4xl font-bold text-foreground'>{restaurant.name}</h1>

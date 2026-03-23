@@ -5,6 +5,7 @@ import { Rating } from '@/components/rating'
 import { Button, Section, Spinner } from '@/components/ui'
 import { Callout } from '@/components/ui/callout'
 import { useFavoriteRestaurants } from '@/hooks/use-favorite-restaurants'
+import { useIsMobile } from '@/hooks/use-mobile'
 import type { RestaurantListItem } from '@/lib/api/restaurants'
 import { useAuth } from '@/lib/auth-context'
 import { PaginationState } from '@tanstack/react-table'
@@ -14,6 +15,7 @@ import * as React from 'react'
 
 export default function FavoritesPage() {
 	const router = useRouter()
+	const isMobile = useIsMobile()
 	const { user, isLoading: isAuthLoading } = useAuth()
 	const [viewMode, setViewMode] = React.useState<'table' | 'cards'>('cards')
 	const [pagination, setPagination] = React.useState<PaginationState>({
@@ -88,7 +90,7 @@ export default function FavoritesPage() {
 			) : (
 				<>
 					{/* お気に入りレストランのテーブル/カード表示（モバイルは常にカード） */}
-					{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
+					{viewMode === 'cards' || isMobile ? (
 						<DataCards
 							data={favoriteItems?.data?.map(item => item.restaurant as RestaurantListItem)!}
 							total={favoriteItems?.meta?.total}

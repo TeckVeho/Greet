@@ -96,7 +96,7 @@ export function DialogRestaurantFilter({
 				<DialogHeader>
 					<DialogTitle>フィルター</DialogTitle>
 					{activeFilterCount > 0 && (
-						<p className='text-sm text-zinc-500 mt-1'>
+						<p className='text-sm text-muted-foreground mt-1'>
 							{activeFilterCount} 件のフィルターが適用されています
 						</p>
 					)}
@@ -105,60 +105,50 @@ export function DialogRestaurantFilter({
 				<div className='space-y-6'>
 					{/* エリア */}
 					<div>
-						<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>エリア</Label>
+						<Label className='text-sm font-semibold text-muted-foreground mb-3 block'>エリア</Label>
 						<div className='flex flex-wrap gap-2'>
 							{AREA_OPTIONS.map(opt => (
-								<button
+								<Button
 									key={opt.value}
 									onClick={() => handleAreaToggle(opt.value)}
-									className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-										localFilters.areas.includes(opt.value)
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
+									variant={localFilters.areas.includes(opt.value) ? 'default' : 'outline'}
 								>
 									{opt.label}
-								</button>
+								</Button>
 							))}
 						</div>
 					</div>
 
 					{/* ジャンル */}
 					<div>
-						<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>ジャンル</Label>
+						<Label className='text-sm font-semibold text-muted-foreground mb-3 block'>
+							ジャンル
+						</Label>
 						<div className='flex flex-wrap gap-2'>
 							{GENRE_OPTIONS.map(opt => (
-								<button
+								<Button
 									key={opt.value}
 									onClick={() => handleGenreToggle(opt.value)}
-									className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-										localFilters.genres.includes(opt.value)
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
+									variant={localFilters.genres.includes(opt.value) ? 'default' : 'outline'}
 								>
 									{opt.label}
-								</button>
+								</Button>
 							))}
 						</div>
 					</div>
 
 					{/* 価格帯 */}
 					<div>
-						<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>価格帯</Label>
+						<Label className='text-sm font-semibold text-muted-foreground mb-3 block'>価格帯</Label>
 						<div className='flex flex-wrap gap-2'>
 							{PRICE_RANGE_OPTIONS.map(opt => (
-								<button
+								<Button
 									key={opt.value}
 									onClick={() => handlePriceRangeToggle(opt.value)}
-									className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-										localFilters.priceRanges.includes(opt.value)
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
+									variant={localFilters.priceRanges.includes(opt.value) ? 'default' : 'outline'}
 								>
 									{opt.label}
-								</button>
+								</Button>
 							))}
 						</div>
 					</div>
@@ -166,111 +156,93 @@ export function DialogRestaurantFilter({
 					{/* 個室・喫煙 */}
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 						<div>
-							<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>個室</Label>
+							<Label className='text-sm font-semibold text-muted-foreground mb-3 block'>個室</Label>
 							<div className='flex gap-2'>
-								<button
+								<Button
 									onClick={() =>
 										setLocalFilters(prev => ({
 											...prev,
 											hasPrivateRoom: true,
 										}))
 									}
-									className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-										localFilters.hasPrivateRoom === true
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
+									variant={localFilters.hasPrivateRoom === true ? 'default' : 'outline'}
+									className={'flex-1'}
 								>
 									あり
-								</button>
-								<button
+								</Button>
+								<Button
 									onClick={() =>
 										setLocalFilters(prev => ({
 											...prev,
 											hasPrivateRoom: false,
 										}))
 									}
-									className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-										localFilters.hasPrivateRoom === false
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
+									variant={localFilters.hasPrivateRoom === false ? 'default' : 'outline'}
+									className={'flex-1'}
 								>
 									なし
-								</button>
-								<button
+								</Button>
+								<Button
 									onClick={() =>
 										setLocalFilters(prev => ({
 											...prev,
 											hasPrivateRoom: undefined,
 										}))
 									}
-									className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-										localFilters.hasPrivateRoom === undefined
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
+									variant={localFilters.hasPrivateRoom === undefined ? 'default' : 'outline'}
+									className={'flex-1'}
 								>
 									すべて
-								</button>
+								</Button>
 							</div>
 						</div>
 
 						<div>
-							<Label className='text-sm font-semibold text-zinc-900 mb-3 block'>喫煙</Label>
+							<Label className='text-sm font-semibold text-muted-foreground mb-3 block'>喫煙</Label>
 							<div className='flex gap-2'>
-								<button
+								<Button
 									onClick={() =>
 										setLocalFilters(prev => ({
 											...prev,
 											smokingAllowed: true,
 										}))
 									}
-									className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-										localFilters.smokingAllowed === true
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
+									variant={localFilters.smokingAllowed === true ? 'default' : 'outline'}
+									className={'flex-1'}
 								>
 									可
-								</button>
-								<button
+								</Button>
+								<Button
 									onClick={() =>
 										setLocalFilters(prev => ({
 											...prev,
 											smokingAllowed: false,
 										}))
 									}
-									className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-										localFilters.smokingAllowed === false
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
+									variant={localFilters.smokingAllowed === false ? 'default' : 'outline'}
+									className={'flex-1'}
 								>
 									不可
-								</button>
-								<button
+								</Button>
+								<Button
 									onClick={() =>
 										setLocalFilters(prev => ({
 											...prev,
 											smokingAllowed: undefined,
 										}))
 									}
-									className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-										localFilters.smokingAllowed === undefined
-											? 'bg-zinc-900 text-white'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-									}`}
+									variant={localFilters.smokingAllowed === undefined ? 'default' : 'outline'}
+									className={'flex-1'}
 								>
 									すべて
-								</button>
+								</Button>
 							</div>
 						</div>
 					</div>
 				</div>
 
 				<DialogFooter>
-					<Button variant='secondary' onClick={handleReset}>
+					<Button variant='outline' onClick={handleReset}>
 						リセット
 					</Button>
 					<Button onClick={handleApply}>適用</Button>

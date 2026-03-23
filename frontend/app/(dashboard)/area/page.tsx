@@ -1,14 +1,24 @@
 'use client'
 
 import { DataCards, DataTable, RestaurantColumns } from '@/components/restaurants'
-import { Section, Spinner } from '@/components/ui'
+import {
+	Button,
+	Section,
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Spinner,
+} from '@/components/ui'
 import { Badge } from '@/components/ui/badge'
-import { listRestaurants } from '@/lib/api/restaurants'
+import { useRestaurants } from '@/hooks/use-restaurants'
 import { useAuth } from '@/lib/auth-context'
-import { areaLabel } from '@/lib/constants'
+import { areaLabel, sortOptions } from '@/lib/constants'
 import type { Area } from '@/lib/types'
 import { sortRestaurants, type SortOption } from '@/lib/utils'
-import { useQuery } from '@tanstack/react-query'
+import { LayoutGrid, Table } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
@@ -25,14 +35,12 @@ export default function AreaPage() {
 			router.push('/login')
 		}
 	}, [user, isAuthLoading, router])
-
-	const { data: restaurantList, isPending: isRestaurantsPending } = useQuery({
-		queryKey: ['restaurants', { scope: 'area' }],
-		queryFn: () => listRestaurants().then(res => res.data),
-		enabled: !!user,
+	const { data: restaurantList, isPending: isRestaurantsPending } = useRestaurants({
+		limit: 100, // 大量に取得してクライアント側で絞り込む
+		page: 1,
 	})
 
-	const restaurants = React.useMemo(() => restaurantList ?? [], [restaurantList])
+	const restaurants = React.useMemo(() => restaurantList?.data ?? [], [restaurantList])
 
 	// エリアごとにグループ化
 	const restaurantsByArea = React.useMemo(() => {
@@ -85,104 +93,60 @@ export default function AreaPage() {
 			<div className='mb-6'>
 				<div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3'>
 					<div className='flex flex-wrap gap-2'>
-						<button
+						<Button
 							onClick={() => setSelectedArea('all')}
-							className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-								selectedArea === 'all'
-									? 'bg-zinc-900 text-white dark:bg-primary dark:text-primary-foreground'
-									: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700'
-							}`}
+							variant={selectedArea === 'all' ? 'default' : 'secondary'}
 						>
 							すべて
-						</button>
+							<span className='ml-1.5 text-xs opacity-70'>({restaurants.length})</span>
+						</Button>
 						{areas.map(area => {
 							const count = restaurantsByArea.get(area)?.length || 0
 							return (
-								<button
+								<Button
 									key={area}
 									onClick={() => setSelectedArea(area)}
-									className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-										selectedArea === area
-											? 'bg-zinc-900 text-white dark:bg-primary dark:text-primary-foreground'
-											: 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700'
-									}`}
+									variant={selectedArea === area ? 'default' : 'secondary'}
 								>
 									{areaLabel(area)}
 									<span className='ml-1.5 text-xs opacity-70'>({count})</span>
-								</button>
+								</Button>
 							)
 						})}
 					</div>
 					{/* 並び替え・ビュー切り替え (モバイルでは非表示) */}
 					<div className='hidden md:flex items-center gap-2 self-end md:self-auto'>
-						<select
-							value={sortOption}
-							onChange={e => setSortOption(e.target.value as SortOption)}
-							className='h-9 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring'
-							aria-label='並び替え'
-						>
-							<option value='createdAt_desc'>登録日（新しい順）</option>
-							<option value='createdAt_asc'>登録日（古い順）</option>
-							<option value='name_asc'>店名（あいうえお順）</option>
-							<option value='name_desc'>店名（逆順）</option>
-							<option value='price_asc'>価格帯（低い順）</option>
-							<option value='price_desc'>価格帯（高い順）</option>
-							<option value='reviews_desc'>レビュー件数（多い順）</option>
-							<option value='rating_desc'>平均評価（高い順）</option>
-						</select>
-						<div className='flex items-center border border-border rounded-md overflow-hidden bg-card'>
-							<button
+						<Select value={sortOption} onValueChange={e => setSortOption(e as SortOption)}>
+							<SelectTrigger className='w-45'>
+								<SelectValue placeholder='Theme' />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									{sortOptions.map(option => (
+										<SelectItem value={option.value} key={option.label}>
+											{option.label}
+										</SelectItem>
+									))}
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+						<div className='hidden md:flex items-center rounded-md overflow-hidden'>
+							<Button
 								onClick={() => setViewMode('table')}
-								className={`px-3 py-2 text-sm transition-colors ${
-									viewMode === 'table'
-										? 'bg-zinc-900 text-white dark:bg-primary dark:text-primary-foreground'
-										: 'bg-card text-muted-foreground hover:bg-muted'
-								}`}
+								variant={viewMode === 'table' ? 'default' : 'secondary'}
+								className='rounded-r-none'
 								title='テーブル表示'
 							>
-								<svg
-									xmlns='http://www.w3.org/2000/svg'
-									width='16'
-									height='16'
-									viewBox='0 0 24 24'
-									fill='none'
-									stroke='currentColor'
-									strokeWidth='2'
-									strokeLinecap='round'
-									strokeLinejoin='round'
-								>
-									<rect width='7' height='7' x='3' y='3' rx='1' />
-									<rect width='7' height='7' x='14' y='3' rx='1' />
-									<rect width='7' height='7' x='14' y='14' rx='1' />
-									<rect width='7' height='7' x='3' y='14' rx='1' />
-								</svg>
-							</button>
-							<button
+								<LayoutGrid className={'size-4'} />
+							</Button>
+							<Button
 								onClick={() => setViewMode('cards')}
-								className={`px-3 py-2 text-sm transition-colors ${
-									viewMode === 'cards'
-										? 'bg-zinc-900 text-white dark:bg-primary dark:text-primary-foreground'
-										: 'bg-card text-muted-foreground hover:bg-muted'
-								}`}
-								title='カード表示'
+								variant={viewMode === 'cards' ? 'default' : 'secondary'}
+								title='テーブル表示'
+								className='rounded-l-none'
 							>
-								<svg
-									xmlns='http://www.w3.org/2000/svg'
-									width='16'
-									height='16'
-									viewBox='0 0 24 24'
-									fill='none'
-									stroke='currentColor'
-									strokeWidth='2'
-									strokeLinecap='round'
-									strokeLinejoin='round'
-								>
-									<rect width='7' height='9' x='3' y='3' rx='1' />
-									<rect width='7' height='5' x='14' y='3' rx='1' />
-									<rect width='7' height='9' x='14' y='12' rx='1' />
-									<rect width='7' height='5' x='3' y='16' rx='1' />
-								</svg>
-							</button>
+								<Table className={'size-4'} />
+							</Button>
 						</div>
 					</div>
 				</div>

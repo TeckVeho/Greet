@@ -54,8 +54,8 @@ export function DialogGlobalSearch() {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button variant={'secondary'} className=' text-zinc-600 hover:bg-zinc-100'>
-					<Search className='size-4' />
+				<Button variant={'secondary'}>
+					<Search className='size-4 text-muted-foreground' />
 					<span className='text-muted-foreground'>検索...</span>
 					<Kbd>⌘ K</Kbd>
 				</Button>
