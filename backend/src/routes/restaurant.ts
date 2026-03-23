@@ -31,7 +31,11 @@ router.post('/upload-image', upload.single('image'), restaurantController.upload
 router.post('/delete-image', restaurantController.deleteImage)
 
 // GET /api/restaurants/:id
-router.get('/:restaurantId', validateParams(restaurantIdSchema), restaurantController.getRestaurantById)
+router.get(
+  '/:restaurantId',
+  validateParams(restaurantIdSchema),
+  restaurantController.getRestaurantById,
+)
 
 // PUT /api/restaurants/:id
 router.put(

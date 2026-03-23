@@ -1,10 +1,10 @@
 import { Router } from 'express'
-import multer from 'multer'
 import { userController } from '../controllers/user.controller'
 import { adminMiddleware } from '../middleware/admin.middleware'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { errorMiddleware } from '../middleware/error.middleware'
 import { tenantMiddleware } from '../middleware/tenant.middleware'
+import { upload } from '../middleware/upload.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware'
 import {
   createUserSchema,
@@ -12,7 +12,6 @@ import {
   updateUserSchema,
   userIdSchema,
 } from '../validators/user.validator'
-const upload = multer()
 const router = Router()
 
 router.use(authMiddleware, tenantMiddleware)
