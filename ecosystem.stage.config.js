@@ -12,7 +12,7 @@ module.exports = {
       watch: false,
       max_memory_restart: '512M',
       env: {
-        PORT: 4100,
+        PORT: 4300,
       },
     },
     {
