@@ -28,7 +28,7 @@ import { useCreateUser, useUpdateUser } from '@/hooks/use-users'
 
 import { UserFormDialogProps } from '@/lib/types'
 import { onError } from '@/lib/utils'
-import { schemaCreate, schemaUpdate } from '@/schemas/user.schemas'
+import { schemaCreate, schemaUpdate } from '@/schemas/user.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import * as React from 'react'
