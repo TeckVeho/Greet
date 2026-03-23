@@ -35,9 +35,9 @@ export default function Page() {
 			<div className='mb-8'>
 				<div className='mb-2 flex items-center gap-2'>
 					<span className='text-2xl md:text-3xl'>🙍</span>
-					<h1 className='text-2xl md:text-3xl font-bold text-zinc-900'>プロフィール</h1>
+					<h1 className='text-2xl md:text-3xl font-bold '>プロフィール</h1>
 				</div>
-				<p className='text-sm text-zinc-500'>ユーザー情報の表示専用ページ</p>
+				<p className='text-sm text-muted-foreground'>ユーザー情報の表示専用ページ</p>
 			</div>
 
 			<div className='grid gap-6 lg:grid-cols-3 w-full'>
@@ -47,8 +47,8 @@ export default function Page() {
 						<CardDescription>プロフィールの概要</CardDescription>
 					</CardHeader>
 					<CardContent className='space-y-4'>
-						<div className='flex items-center gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-3'>
-							<div className='flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl shadow-sm'>
+						<div className='flex items-center gap-3 rounded-md p-3 border/input bg-background'>
+							<div className='flex h-12 w-12 items-center justify-center rounded-full text-xl shadow-sm'>
 								{user?.avatar ? (
 									<Image src={user?.avatar} alt='Avatar' width={48} height={48} />
 								) : (
@@ -56,8 +56,8 @@ export default function Page() {
 								)}
 							</div>
 							<div>
-								<p className='font-medium text-zinc-900'>{user?.name}</p>
-								<p className='text-sm text-zinc-500'>{user?.email}</p>
+								<p className='font-medium '>{user?.name}</p>
+								<p className='text-sm text-muted-foreground'>{user?.email}</p>
 							</div>
 						</div>
 

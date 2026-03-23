@@ -1,18 +1,18 @@
 'use client'
 
-import { InputPassword } from '@/components/ui'
-import { Button } from '@/components/ui/button'
 import {
+	Button,
 	Card,
 	CardContent,
 	CardDescription,
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Spinner } from '@/components/ui/spinner'
+	Input,
+	InputPassword,
+	Label,
+	Spinner,
+} from '@/components/ui'
 import { useAuth } from '@/lib/auth-context'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
@@ -104,7 +104,7 @@ export default function LoginPage() {
 								onChange={e => setPassword(e.target.value)}
 								required
 								disabled={isLoading}
-								className='border-input bg-background'
+								className='border-input bg-background rounded-2xl'
 							/>
 						</div>
 						{error && (
