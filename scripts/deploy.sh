@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
-# ──────────────────────────────────────────────
-# Deploy script – runs on EC2 after git pull
-# Called by GitHub Actions or manually:
-#   ssh deploy@server 'cd ~/Greet && bash scripts/deploy.sh'
-# Stage can run side-by-side on same host with a separate checkout:
-#   PROJECT_DIR=~/Greet-stage bash scripts/deploy.sh stage
-# ──────────────────────────────────────────────
+
 set -euo pipefail
 
 DEPLOY_BRANCH="${1:-development}"
