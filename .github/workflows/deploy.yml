@@ -67,11 +67,21 @@ jobs:
             nvm install 20
             nvm use 20
 
+            # Ensure project directory exists
+            if [ ! -d ~/Greet/.git ]; then
+              git clone https://github.com/TeckVeho/Greet.git ~/Greet
+            fi
+
+            # Pull latest code first so deploy.sh is up to date
+            cd ~/Greet
+            git fetch origin development
+            git reset --hard origin/development
+
             # Write production env files from secrets
             printf '%s\n' "$PRODUCTION_ENV_BACKEND" > ~/Greet/backend/.env
             printf '%s\n' "$PRODUCTION_ENV_FRONTEND" > ~/Greet/frontend/.env
 
-            cd ~/Greet && ./scripts/deploy.sh development
+            bash scripts/deploy.sh development
         env:
           PRODUCTION_ENV_BACKEND: ${{ secrets.PRODUCTION_ENV_BACKEND }}
           PRODUCTION_ENV_FRONTEND: ${{ secrets.PRODUCTION_ENV_FRONTEND }}
