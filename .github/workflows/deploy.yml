@@ -71,7 +71,7 @@ jobs:
             printf '%s\n' "$PRODUCTION_ENV_BACKEND" > ~/Greet/backend/.env
             printf '%s\n' "$PRODUCTION_ENV_FRONTEND" > ~/Greet/frontend/.env
 
-            cd ~/Greet && bash scripts/deploy.sh development
+            cd ~/Greet && ./scripts/deploy.sh development
         env:
           PRODUCTION_ENV_BACKEND: ${{ secrets.PRODUCTION_ENV_BACKEND }}
           PRODUCTION_ENV_FRONTEND: ${{ secrets.PRODUCTION_ENV_FRONTEND }}
