@@ -3,18 +3,45 @@
 # Deploy script – runs on EC2 after git pull
 # Called by GitHub Actions or manually:
 #   ssh deploy@server 'cd ~/Greet && bash scripts/deploy.sh'
+# Stage can run side-by-side on same host with a separate checkout:
+#   PROJECT_DIR=~/Greet-stage bash scripts/deploy.sh stage
 # ──────────────────────────────────────────────
 set -euo pipefail
 
-PROJECT_DIR="$HOME/Greet"
 DEPLOY_BRANCH="${1:-development}"
-PM2_CONFIG="ecosystem.config.js"
 
-if [ "$DEPLOY_BRANCH" = "main" ] && [ -f "$PROJECT_DIR/ecosystem.prod.config.js" ]; then
-	PM2_CONFIG="ecosystem.prod.config.js"
+case "$DEPLOY_BRANCH" in
+	main)
+		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
+		PM2_CONFIG="ecosystem.prod.config.js"
+		;
+	stage)
+		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet-stage}"
+		PM2_CONFIG="ecosystem.stage.config.js"
+		;
+	*)
+		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
+		PM2_CONFIG="ecosystem.config.js"
+		;
+esac
+
+if [ ! -d "$PROJECT_DIR/.git" ]; then
+	if [ -d "$PROJECT_DIR" ] && [ -n "$(ls -A "$PROJECT_DIR" 2>/dev/null)" ]; then
+		echo "Project directory exists but is not a git checkout: $PROJECT_DIR"
+		echo "Please clean this directory or point PROJECT_DIR to a valid checkout."
+		exit 1
+	fi
+
+	echo "Project directory not found at $PROJECT_DIR. Cloning repository..."
+	git clone https://github.com/TeckVeho/Greet.git "$PROJECT_DIR"
 fi
 
 cd "$PROJECT_DIR"
+
+if [ ! -f "$PM2_CONFIG" ]; then
+	echo "PM2 config not found: $PROJECT_DIR/$PM2_CONFIG"
+	exit 1
+fi
 
 if ! command -v node >/dev/null 2>&1; then
 	echo "Node.js is not installed. Please install Node.js 20+ before deploy."
@@ -46,6 +73,8 @@ npm_ci_with_retry() {
 }
 
 echo "=== Deploying Greet (${DEPLOY_BRANCH}) ==="
+echo "Project directory: ${PROJECT_DIR}"
+echo "PM2 config: ${PM2_CONFIG}"
 
 # ── Pull latest code ──
 echo "[1/6] Pulling latest code..."

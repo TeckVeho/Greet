@@ -7,14 +7,25 @@ set -euo pipefail
 
 DEPLOY_BRANCH="${1:-development}"
 APACHE_CONF_SOURCE="${2:-apache/greet.conf}"
-PM2_CONFIG="ecosystem.config.js"
 
-if [ "$DEPLOY_BRANCH" = "main" ] && [ -f "$HOME/Greet/ecosystem.prod.config.js" ]; then
-  PM2_CONFIG="ecosystem.prod.config.js"
-fi
+case "$DEPLOY_BRANCH" in
+  main)
+    PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
+    PM2_CONFIG="ecosystem.prod.config.js"
+    ;;
+  stage)
+    PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet-stage}"
+    PM2_CONFIG="ecosystem.stage.config.js"
+    ;;
+  *)
+    PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
+    PM2_CONFIG="ecosystem.config.js"
+    ;;
+esac
 
 echo "=== Greet Server Setup ==="
 echo "Branch: ${DEPLOY_BRANCH}"
+echo "Project directory: ${PROJECT_DIR}"
 echo "Apache config: ${APACHE_CONF_SOURCE}"
 
 # ── Node.js (via nvm) ──
@@ -40,7 +51,6 @@ else
 fi
 
 # ── Project directory ──
-PROJECT_DIR="$HOME/Greet"
 if [ ! -d "$PROJECT_DIR" ]; then
   echo "Cloning repository..."
   git clone https://github.com/TeckVeho/Greet.git "$PROJECT_DIR"
@@ -102,13 +112,15 @@ if [ ! -f "$PROJECT_DIR/$APACHE_CONF_SOURCE" ]; then
   exit 1
 fi
 
+APACHE_CONF_TARGET="/etc/httpd/conf.d/$(basename "$APACHE_CONF_SOURCE")"
+
 if sudo -n true 2>/dev/null; then
-  sudo cp "$PROJECT_DIR/$APACHE_CONF_SOURCE" /etc/httpd/conf.d/greet.conf
+  sudo cp "$PROJECT_DIR/$APACHE_CONF_SOURCE" "$APACHE_CONF_TARGET"
   sudo systemctl reload httpd
 else
   echo "Skipping Apache copy/reload (sudo password required)."
   echo "Run manually:"
-  echo "  sudo cp $PROJECT_DIR/$APACHE_CONF_SOURCE /etc/httpd/conf.d/greet.conf"
+  echo "  sudo cp $PROJECT_DIR/$APACHE_CONF_SOURCE $APACHE_CONF_TARGET"
   echo "  sudo systemctl reload httpd"
 fi
 
