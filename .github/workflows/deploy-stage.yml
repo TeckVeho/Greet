@@ -1,0 +1,91 @@
+name: Deploy to Stage (Stage Branch)
+
+on:
+  push:
+    branches: [stage]
+  pull_request:
+    branches: [stage]
+
+jobs:
+  # -- Build & Lint Check --
+  build:
+    name: Build & Verify (Stage)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: https://greet-stage-api.d-dxlab.com/api
+          S3_BUCKET_NAME: greet-product
+          S3_REGION: ap-northeast-1
+        run: npm run build
+
+  # -- Deploy (only on push to stage, not PRs) --
+  deploy:
+    name: Deploy to Stage Server
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/stage'
+
+    steps:
+      - name: Deploy via SSH to Stage
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.STAGE_EC2_HOST }}
+          username: ${{ secrets.STAGE_EC2_USER }}
+          key: ${{ secrets.STAGE_EC2_SSH_KEY }}
+          command_timeout: 40m
+          envs: STAGE_PRODUCTION_ENV_BACKEND,STAGE_PRODUCTION_ENV_FRONTEND,PROJECT_DIR
+          script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            nvm install 20
+            nvm use 20
+
+            export PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet-stage}"
+
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
+              rm -rf "$PROJECT_DIR"
+              git clone https://github.com/TeckVeho/Greet.git "$PROJECT_DIR"
+            fi
+
+            cd "$PROJECT_DIR"
+            git fetch origin stage
+            git checkout stage
+            git reset --hard origin/stage
+            mkdir -p backend frontend
+
+            # Write stage env files from secrets
+            printf '%s\n' "$STAGE_PRODUCTION_ENV_BACKEND" > "$PROJECT_DIR/backend/.env"
+            printf '%s\n' "$STAGE_PRODUCTION_ENV_FRONTEND" > "$PROJECT_DIR/frontend/.env"
+
+            cd "$PROJECT_DIR" && bash scripts/deploy.sh stage
+        env:
+          STAGE_PRODUCTION_ENV_BACKEND: ${{ secrets.STAGE_PRODUCTION_ENV_BACKEND }}
+          STAGE_PRODUCTION_ENV_FRONTEND: ${{ secrets.STAGE_PRODUCTION_ENV_FRONTEND }}
+          PROJECT_DIR: /home/deploy/Greet-stage
