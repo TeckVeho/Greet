@@ -14,15 +14,15 @@ case "$DEPLOY_BRANCH" in
 	main)
 		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
 		PM2_CONFIG="ecosystem.prod.config.js"
-		;
+		;;
 	stage)
 		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet-stage}"
 		PM2_CONFIG="ecosystem.stage.config.js"
-		;
+		;;
 	*)
 		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
 		PM2_CONFIG="ecosystem.config.js"
-		;
+		;;
 esac
 
 if [ ! -d "$PROJECT_DIR/.git" ]; then
