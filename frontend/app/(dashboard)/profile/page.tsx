@@ -49,8 +49,15 @@ export default function Page() {
 					<CardContent className='space-y-4'>
 						<div className='flex items-center gap-3 rounded-md p-3 border/input bg-background'>
 							<div className='flex h-12 w-12 items-center justify-center rounded-full text-xl shadow-sm'>
-								{user?.avatar ? (
-									<Image src={user?.avatar} alt='Avatar' width={48} height={48} />
+								{typeof user?.avatar === 'string' ? (
+									<Image
+										src={user?.avatar}
+										alt='Avatar'
+										width={48}
+										height={48}
+										unoptimized
+										className='rounded-full object-cover w-12 h-12'
+									/>
 								) : (
 									user?.icon
 								)}
