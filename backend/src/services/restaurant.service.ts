@@ -13,6 +13,35 @@ type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; c
 type UpdateRestaurantInput = updateRestaurantBodySchema
 type ListQuery = listRestaurantsQueryBodySchema
 
+const AREA_LABELS: Record<Area, string> = {
+  GINZA: '銀座',
+  AKASAKA: '赤坂',
+  ROPPONGI: '六本木',
+  SHIMBASHI: '新橋',
+  AZABU: '麻布',
+  EBIISU: '恵比寿',
+  OMOTESANDO: '表参道',
+  OTHER: 'その他',
+}
+
+const GENRE_LABELS: Record<Genre, string> = {
+  SUSHI: '寿司',
+  FRENCH: 'フレンチ',
+  ITALIAN: 'イタリアン',
+  WASHOKU: '和食',
+  CHINESE: '中華',
+  TEPPANYAKI: '鉄板焼き',
+  YAKINIKU: '焼肉',
+  TEMPURA: '天ぷら',
+  KAPPO: '割烹',
+  OTHER: 'その他',
+}
+
+function matchesSearch(term: string, enumKey: string, label: string) {
+  const normalized = term.toLowerCase()
+  return enumKey.toLowerCase().includes(normalized) || label.includes(term)
+}
+
 function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
   if (!user) {
     return null
@@ -58,11 +87,13 @@ export class RestaurantService {
       priceRanges = [priceRanges]
     }
     const matchedAreas = search
-      ? Object.values(Area).filter(area => area.toLowerCase().includes(search.toLowerCase()))
+      ? (Object.values(Area).filter(area => matchesSearch(search, area, AREA_LABELS[area])) as Area[])
       : []
 
     const matchedGenres = search
-      ? Object.values(Genre).filter(genre => genre.toLowerCase().includes(search.toLowerCase()))
+      ? (Object.values(Genre).filter(genre =>
+          matchesSearch(search, genre, GENRE_LABELS[genre]),
+        ) as Genre[])
       : []
     let orderBy: Prisma.RestaurantOrderByWithRelationInput = { createdAt: 'desc' }
 

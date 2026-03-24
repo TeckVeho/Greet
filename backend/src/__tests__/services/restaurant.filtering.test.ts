@@ -250,6 +250,61 @@ describe('RestaurantService - フィルタリング', () => {
   })
 
   // ─────────────────────────────────────────
+  // 検索語（漢字/カタカナ）→ enum マッチング
+  // ─────────────────────────────────────────
+  describe('エリア・ジャンル検索', () => {
+    it('エリアを漢字で検索した場合、対応するArea enumで絞り込みされる', async () => {
+      mockCount.mockResolvedValue(0)
+      mockFindMany.mockResolvedValue([])
+
+      await service.findAll({ search: '銀座' })
+
+      expect(mockFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: expect.arrayContaining([
+                  expect.objectContaining({
+                    area: { in: ['GINZA'] },
+                  }),
+                ]),
+              }),
+            ]),
+          }),
+        }),
+      )
+    })
+
+    it('ジャンルを日本語で検索した場合、対応するGenre enumで絞り込みされる', async () => {
+      mockCount.mockResolvedValue(0)
+      mockFindMany.mockResolvedValue([])
+
+      await service.findAll({ search: '寿司' })
+
+      expect(mockFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: expect.arrayContaining([
+                  expect.objectContaining({
+                    genres: {
+                      some: {
+                        genre: { in: ['SUSHI'] },
+                      },
+                    },
+                  }),
+                ]),
+              }),
+            ]),
+          }),
+        }),
+      )
+    })
+  })
+
+  // ─────────────────────────────────────────
   // findById のレスポンス変換
   // ─────────────────────────────────────────
   describe('findById レスポンス変換', () => {
