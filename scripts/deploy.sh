@@ -137,6 +137,7 @@ echo "[2/6] Installing backend dependencies..."
 install_if_lock_changed "$PROJECT_DIR/backend" "backend" "node_modules/.bin/prisma"
 
 echo "[3/6] Building backend..."
+export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--experimental-wasm-gc"
 run_npm_script "$PROJECT_DIR/backend" "build"
 
 echo "[4/6] Running database migrations..."
@@ -146,7 +147,7 @@ run_prisma_migrate_deploy "$PROJECT_DIR/backend" 2>/dev/null || echo "No pending
 echo "[5/6] Installing frontend dependencies & building..."
 install_if_lock_changed "$PROJECT_DIR/frontend" "frontend" "node_modules/.bin/next"
 export NEXT_TELEMETRY_DISABLED=1
-export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=2048}"
+export NODE_OPTIONS="--max-old-space-size=2048"
 # Avoid stale Next artifacts causing server-action ID mismatches across deploys.
 rm -rf "$PROJECT_DIR/frontend/.next"
 run_npm_script "$PROJECT_DIR/frontend" "build"

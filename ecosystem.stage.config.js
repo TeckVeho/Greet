@@ -7,6 +7,7 @@ module.exports = {
       name: 'greet-stage-backend',
       cwd: './backend',
       script: 'dist/index.js',
+      node_args: '--experimental-wasm-gc',
       instances: 1,
       autorestart: true,
       watch: false,
