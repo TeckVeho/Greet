@@ -11,9 +11,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "prisma:seed": "node --experimental-wasm-gc ./node_modules/.bin/tsx prisma/seed.ts",
-    "prisma:seed:cli": "prisma db seed",
-    "seed": "npm run prisma:seed",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "seed": "tsx prisma/seed.ts",
     "lint": "ESLINT_USE_FLAT_CONFIG=false eslint \"src/**/*.{ts,tsx}\"",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\""
   },
