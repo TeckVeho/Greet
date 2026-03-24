@@ -137,7 +137,6 @@ echo "[2/6] Installing backend dependencies..."
 install_if_lock_changed "$PROJECT_DIR/backend" "backend" "node_modules/.bin/prisma"
 
 echo "[3/6] Building backend..."
-export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--experimental-wasm-gc"
 run_npm_script "$PROJECT_DIR/backend" "build"
 
 echo "[4/6] Running database migrations..."
