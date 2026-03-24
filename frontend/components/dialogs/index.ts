@@ -1,3 +1,4 @@
+export { DialogCreateReview } from './dialog-create-review'
 export { DialogGlobalSearch } from './dialog-global-search'
 export { DialogRestaurantCreate } from './dialog-restaurant-create'
 export { DialogRestaurantFilter, type FilterState } from './dialog-restaurant-filter'
