@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+trap 'echo "Deploy failed at line $LINENO with exit code $?."' ERR
 
 DEPLOY_BRANCH="${1:-development}"
 
@@ -55,7 +56,7 @@ npm_ci_with_retry() {
 
 	cd "$dir"
 	echo "Installing ${label} dependencies..."
-	if npm ci --no-audit --no-fund; then
+	if npm ci --no-audit --no-fund --progress=false; then
 		return 0
 	fi
 
@@ -63,12 +64,45 @@ npm_ci_with_retry() {
 	rm -rf node_modules
 	npm cache clean --force
 	npm cache verify
-	npm ci --no-audit --no-fund --prefer-online --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
+	npm ci --no-audit --no-fund --progress=false --prefer-online --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
+}
+
+install_if_lock_changed() {
+	local dir="$1"
+	local label="$2"
+	local lock_file="$dir/package-lock.json"
+	local hash_file="$dir/.package-lock.sha256"
+
+	if [ ! -f "$lock_file" ]; then
+		echo "Missing lock file for ${label}: $lock_file"
+		exit 1
+	fi
+
+	local current_hash
+	current_hash="$(sha256sum "$lock_file" | awk '{print $1}')"
+	local previous_hash=""
+	if [ -f "$hash_file" ]; then
+		previous_hash="$(cat "$hash_file" 2>/dev/null || true)"
+	fi
+
+	if [ -d "$dir/node_modules" ] && [ "$current_hash" = "$previous_hash" ]; then
+		echo "Lockfile unchanged for ${label}; skipping npm ci."
+		return 0
+	fi
+
+	npm_ci_with_retry "$dir" "$label"
+	printf '%s\n' "$current_hash" > "$hash_file"
 }
 
 echo "=== Deploying Greet (${DEPLOY_BRANCH}) ==="
 echo "Project directory: ${PROJECT_DIR}"
 echo "PM2 config: ${PM2_CONFIG}"
+echo "Node version: $(node -v)"
+echo "npm version: $(npm -v)"
+echo "Memory snapshot:"
+free -h || true
+echo "Disk snapshot:"
+df -h || true
 
 # ── Pull latest code ──
 echo "[1/6] Pulling latest code..."
@@ -77,7 +111,7 @@ git reset --hard "origin/$DEPLOY_BRANCH"
 
 # ── Backend ──
 echo "[2/6] Installing backend dependencies..."
-npm_ci_with_retry "$PROJECT_DIR/backend" "backend"
+install_if_lock_changed "$PROJECT_DIR/backend" "backend"
 
 echo "[3/6] Building backend..."
 npm run build
@@ -87,7 +121,9 @@ npx prisma migrate deploy 2>/dev/null || echo "No pending migrations"
 
 # ── Frontend ──
 echo "[5/6] Installing frontend dependencies & building..."
-npm_ci_with_retry "$PROJECT_DIR/frontend" "frontend"
+install_if_lock_changed "$PROJECT_DIR/frontend" "frontend"
+export NEXT_TELEMETRY_DISABLED=1
+export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=2048}"
 npm run build
 
 # ── Restart PM2 ──
