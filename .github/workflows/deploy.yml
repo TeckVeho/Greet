@@ -61,7 +61,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           command_timeout: 40m
           request_pty: true
-          capture_stdout: true
+          capture_stdout: false
           envs: PRODUCTION_ENV_BACKEND,PRODUCTION_ENV_FRONTEND
           script: |
             export NVM_DIR="$HOME/.nvm"

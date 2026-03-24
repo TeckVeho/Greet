@@ -67,6 +67,23 @@ npm_ci_with_retry() {
 	npm ci --no-audit --no-fund --progress=false --prefer-online --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
 }
 
+run_npm_script() {
+	local dir="$1"
+	local script="$2"
+	(
+		cd "$dir"
+		npm run "$script"
+	)
+}
+
+run_prisma_migrate_deploy() {
+	local dir="$1"
+	(
+		cd "$dir"
+		npx prisma migrate deploy
+	)
+}
+
 install_if_lock_changed() {
 	local dir="$1"
 	local label="$2"
@@ -120,20 +137,19 @@ echo "[2/6] Installing backend dependencies..."
 install_if_lock_changed "$PROJECT_DIR/backend" "backend" "node_modules/.bin/prisma"
 
 echo "[3/6] Building backend..."
-npm run build
+run_npm_script "$PROJECT_DIR/backend" "build"
 
 echo "[4/6] Running database migrations..."
-npx prisma migrate deploy 2>/dev/null || echo "No pending migrations"
+run_prisma_migrate_deploy "$PROJECT_DIR/backend" 2>/dev/null || echo "No pending migrations"
 
 # ── Frontend ──
 echo "[5/6] Installing frontend dependencies & building..."
 install_if_lock_changed "$PROJECT_DIR/frontend" "frontend" "node_modules/.bin/next"
 export NEXT_TELEMETRY_DISABLED=1
 export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=2048}"
-cd "$PROJECT_DIR/frontend"
 # Avoid stale Next artifacts causing server-action ID mismatches across deploys.
-rm -rf .next
-npm run build
+rm -rf "$PROJECT_DIR/frontend/.next"
+run_npm_script "$PROJECT_DIR/frontend" "build"
 
 if [ ! -x "$PROJECT_DIR/frontend/node_modules/.bin/next" ]; then
 	echo "Frontend runtime binary not found after install/build: $PROJECT_DIR/frontend/node_modules/.bin/next"
