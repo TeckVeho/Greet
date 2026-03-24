@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
 import { ApiError } from '../utils/utils'
 import { createUserBody, listUserQuery } from '../validators/user.validator'
-import { uploadFile } from './file.service'
+import { resolveFileUrl, uploadFile } from './file.service'
 
 type Requester = {
   userId: string
@@ -56,7 +56,12 @@ export class UserService {
         prisma.user.count({ where: whereCondition }),
       ])
 
-      const safeData = users.map(({ passwordHash, ...user }) => user)
+      const safeData = await Promise.all(
+        users.map(async ({ passwordHash, ...user }) => ({
+          ...user,
+          avatar: await resolveFileUrl(user.avatar),
+        })),
+      )
 
       return {
         success: true,
@@ -95,6 +100,7 @@ export class UserService {
         throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
       }
       const { passwordHash, ...safeUser } = user
+      safeUser.avatar = (await resolveFileUrl(safeUser.avatar)) ?? null
       return { success: true, data: safeUser, statusCode: StatusCodes.OK }
     } catch (err) {
       if (err instanceof ApiError) throw err
@@ -145,6 +151,8 @@ export class UserService {
         },
       })
       const { passwordHash, ...safeUser } = user
+      const resolvedAvatar = await resolveFileUrl(safeUser.avatar)
+      safeUser.avatar = resolvedAvatar ?? null
       return { success: true, data: safeUser, statusCode: StatusCodes.CREATED }
     } catch (error) {
       if (error instanceof ApiError) {
@@ -220,6 +228,8 @@ export class UserService {
         },
       })
       const { passwordHash, ...safeUser } = user
+      const resolvedAvatar = await resolveFileUrl(safeUser.avatar)
+      safeUser.avatar = resolvedAvatar ?? null
       return { success: true, data: safeUser, statusCode: StatusCodes.OK }
     } catch (error) {
       if (error instanceof ApiError) {
