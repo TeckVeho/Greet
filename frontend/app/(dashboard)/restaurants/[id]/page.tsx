@@ -1,9 +1,9 @@
 'use client'
 
 import { DialogWarning } from '@/components/dialogs'
+import { DialogCreateReview } from '@/components/dialogs/dialog-create-review'
 import { DialogRestaurantUpdate } from '@/components/dialogs/dialog-restaurant-update'
 import { Rating } from '@/components/rating'
-import { ReviewFormDialog } from '@/components/review-form-dialog'
 import { Section } from '@/components/ui'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -318,10 +318,9 @@ export default function RestaurantDetailPage() {
 
 			{/* レビュー投稿ダイアログ */}
 			{restaurant && (
-				<ReviewFormDialog
+				<DialogCreateReview
 					open={isReviewDialogOpen}
 					onOpenChange={setIsReviewDialogOpen}
-					restaurantId={restaurant.id}
 					onSubmit={handleReviewSubmit}
 				/>
 			)}
