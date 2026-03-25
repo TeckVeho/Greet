@@ -52,6 +52,15 @@ export const UserColumns: ColumnDef<User>[] = [
 	{
 		accessorKey: 'department',
 		header: '部署',
+		cell: ({ getValue }) => {
+			const department = (getValue<string | null | undefined>() ?? '').trim()
+			const display = department.length > 0 ? department : '-'
+			return (
+				<span className='block max-w-40 truncate whitespace-nowrap' title={display}>
+					{display}
+				</span>
+			)
+		},
 	},
 	{
 		accessorKey: 'role',
