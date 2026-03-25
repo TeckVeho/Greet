@@ -241,21 +241,6 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 								/>
 
 								<div className='flex items-center gap-4'>
-									{/* 権限 */}
-									<FormField
-										control={form.control}
-										name='icon'
-										render={({ field }) => (
-											<FormItem className='flex-1'>
-												<FormLabel>アイコン</FormLabel>
-												<FormControl>
-													<Input {...field} type='text' placeholder='例: 🧑‍💼' maxLength={10} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
 									{/* 部署 */}
 									<FormField
 										control={form.control}
