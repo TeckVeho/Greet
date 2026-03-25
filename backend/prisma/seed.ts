@@ -111,7 +111,6 @@ async function main() {
       name: '管理者 太郎',
       role: Role.admin,
       department: '総務部',
-      icon: '👤',
       companyId: companyGreet.id,
     },
   })
@@ -125,7 +124,6 @@ async function main() {
       name: '山田 花子',
       role: Role.user,
       department: '営業部',
-      icon: '🌸',
       companyId: companyYamada.id,
     },
   })
@@ -138,7 +136,6 @@ async function main() {
       name: '鈴木 一郎',
       role: Role.user,
       department: '営業部',
-      icon: '🌟',
       companyId: companySuzuki.id,
     },
   })
@@ -151,7 +148,6 @@ async function main() {
       name: '佐藤 次郎',
       role: Role.user,
       department: 'マーケティング部',
-      icon: '🍀',
       companyId: companyGreet.id,
     },
   })
@@ -164,7 +160,6 @@ async function main() {
       name: '田中 三郎',
       role: Role.user,
       department: '人事部',
-      icon: '📌',
       companyId: companyYamada.id,
     },
   })
@@ -177,7 +172,6 @@ async function main() {
       name: '高橋 四郎',
       role: Role.user,
       department: '開発部',
-      icon: '🔧',
       companyId: companySuzuki.id,
     },
   })
@@ -190,7 +184,6 @@ async function main() {
       name: '伊藤 五郎',
       role: Role.user,
       department: '経理部',
-      icon: '📊',
       companyId: companyGreet.id,
     },
   })
@@ -347,7 +340,6 @@ async function main() {
         name: u.name,
         role: Role.user,
         department: u.dept,
-        icon: u.icon,
         companyId: u.comp,
       },
     })

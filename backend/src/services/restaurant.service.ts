@@ -42,7 +42,7 @@ function matchesSearch(term: string, enumKey: string, label: string) {
   return enumKey.toLowerCase().includes(normalized) || label.includes(term)
 }
 
-function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
+function mapUserSummary(user: { id: string; name: string } | null) {
   if (!user) {
     return null
   }
@@ -50,7 +50,6 @@ function mapUserSummary(user: { id: string; name: string; icon: string | null } 
   return {
     id: user.id,
     name: user.name,
-    icon: user.icon ?? undefined,
   }
 }
 
@@ -87,7 +86,9 @@ export class RestaurantService {
       priceRanges = [priceRanges]
     }
     const matchedAreas = search
-      ? (Object.values(Area).filter(area => matchesSearch(search, area, AREA_LABELS[area])) as Area[])
+      ? (Object.values(Area).filter(area =>
+          matchesSearch(search, area, AREA_LABELS[area]),
+        ) as Area[])
       : []
 
     const matchedGenres = search
@@ -164,7 +165,7 @@ export class RestaurantService {
           },
 
           createdBy: {
-            select: { id: true, name: true, icon: true },
+            select: { id: true, name: true },
           },
         },
       }),
@@ -239,7 +240,6 @@ export class RestaurantService {
               select: {
                 id: true,
                 name: true,
-                icon: true,
               },
             },
           },
@@ -251,7 +251,6 @@ export class RestaurantService {
           select: {
             id: true,
             name: true,
-            icon: true,
           },
         },
       },

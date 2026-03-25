@@ -20,9 +20,6 @@ export const schemaCreate = z.object({
 	role: z.enum(['admin', 'user'], '権限はadminかuserを選択してください'),
 	department: z.string().max(100, '部署名は100文字以内で入力してください').optional(),
 	companyId: z.string().min(1, '所属会社は必須です'),
-	icon: z.string().optional().refine(isSingleEmojiOrChar, {
-		message: 'アイコンは1文字以内で入力してください',
-	}),
 })
 export const schemaUpdate = z.object({
 	avatar: z.any().optional(),
@@ -35,7 +32,4 @@ export const schemaUpdate = z.object({
 	role: z.enum(['admin', 'user'], '権限はadminかuserを選択してください'),
 	department: z.string().max(100, '部署名は100文字以内で入力してください').optional(),
 	companyId: z.string().min(1, '所属会社は必須です'),
-	icon: z.string().optional().refine(isSingleEmojiOrChar, {
-		message: 'アイコンは1文字以内で入力してください',
-	}),
 })

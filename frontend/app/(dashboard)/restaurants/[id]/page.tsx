@@ -259,13 +259,8 @@ export default function RestaurantDetailPage() {
 						<div className='space-y-4'>
 							{restaurant.reviews.map(review => {
 								const authorName = review.author?.name ?? '削除済みユーザー'
-								const nameIcon = (
-									<div className='flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium text-foreground'>
-										{review.author?.icon ?? authorName.charAt(0)}
-									</div>
-								)
 								return (
-									<Callout key={review.id} icon={nameIcon}>
+									<Callout key={review.id}>
 										<div className='space-y-2'>
 											<div className='flex items-center justify-between'>
 												<div className='flex flex-wrap items-center gap-2'>

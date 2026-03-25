@@ -65,7 +65,6 @@ export function DialogCreateReview({
 			author: {
 				id: user.id,
 				name: user.name,
-				icon: user.icon ?? '',
 			},
 			occasion: data.occasion,
 			result: data.result,

@@ -59,7 +59,7 @@ export default function Page() {
 										className='rounded-full object-cover w-12 h-12'
 									/>
 								) : (
-									user?.icon
+									user?.name?.charAt(0)
 								)}
 							</div>
 							<div>
@@ -81,7 +81,6 @@ export default function Page() {
 					<CardContent className='grid gap-4 md:grid-cols-2'>
 						<ProfileField label='名前' value={user?.name} />
 						<ProfileField label='メールアドレス' value={user?.email} />
-						<ProfileField label='アイコン' value={user?.icon} />
 						<ProfileField label='会社コード' value={user?.company?.code} />
 						<div className='md:col-span-2'>
 							<ProfileField label='会社名' value={user?.company?.name} />

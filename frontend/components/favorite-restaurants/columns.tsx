@@ -54,12 +54,7 @@ export const favoriteRestaurantsColumns: ColumnDef<Restaurant>[] = [
 		accessorKey: 'createdBy.name',
 		header: '登録者',
 		cell: ({ row }) => {
-			return (
-				<span className='whitespace-nowrap'>
-					{row.original.createdBy?.icon}
-					{row.original.createdBy?.name || '-'}
-				</span>
-			)
+			return <span className='whitespace-nowrap'>{row.original.createdBy?.name || '-'}</span>
 		},
 	},
 	{

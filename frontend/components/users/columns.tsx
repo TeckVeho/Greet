@@ -54,14 +54,6 @@ export const UserColumns: ColumnDef<User>[] = [
 		header: '部署',
 	},
 	{
-		accessorKey: 'icon',
-		header: 'アイコン',
-		cell: ({ getValue }) => {
-			const value = getValue<string>()
-			return value ? value : <span className='text-muted-foreground'>-</span>
-		},
-	},
-	{
 		accessorKey: 'role',
 		header: 'ユーザー権限',
 		cell: ({ row }) => {

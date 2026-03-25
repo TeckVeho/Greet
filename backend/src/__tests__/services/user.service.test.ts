@@ -1,8 +1,8 @@
-import { UserService } from '../../services/user.service'
-import { prisma } from '../../prisma'
-import { ApiError } from '../../utils/utils'
-import { StatusCodes } from 'http-status-codes'
 import bcrypt from 'bcrypt'
+import { StatusCodes } from 'http-status-codes'
+import { prisma } from '../../prisma'
+import { UserService } from '../../services/user.service'
+import { ApiError } from '../../utils/utils'
 
 jest.mock('../../prisma', () => ({
   prisma: {
@@ -42,7 +42,6 @@ const mockUserFromDb = {
   role: 'user',
   department: '営業部',
   avatar: null,
-  icon: '👤',
   companyId: 'company-1',
   createdAt: new Date('2025-01-01'),
   updatedAt: new Date('2025-01-01'),
@@ -85,9 +84,7 @@ describe('UserService', () => {
       expect(result.meta.page).toBe(2)
       expect(result.meta.limit).toBe(10)
       expect(result.meta.totalPages).toBe(3)
-      expect(mockUserFindMany).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 10, take: 10 }),
-      )
+      expect(mockUserFindMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 10, take: 10 }))
     })
 
     it('デフォルトのページネーション値（page=1, limit=10）', async () => {
@@ -98,9 +95,7 @@ describe('UserService', () => {
 
       expect(result.meta.page).toBe(1)
       expect(result.meta.limit).toBe(10)
-      expect(mockUserFindMany).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 0, take: 10 }),
-      )
+      expect(mockUserFindMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 0, take: 10 }))
     })
 
     it('companyIdで絞り込みが行われる', async () => {
@@ -112,10 +107,7 @@ describe('UserService', () => {
       expect(mockUserFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            AND: [
-              { companyId: 'company-1' },
-              {},
-            ],
+            AND: [{ companyId: 'company-1' }, {}],
           },
         }),
       )
@@ -158,9 +150,7 @@ describe('UserService', () => {
             AND: [
               { companyId: 'company-1' },
               {
-                OR: expect.arrayContaining([
-                  { name: { contains: '営業' } },
-                ]),
+                OR: expect.arrayContaining([{ name: { contains: '営業' } }]),
               },
             ],
           },

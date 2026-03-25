@@ -163,9 +163,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 					{reviews.map((review, index) => (
 						<Avatar className='shadow-sm hover:z-10 ' key={index}>
 							<AvatarFallback className='bg-muted text-[10px]'>
-								{review.author?.icon
-									? review.author.icon
-									: (review.author?.name?.charAt(0) ?? '退')}
+								{review.author?.name?.charAt(0) ?? '退'}
 							</AvatarFallback>
 						</Avatar>
 					))}

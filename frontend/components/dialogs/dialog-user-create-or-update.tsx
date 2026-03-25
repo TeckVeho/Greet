@@ -52,7 +52,6 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 			role: 'user',
 			department: '',
 			companyId: '',
-			icon: undefined,
 		},
 		resolver: zodResolver(schemaCreate),
 	})
@@ -64,7 +63,6 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 			role: 'user',
 			department: '',
 			companyId: '',
-			icon: undefined,
 		},
 		resolver: zodResolver(schemaUpdate),
 	})
@@ -78,7 +76,6 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 				role: user.role,
 				department: user.department,
 				companyId: user.companyId,
-				icon: user.icon ?? '',
 			})
 		} else {
 			formCreateUser.reset({
@@ -88,7 +85,6 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 				role: 'user',
 				department: '',
 				companyId: '',
-				icon: undefined,
 			})
 		}
 	}, [mode, user])
