@@ -159,6 +159,14 @@ fi
 # ── Restart PM2 ──
 echo "[6/6] Restarting PM2 processes..."
 cd "$PROJECT_DIR"
+
+# Some servers may not have PM2 installed yet (e.g. if `scripts/setup-server.sh`
+# wasn't run once). Install it on-demand to make deployments self-healing.
+if ! command -v pm2 >/dev/null 2>&1; then
+	echo "PM2 not found; installing..."
+	npm install -g pm2
+fi
+
 pm2 restart "$PM2_CONFIG" 2>/dev/null || pm2 start "$PM2_CONFIG"
 pm2 save
 
