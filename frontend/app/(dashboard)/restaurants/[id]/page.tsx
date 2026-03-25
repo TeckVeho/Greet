@@ -189,7 +189,7 @@ export default function RestaurantDetailPage() {
 
 					<div className='flex items-start gap-3'>
 						<div className='w-24 shrink-0 text-sm font-medium text-muted-foreground'>価格帯</div>
-						<div className='flex-1 text-sm font-semibold text-foreground'>
+						<div className='flex-1 text-sm text-foreground'>
 							{priceRangeLabel(restaurant.priceRange)}
 						</div>
 					</div>

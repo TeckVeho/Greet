@@ -34,7 +34,7 @@ export const UserColumns: ColumnDef<User>[] = [
 	},
 	{
 		accessorKey: 'company.name',
-		header: '会社',
+		header: '所属会社',
 		cell: ({ getValue, row }) => {
 			const value = getValue<string>()
 			return (
@@ -63,7 +63,7 @@ export const UserColumns: ColumnDef<User>[] = [
 	},
 	{
 		accessorKey: 'role',
-		header: '権限',
+		header: 'ユーザー権限',
 		cell: ({ row }) => {
 			const role = row.original.role
 			return (

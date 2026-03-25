@@ -221,7 +221,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 									name='name'
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel required>名前</FormLabel>
+											<FormLabel required>お名前</FormLabel>
 											<FormControl>
 												<Input {...field} placeholder='例: 山田太郎' required />
 											</FormControl>

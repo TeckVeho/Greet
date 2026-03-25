@@ -9,7 +9,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Dispatch, SetStateAction } from 'react'
 import { Pagination } from '../pagination'
-import { Rating } from '../rating'
+import { OutlineStar, Rating } from '../rating'
 
 const getGenreVariant = (genreKey: string): any => {
 	switch (genreKey) {
@@ -103,11 +103,11 @@ export function DataCards({
 											}}
 											className='absolute top-3 right-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 bg-card/90 shadow-sm transition-colors hover:bg-card'
 										>
-											<Rating
-												rate={isFav ? 1 : 0}
-												max={1}
-												className='[&_svg]:size-5! [&>div]:size-5!'
-											/>
+											{isFav ? (
+												<Rating rate={1} max={1} className='[&_svg]:size-5! [&>div]:size-5!' />
+											) : (
+												<OutlineStar className='[&_svg]:size-5! [&>div]:size-5!' />
+											)}
 										</button>
 									</div>
 
@@ -155,7 +155,9 @@ export function DataCards({
 										</div>
 
 										<div className='mt-3 flex items-center justify-between border-t border-border/70 pt-3 text-xs'>
-											<div className='text-muted-foreground'>レビュー {restaurant.reviewCount} 件</div>
+											<div className='text-muted-foreground'>
+												レビュー {restaurant.reviewCount} 件
+											</div>
 										</div>
 									</div>
 								</Link>
