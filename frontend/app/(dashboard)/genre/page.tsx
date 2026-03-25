@@ -77,9 +77,16 @@ export default function GenrePage() {
 	// ジャンルの一覧を取得（件数が多い順）
 	const genres = React.useMemo(() => {
 		return Array.from(restaurantsByGenre.keys()).sort((a, b) => {
+			// Always keep "OTHER(その他)" at the end for UI consistency.
+			if (a === 'OTHER' && b !== 'OTHER') return 1
+			if (b === 'OTHER' && a !== 'OTHER') return -1
+
 			const countA = restaurantsByGenre.get(a)?.length || 0
 			const countB = restaurantsByGenre.get(b)?.length || 0
-			return countB - countA
+			if (countA !== countB) return countB - countA
+
+			// Stable, deterministic tie-breaker (otherwise Map insertion order leaks through).
+			return genreLabel(a).localeCompare(genreLabel(b), 'ja')
 		})
 	}, [restaurantsByGenre])
 
