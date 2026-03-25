@@ -82,7 +82,8 @@ const optionalUrl = z
 	.transform(value => {
 		if (typeof value !== 'string') return undefined
 		const trimmed = value.trim()
-		return trimmed.length > 0 ? trimmed : undefined
+		// Empty string means "clear the URL" on update
+		return trimmed.length > 0 ? trimmed : null
 	})
 
 const schema = z.object({

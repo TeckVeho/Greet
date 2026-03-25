@@ -50,7 +50,12 @@ export const updateRestaurantSchema = z.object({
     .string()
     .regex(phoneRegex, { message: '電話番号の形式が正しくありません' })
     .optional(),
-  url: z.string().url({ message: '有効なURLを指定してください' }).optional(),
+  // Allow clearing the URL by sending null (client uses this to "delete" map link).
+  // Also accept empty string and coerce it to null for convenience.
+  url: z.preprocess(
+    value => (value === '' ? null : value),
+    z.string().url({ message: '有効なURLを指定してください' }).nullable().optional(),
+  ),
   coverImage: z.string().optional(),
   icon: z.string().optional(),
   genres: z.array(z.nativeEnum(Genre)).min(1, {

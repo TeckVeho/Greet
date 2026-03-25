@@ -208,23 +208,21 @@ export default function RestaurantDetailPage() {
 						</div>
 					</div>
 
-					<div className='flex items-start gap-3'>
-						<div className='w-24 shrink-0 text-sm font-medium text-muted-foreground'>地図</div>
-						<div className='flex-1'>
-							{restaurant.url ? (
+					{restaurant.url && (
+						<div className='flex items-start gap-3'>
+							<div className='w-24 shrink-0 text-sm font-medium text-muted-foreground'>地図</div>
+							<div className='flex-1'>
 								<a
 									href={restaurant.url}
 									target='_blank'
 									rel='noopener noreferrer'
 									className='text-sm text-primary hover:underline'
 								>
-									地図
+									Google Mapで見る
 								</a>
-							) : (
-								<Badge variant={'danger'}>なし</Badge>
-							)}
+							</div>
 						</div>
-					</div>
+					)}
 				</div>
 
 				{/* レビューセクション */}

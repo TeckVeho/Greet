@@ -97,7 +97,8 @@ export interface CreateRestaurantPayload {
 	priceRange: string
 	address?: string
 	phone?: string
-	url?: string
+	// null is used to explicitly clear the stored URL on update
+	url?: string | null
 	coverImage?: string
 	icon?: string
 	genres?: string[]

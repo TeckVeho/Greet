@@ -191,11 +191,9 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 					rel='noopener noreferrer'
 					className='font-medium underline text-blue-500'
 				>
-					地図
+					Google Mapで見る
 				</a>
-			) : (
-				<Badge variant={'danger'}>なし</Badge>
-			)
+			) : null
 		},
 	},
 	{
