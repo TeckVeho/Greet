@@ -65,7 +65,7 @@ export function DialogGlobalSearch() {
 					<DialogTitle className='sr-only'>レストラン検索</DialogTitle>
 					<InputGroup className='h-13'>
 						<InputGroupInput
-							placeholder='店名、エリア、ジャンルで検索...'
+							placeholder='店名、エリア、ジャンル、住所で検索...'
 							onChange={e => setSearchQuery(e.target.value)}
 							value={searchQuery}
 						/>

@@ -1,6 +1,6 @@
 'use client'
 
-import { BadgeCheck, ChevronsUpDown, LogOut } from 'lucide-react'
+import { ChevronsUpDown, LogOut } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/lib/auth-context'
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export function NavUser({
@@ -80,13 +79,6 @@ export function NavUser({
 								</div>
 							</div>
 						</DropdownMenuLabel>
-						<DropdownMenuSeparator />
-						<Link href='/profile'>
-							<DropdownMenuItem>
-								<BadgeCheck />
-								プロファイル
-							</DropdownMenuItem>
-						</Link>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
 							onClick={() => {

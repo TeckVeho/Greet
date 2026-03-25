@@ -133,7 +133,7 @@ export function DataCards({
 										</div>
 
 										<div className='mb-3 text-sm text-foreground font-medium'>
-											<span>予算:</span> {priceRangeLabel(restaurant.priceRange)}
+											<span>価格帯:</span> {priceRangeLabel(restaurant.priceRange)}
 										</div>
 
 										<div className='flex items-center gap-4 text-sm'>
@@ -172,12 +172,12 @@ export function DataCards({
 			</div>
 
 			{/* Paginatsiya (DataTable kabi) */}
-			<div className='flex items-center justify-between mt-4'>
-				<span className='whitespace-nowrap text-sm font-medium'>{total} 件の飲食店</span>
-
-				{typeof pagination?.pageSize === 'number' &&
-					typeof pagination?.pageIndex === 'number' &&
-					setPagination && (
+			{typeof pagination?.pageSize === 'number' &&
+				typeof pagination?.pageIndex === 'number' &&
+				setPagination &&
+				typeof total === 'number' && (
+					<div className='flex items-center justify-between mt-4'>
+						<span className='whitespace-nowrap text-sm font-medium'>{total} 件の飲食店</span>
 						<Pagination
 							totalPages={totalPages}
 							pageIndex={pagination.pageIndex}
@@ -185,8 +185,8 @@ export function DataCards({
 							onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
 							onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
 						/>
-					)}
-			</div>
+					</div>
+				)}
 		</div>
 	)
 }

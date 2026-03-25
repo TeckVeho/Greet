@@ -181,7 +181,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	},
 	{
 		accessorKey: 'url',
-		header: 'URL',
+		header: '地図',
 		cell: ({ getValue }) => {
 			const url = getValue<string>()
 			return url ? (
@@ -191,7 +191,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 					rel='noopener noreferrer'
 					className='font-medium underline text-blue-500'
 				>
-					Google Mapで見る
+					地図
 				</a>
 			) : (
 				<Badge variant={'danger'}>なし</Badge>

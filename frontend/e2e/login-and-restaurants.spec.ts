@@ -179,7 +179,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
     await expect(page.getByText('銀座 鮨 さいとう')).toBeVisible()
     await expect(page.getByText('赤坂 ビストロ')).toBeVisible()
 
-    await page.getByPlaceholder('店名、エリア、ジャンルで検索...').fill('銀座')
+    await page.getByPlaceholder('店名、エリア、ジャンル、住所で検索...').fill('銀座')
 
     await expect(page.getByText('銀座 鮨 さいとう')).toBeVisible()
     await expect(page.getByText('赤坂 ビストロ')).toHaveCount(0)
@@ -927,9 +927,9 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
 
     const searchDialog = page.getByRole('dialog')
     await expect(searchDialog).toBeVisible()
-    await expect(searchDialog.getByPlaceholder('店名、エリア、ジャンルで検索...')).toBeVisible()
+    await expect(searchDialog.getByPlaceholder('店名、エリア、ジャンル、住所で検索...')).toBeVisible()
 
-    await searchDialog.getByPlaceholder('店名、エリア、ジャンルで検索...').fill('グローバル')
+    await searchDialog.getByPlaceholder('店名、エリア、ジャンル、住所で検索...').fill('グローバル')
     await expect(searchDialog.getByText('グローバル検索対象店')).toBeVisible()
     await expect(searchDialog.getByText('別の店舗')).toHaveCount(0)
 

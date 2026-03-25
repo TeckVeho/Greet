@@ -221,6 +221,11 @@ export default function GenrePage() {
 							total={displayedRestaurants.length}
 						/>
 					)}
+
+					{/* 件数表示 */}
+					<div className='mt-4 text-sm text-muted-foreground'>
+						{displayedRestaurants.length} 件の飲食店
+					</div>
 				</>
 			)}
 		</Section>

@@ -43,7 +43,7 @@ export function SearchFilterBar({
 			<div className='relative w-full md:flex-1 md:max-w-md'>
 				<InputGroup>
 					<InputGroupInput
-						placeholder='店名、エリア、ジャンルで検索...'
+						placeholder='店名、エリア、ジャンル、住所で検索...'
 						onChange={e => onSearchChange(e.target.value)}
 						value={searchValue}
 					/>

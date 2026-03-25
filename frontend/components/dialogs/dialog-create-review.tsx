@@ -139,16 +139,22 @@ export function DialogCreateReview({
 										<FormControl>
 											<div className='flex items-center gap-3'>
 												{[1, 2, 3, 4, 5].map(star => (
-													<Star
+													<button
 														key={star}
-														onClick={() => field.onChange(star)} // ← har bir yulduz o'z qiymatini bersin
-														className={cn(
-															star <= field.value
-																? 'fill-yellow-300 stroke-yellow-300'
-																: 'fill-foreground/15 stroke-foreground/15',
-															false && 'cursor-pointer hover:scale-110 transition-transform',
-														)}
-													/>
+														type='button'
+														title={`${star}つ星`}
+														aria-label={`${star}つ星`}
+														onClick={() => field.onChange(star)}
+														className='cursor-pointer transition-transform hover:scale-110'
+													>
+														<Star
+															className={cn(
+																star <= field.value
+																	? 'fill-yellow-300 stroke-yellow-300'
+																	: 'fill-foreground/15 stroke-foreground/15',
+															)}
+														/>
+													</button>
 												))}
 											</div>
 										</FormControl>
