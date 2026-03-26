@@ -69,19 +69,19 @@ export default function LoginPage() {
 			<div className='pointer-events-none absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100/60 blur-[90px] dark:bg-amber-950/30' />
 
 			<Card className='relative z-10 w-full max-w-md border-white/40 bg-white/75 shadow-2xl backdrop-blur-md dark:border-white/10 dark:bg-stone-900/70'>
-				<CardHeader className='space-y-3 pb-4 pt-12'>
+				<CardHeader className='space-y-1 pb-8 pt-10'>
 					{/* Logo + tagline grouped tightly together */}
-					<div className='flex flex-col items-center gap-1'>
+					<div className='flex flex-col items-center -space-y-5'>
 						<Image
 							src='/newlogogreet.png'
 							alt='Greet'
 							width={220}
 							height={147}
-							className='block h-auto w-[220px]'
+							className='block h-auto w-[220px] -mb-8'
 							priority
 						/>
 						<p
-							className='text-center text-sm font-semibold tracking-widest'
+							className='text-center text-sm font-semibold tracking-widest -mt-3'
 							style={{ color: '#7C4F2A' }}
 						>
 							接待を、戦略に。
