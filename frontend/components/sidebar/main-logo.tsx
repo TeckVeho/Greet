@@ -1,43 +1,43 @@
 'use client'
 
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export function MainLogo() {
 	return (
-		<Link href='/'>
-			<SidebarMenu>
-				<SidebarMenuItem>
-					<SidebarMenuButton
-						size='lg'
-						className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
-					>
-						<div
-							className='flex shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/20 shadow-sm'
-							style={{ width: 40, height: 27, backgroundColor: '#FDFCF9' }}
-						>
-							<Image
-								src='/logogreet.svg'
-								alt='Greet'
-								width={40}
-								height={27}
-								className='block h-full w-full object-cover'
-								priority
-							/>
-						</div>
-						<div className='grid flex-1 text-left text-sm leading-tight'>
-							<span
-								className='truncate font-semibold'
-								style={{ fontFamily: 'var(--font-logo), serif' }}
-							>
-								Greet
-							</span>
-							<span className='truncate text-xs text-muted-foreground'>接待を、戦略に。</span>
-						</div>
-					</SidebarMenuButton>
-				</SidebarMenuItem>
-			</SidebarMenu>
+		<Link
+			href='/'
+			className='block rounded-lg px-1 py-1 outline-none transition-opacity hover:opacity-75 focus-visible:ring-2 focus-visible:ring-sidebar-ring'
+		>
+			{/* Expanded: full logo + tagline stacked — mirrors the login page layout */}
+			<div className='flex flex-col items-center gap-1 group-data-[collapsible=icon]:hidden'>
+				<Image
+					src='/newlogogreet.png'
+					alt='Greet'
+					width={140}
+					height={93}
+					className='block h-auto w-[140px]'
+					priority
+				/>
+				<span
+					className='text-xs font-semibold tracking-widest'
+					style={{ color: '#7C4F2A' }}
+				>
+					接待を、戦略に。
+				</span>
+			</div>
+
+			{/* Collapsed: circle emblem only (crop technique — see sizing notes) */}
+			<div className='hidden group-data-[collapsible=icon]:flex h-8 w-8 overflow-hidden rounded-md'>
+				<Image
+					src='/newlogogreet.png'
+					alt='Greet'
+					width={128}
+					height={85}
+					className='block h-auto w-[128px] -translate-x-[8px] -translate-y-[26px]'
+					priority
+				/>
+			</div>
 		</Link>
 	)
 }

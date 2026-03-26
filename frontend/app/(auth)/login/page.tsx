@@ -60,26 +60,34 @@ export default function LoginPage() {
 	}
 
 	return (
-		<div className='flex min-h-screen items-center justify-center bg-background px-4 py-12'>
-			<Card className='w-full max-w-md border-border bg-card shadow-lg'>
-				<CardHeader className='space-y-3 pb-6'>
-					<div className='flex justify-center'>
-						<div
-							className='overflow-hidden rounded-2xl border border-border/20 shadow-md'
-							style={{ backgroundColor: '#FDFCF9' }}
+		<div className='relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12 bg-gradient-to-br from-amber-50 via-orange-50/40 to-stone-100 dark:from-stone-950 dark:via-stone-900 dark:to-neutral-950'>
+			{/* Warm ambient glow — top-right */}
+			<div className='pointer-events-none absolute -right-40 -top-40 h-[560px] w-[560px] rounded-full bg-amber-200/50 blur-[120px] dark:bg-amber-900/20' />
+			{/* Warm ambient glow — bottom-left */}
+			<div className='pointer-events-none absolute -bottom-40 -left-40 h-[560px] w-[560px] rounded-full bg-orange-200/40 blur-[120px] dark:bg-orange-900/15' />
+			{/* Subtle center glow */}
+			<div className='pointer-events-none absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100/60 blur-[90px] dark:bg-amber-950/30' />
+
+			<Card className='relative z-10 w-full max-w-md border-white/40 bg-white/75 shadow-2xl backdrop-blur-md dark:border-white/10 dark:bg-stone-900/70'>
+				<CardHeader className='space-y-3 pb-4 pt-12'>
+					{/* Logo + tagline grouped tightly together */}
+					<div className='flex flex-col items-center gap-1'>
+						<Image
+							src='/newlogogreet.png'
+							alt='Greet'
+							width={220}
+							height={147}
+							className='block h-auto w-[220px]'
+							priority
+						/>
+						<p
+							className='text-center text-sm font-semibold tracking-widest'
+							style={{ color: '#7C4F2A' }}
 						>
-							<Image
-								src='/logogreet.svg'
-								alt='Greet'
-								width={220}
-								height={147}
-								className='block h-auto w-[220px]'
-								priority
-							/>
-						</div>
+							接待を、戦略に。
+						</p>
 					</div>
-					<p className='text-center text-sm text-muted-foreground'>接待を、戦略に。</p>
-					<CardDescription className='text-center pt-1'>
+					<CardDescription className='text-center'>
 						アカウント情報を入力してログインしてください
 					</CardDescription>
 				</CardHeader>
@@ -97,7 +105,7 @@ export default function LoginPage() {
 								onChange={e => setEmail(e.target.value)}
 								required
 								disabled={isLoading}
-								className='border-input bg-background'
+								className='border-input bg-background/80'
 							/>
 						</div>
 						<div className='space-y-2'>
@@ -110,7 +118,7 @@ export default function LoginPage() {
 								onChange={e => setPassword(e.target.value)}
 								required
 								disabled={isLoading}
-								className='border-input bg-background rounded-2xl'
+								className='border-input bg-background/80 rounded-2xl'
 							/>
 						</div>
 						{error && (
