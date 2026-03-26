@@ -3,7 +3,18 @@ import { Area, Genre, PriceRange, PrismaClient, Role } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import 'dotenv/config'
 
-const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
+const dbUrl = new URL(process.env.DATABASE_URL!)
+const adapter = new PrismaMariaDb({
+  host: dbUrl.hostname,
+  port: parseInt(dbUrl.port, 10) || 3306,
+  user: decodeURIComponent(dbUrl.username),
+  password: decodeURIComponent(dbUrl.password),
+  database: dbUrl.pathname.slice(1),
+  connectionLimit: 5,
+  idleTimeout: 60,
+  acquireTimeout: 10_000,
+  connectTimeout: 10_000,
+})
 const prisma = new PrismaClient({ adapter })
 
 const SALT_ROUNDS = 12
