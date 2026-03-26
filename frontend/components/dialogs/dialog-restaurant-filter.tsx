@@ -241,7 +241,7 @@ export function DialogRestaurantFilter({
 					</div>
 				</div>
 
-				<DialogFooter>
+				<DialogFooter className='max-sm:gap-3'>
 					<Button variant='outline' onClick={handleReset}>
 						リセット
 					</Button>

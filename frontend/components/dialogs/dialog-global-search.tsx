@@ -14,13 +14,16 @@ import {
 	Kbd,
 } from '@/components/ui'
 import { Badge } from '@/components/ui/badge'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useRestaurants } from '@/hooks/use-restaurants'
 import { areaLabel, genreLabel, priceRangeLabel } from '@/lib/constants'
+import { cn } from '@/lib/utils'
 import { Search, SearchIcon, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
 export function DialogGlobalSearch() {
+	const isMobile = useIsMobile()
 	const [open, setOpen] = React.useState(false)
 	const router = useRouter()
 	const [searchQuery, setSearchQuery] = React.useState('')
@@ -60,10 +63,10 @@ export function DialogGlobalSearch() {
 					<Kbd>⌘ K</Kbd>
 				</Button>
 			</DialogTrigger>
-			<DialogContent className='max-w-[95vw] md:max-w-2xl p-0' showClose={false}>
+			<DialogContent className='max-w-[95vw] md:max-w-2xl p-0' showClose={isMobile ? true : false}>
 				<DialogHeader className='px-6 pt-5 pb-4 border-b border-zinc-300'>
 					<DialogTitle className='sr-only'>レストラン検索</DialogTitle>
-					<InputGroup className='h-13'>
+					<InputGroup className={cn('h-13', isMobile && 'mt-6')}>
 						<InputGroupInput
 							placeholder='店名、エリア、ジャンル、住所で検索...'
 							onChange={e => setSearchQuery(e.target.value)}

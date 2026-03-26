@@ -327,7 +327,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 							</div>
 						</DialogBody>
 
-						<DialogFooter>
+						<DialogFooter className='max-sm:gap-3'>
 							<Button
 								type='button'
 								variant='secondary'

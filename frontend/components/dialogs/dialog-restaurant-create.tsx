@@ -455,7 +455,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 						</form>
 					</Form>
 				</ScrollArea>
-				<DialogFooter>
+				<DialogFooter className='max-sm:gap-3'>
 					<Button
 						type='button'
 						variant='secondary'

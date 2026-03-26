@@ -15,6 +15,7 @@ import { PaginationState } from '@tanstack/react-table'
 import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 
 export default function Home() {
 	const isMobile = useIsMobile()
@@ -138,13 +139,16 @@ export default function Home() {
 			</Section>
 
 			{/* モバイル用固定CTAボタン */}
-			<Button
-				onClick={handleNewRestaurant}
-				className='md:hidden fixed bottom-4 right-4 z-30 h-14 w-14 rounded-full'
-				aria-label='新規登録'
-			>
-				<Plus />
-			</Button>
+			{createPortal(
+				<Button
+					onClick={handleNewRestaurant}
+					className='md:hidden fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full'
+				>
+					<Plus />
+				</Button>,
+				document.body,
+			)}
+
 			{/* 新規登録モーダル */}
 			<DialogRestaurantCreate open={isDialogOpen} onOpenChange={setIsDialogOpen} />
 

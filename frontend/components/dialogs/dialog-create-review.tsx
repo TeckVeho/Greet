@@ -164,7 +164,7 @@ export function DialogCreateReview({
 								)}
 							/>
 						</DialogBody>
-						<DialogFooter>
+						<DialogFooter className='max-sm:gap-3'>
 							<Button
 								type='button'
 								variant='secondary'

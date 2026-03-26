@@ -476,7 +476,7 @@ export const DialogRestaurantUpdate: React.FC<{
 						</form>
 					</Form>
 				</ScrollArea>
-				<DialogFooter>
+				<DialogFooter className='max-sm:gap-3'>
 					<DialogClose asChild>
 						<Button type='button' variant='secondary' disabled={isSubmitting}>
 							キャンセル
