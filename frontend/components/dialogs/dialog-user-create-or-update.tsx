@@ -25,10 +25,11 @@ import {
 	SelectValue,
 } from '@/components/ui'
 import { useCompanies } from '@/hooks/use-companies'
-import { useCreateUser, useUpdateUser } from '@/hooks/use-users'
+import { useChangeUserPassword, useCreateUser, useUpdateUser } from '@/hooks/use-users'
 
 import { UserFormDialogProps } from '@/lib/types'
 import { onError } from '@/lib/utils'
+import { toast } from 'sonner'
 import { schemaCreate, schemaUpdate } from '@/schemas/user.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
@@ -44,6 +45,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 	const { data: companiesData, isPending: isPendingCompanies } = useCompanies()
 	const { mutateAsync: createUser, isPending: creating } = useCreateUser()
 	const { mutateAsync: updateUser, isPending: updating } = useUpdateUser(user?.id)
+	const { mutateAsync: changeUserPassword, isPending: changingPassword } = useChangeUserPassword(user?.id)
 	const formCreateUser = useForm<UserCreateFormData>({
 		mode: 'onSubmit',
 		defaultValues: {
@@ -61,6 +63,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 		defaultValues: {
 			name: '',
 			email: '',
+			password: '',
 			role: 'user',
 			department: '',
 			companyId: '',
@@ -75,6 +78,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 				name: user.name,
 				email: user.email,
 				role: user.role,
+				password: '',
 				department: user.department,
 				companyId: user.companyId,
 			})
@@ -92,29 +96,34 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 	const isUpdate = mode === 'update'
 	const form = isUpdate ? formUpdateUser : (formCreateUser as UseFormReturn<any>)
 	const fileInputRef = React.useRef<HTMLInputElement>(null)
-	const onSubmit = (data: any) => {
+	const onSubmit = async (data: any) => {
 		const formData = new FormData()
+		const nextPassword = typeof data.password === 'string' ? data.password.trim() : ''
 
 		// Hamma fieldlarni FormData ga solamiz
 		Object.keys(data).forEach(key => {
+			if (key === 'password') {
+				return
+			}
 			if (data[key] !== undefined) {
 				formData.append(key, data[key])
 			}
 		})
 		if (isUpdate) {
-			updateUser(formData, {
-				onSuccess: () => {
-					formUpdateUser.reset()
-					setOpen(false)
-				},
-			})
+			await updateUser(formData)
+			if (nextPassword) {
+				await changeUserPassword(nextPassword)
+				toast.success('ユーザー情報とパスワードを更新しました。')
+			} else {
+				toast.success('ユーザー情報を更新しました。')
+			}
+			formUpdateUser.reset()
+			setOpen(false)
 		} else {
-			createUser(formData, {
-				onSuccess: () => {
-					formCreateUser.reset()
-					setOpen(false)
-				},
-			})
+			await createUser(formData)
+			toast.success('ユーザーを登録しました。')
+			formCreateUser.reset()
+			setOpen(false)
 		}
 	}
 	return (
@@ -124,16 +133,18 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 				<DialogHeader>
 					<DialogTitle>{mode === 'create' ? '新規ユーザー登録' : 'ユーザー情報編集'}</DialogTitle>
 				</DialogHeader>
+				<ScrollArea className='max-h-[75vh]'>
 				<FormUi {...form}>
 					<form
+						id='form-user'
+						className='pr-4'
 						onSubmit={
 							mode === 'update'
 								? formUpdateUser.handleSubmit(onSubmit, onError)
 								: formCreateUser.handleSubmit(onSubmit, onError)
 						}
 					>
-						<ScrollArea className='max-h-[75vh]'>
-							<DialogBody>
+						<DialogBody>
 								<div className='space-y-4'>
 									{/* avatar */}
 									<FormField
@@ -315,8 +326,8 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 										/>
 									</div>
 
-									{/* パスワード（新規作成時のみ） */}
-									{mode === 'create' && (
+									{/* パスワード */}
+									{mode === 'create' ? (
 										<FormField
 											control={formCreateUser.control}
 											name='password'
@@ -324,7 +335,25 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 												<FormItem>
 													<FormLabel required>パスワード</FormLabel>
 													<FormControl>
-														<InputPassword {...field} placeholder='6文字以上' required />
+														<InputPassword {...field} placeholder='8文字以上' required />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									) : (
+										<FormField
+											control={formUpdateUser.control}
+											name='password'
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>新しいパスワード（任意）</FormLabel>
+													<FormControl>
+														<InputPassword
+															{...field}
+															value={field.value ?? ''}
+															placeholder='変更する場合のみ入力（8文字以上）'
+														/>
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -332,24 +361,27 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 										/>
 									)}
 								</div>
-							</DialogBody>
-						</ScrollArea>
-
-						<DialogFooter className='max-sm:gap-3 mt-5'>
-							<Button
-								type='button'
-								variant='secondary'
-								onClick={() => setOpen(false)}
-								disabled={creating || updating}
-							>
-								キャンセル
-							</Button>
-							<Button type='submit' disabled={creating || updating}>
-								{creating || updating ? '保存中...' : mode === 'create' ? '登録' : '更新'}
-							</Button>
-						</DialogFooter>
+						</DialogBody>
 					</form>
 				</FormUi>
+				</ScrollArea>
+				<DialogFooter className='max-sm:gap-3'>
+					<Button
+						type='button'
+						variant='secondary'
+						onClick={() => setOpen(false)}
+						disabled={creating || updating || changingPassword}
+					>
+						キャンセル
+					</Button>
+					<Button type='submit' form='form-user' disabled={creating || updating || changingPassword}>
+						{creating || updating || changingPassword
+							? '保存中...'
+							: mode === 'create'
+								? '登録'
+								: '更新'}
+					</Button>
+				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	)

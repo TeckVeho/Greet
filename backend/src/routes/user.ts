@@ -7,6 +7,7 @@ import { tenantMiddleware } from '../middleware/tenant.middleware'
 import { upload } from '../middleware/upload.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware'
 import {
+  adminChangeUserPasswordSchema,
   createUserSchema,
   listUserQuerySchema,
   updateUserSchema,
@@ -36,6 +37,14 @@ router.put(
   validateParams(userIdSchema),
   validateBody(updateUserSchema),
   userController.updateUser,
+)
+// change user password (admin only)
+router.patch(
+  '/:userId/password',
+  adminMiddleware,
+  validateParams(userIdSchema),
+  validateBody(adminChangeUserPasswordSchema),
+  userController.changeUserPassword,
 )
 // delete user
 router.delete('/:userId', adminMiddleware, validateParams(userIdSchema), userController.deleteUser)

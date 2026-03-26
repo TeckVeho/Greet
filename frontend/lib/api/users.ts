@@ -80,10 +80,21 @@ export async function updateUser(id: string, payload: FormData): Promise<User> {
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
 	}
-	toast.success('ユーザー情報を更新しました。')
-	document.getElementById('dialog-update-user-close-button')?.click()
 	queryClient.invalidateQueries({ queryKey: ['users'] })
 	return res.data.data
+}
+
+export async function changeUserPassword(
+	id: string,
+	payload: { password: string },
+): Promise<void> {
+	const res = await apiClient.patch<ApiResponse<{ message: string }>>(`/users/${id}/password`, payload)
+
+	if (!res.data.success) {
+		throw new Error(res.data.error.message)
+	}
+
+	queryClient.invalidateQueries({ queryKey: ['users'] })
 }
 
 export async function deleteUser(id: string): Promise<void> {

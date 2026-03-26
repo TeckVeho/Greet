@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client'
-import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
+import { hashPassword } from '../utils/password'
 import { ApiError } from '../utils/utils'
 import { createUserBody, listUserQuery } from '../validators/user.validator'
 import { resolveFileUrl, uploadFile } from './file.service'
@@ -13,6 +13,41 @@ type Requester = {
 }
 
 export class UserService {
+  async changePasswordByAdmin(
+    id: string,
+    passwordData: { password: string },
+    requester?: Requester,
+  ) {
+    if (!requester || requester.role !== 'admin') {
+      throw new ApiError(StatusCodes.FORBIDDEN, '管理者のみ実行できます')
+    }
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, companyId: true },
+    })
+
+    if (!targetUser) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+    }
+
+    if (requester.role !== 'admin' && targetUser.companyId !== requester.companyId) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: {
+        passwordHash: await hashPassword(passwordData.password),
+      },
+    })
+
+    return {
+      success: true,
+      data: { message: 'ユーザーのパスワードを変更しました' },
+      statusCode: StatusCodes.OK,
+    }
+  }
+
   async findAll(query: listUserQuery, requester?: Requester) {
     const requestedCompanyId = query.companyId?.trim()
     // Tenant rule: only admins may access cross-company user data.
@@ -130,7 +165,7 @@ export class UserService {
       }
 
       const { password, ...rest } = userData
-      const hashedPassword = await bcrypt.hash(password, 12)
+      const hashedPassword = await hashPassword(password)
       let avatarUrl = undefined
       if (file) {
         avatarUrl = await uploadFile(file)
@@ -206,7 +241,7 @@ export class UserService {
       const { password, ...rest } = userData
       const data: any = { ...rest }
       if (password) {
-        data.passwordHash = await bcrypt.hash(password, 12)
+        data.passwordHash = await hashPassword(password)
       }
       if (file) {
         data.avatar = await uploadFile(file)

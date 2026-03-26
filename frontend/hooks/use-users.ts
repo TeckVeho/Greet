@@ -1,6 +1,12 @@
 'use client'
 
-import { createUser, listUsers, updateUser, type UsersListResponse } from '@/lib/api/users'
+import {
+	changeUserPassword,
+	createUser,
+	listUsers,
+	updateUser,
+	type UsersListResponse,
+} from '@/lib/api/users'
 import { queryClient } from '@/lib/query-client'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import axios from 'axios'
@@ -55,6 +61,25 @@ export const useUpdateUser = (id?: string) => {
 				toast.error(message || 'ユーザー更新に失敗しました。')
 			} else {
 				toast.error('ユーザー更新に失敗しました。')
+			}
+		},
+	})
+}
+
+export const useChangeUserPassword = (id?: string) => {
+	return useMutation({
+		mutationKey: ['changeUserPassword', id],
+		mutationFn: async (password: string) => {
+			if (!id) return Promise.reject(new Error('User ID is required for password update'))
+			return await changeUserPassword(id, { password })
+		},
+		onError: e => {
+			console.error('Failed to change user password', e)
+			if (axios.isAxiosError(e)) {
+				const message = e.response?.data?.error?.message
+				toast.error(message || 'パスワード更新に失敗しました。')
+			} else {
+				toast.error('パスワード更新に失敗しました。')
 			}
 		},
 	})

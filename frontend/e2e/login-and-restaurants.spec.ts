@@ -923,6 +923,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
     })
 
     await page.goto('/')
+    await page.waitForSelector('header.surface-glass', { state: 'visible' })
     await page.keyboard.press('Control+K')
 
     const searchDialog = page.getByRole('dialog')

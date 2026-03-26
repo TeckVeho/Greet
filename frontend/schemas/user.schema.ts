@@ -15,7 +15,7 @@ export const schemaCreate = z.object({
 		.email('有効なメールアドレスを入力してください'),
 	password: z
 		.string()
-		.min(6, 'パスワードは6文字以上で入力してください')
+		.min(8, 'パスワードは8文字以上で入力してください')
 		.regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, 'パスワードは英字と数字を含める必要があります'),
 	role: z.enum(['admin', 'user'], '権限はadminかuserを選択してください'),
 	department: z.string().max(100, '部署名は100文字以内で入力してください').optional(),
@@ -30,6 +30,15 @@ export const schemaUpdate = z.object({
 		.email('有効なメールアドレスを入力してください'),
 
 	role: z.enum(['admin', 'user'], '権限はadminかuserを選択してください'),
+	password: z
+		.string()
+		.trim()
+		.optional()
+		.refine(value => !value || value.length >= 8, 'パスワードは8文字以上で入力してください')
+		.refine(
+			value => !value || /^(?=.*[A-Za-z])(?=.*\d).+$/.test(value),
+			'パスワードは英字と数字を含める必要があります',
+		),
 	department: z.string().max(100, '部署名は100文字以内で入力してください').optional(),
 	companyId: z.string().min(1, '所属会社は必須です'),
 })

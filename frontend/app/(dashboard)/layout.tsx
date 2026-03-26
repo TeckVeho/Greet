@@ -9,19 +9,10 @@ interface AppLayoutProps {
 }
 
 export default function Layout({ children }: AppLayoutProps) {
-	const [isSearchOpen, setIsSearchOpen] = React.useState(false)
+	const [isMounted, setIsMounted] = React.useState(false)
 
-	// キーボードショートカット (Cmd+K / Ctrl+K) で検索を開く
 	React.useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-				e.preventDefault()
-				setIsSearchOpen(true)
-			}
-		}
-
-		document.addEventListener('keydown', handleKeyDown)
-		return () => document.removeEventListener('keydown', handleKeyDown)
+		setIsMounted(true)
 	}, [])
 
 	return (
@@ -33,10 +24,14 @@ export default function Layout({ children }: AppLayoutProps) {
 				} as React.CSSProperties
 			}
 		>
-			<AppSidebar variant='floating' />
+			{isMounted ? <AppSidebar variant='floating' /> : null}
 			<SidebarInset className='min-w-0'>
 				<div className='sticky top-0 z-30 px-2 pt-2 md:px-3'>
-					<Header />
+					{isMounted ? (
+						<Header />
+					) : (
+						<div className='surface-glass h-14 rounded-2xl border border-border/80' />
+					)}
 				</div>
 
 				<div className='page-section flex-1 px-2 pb-4 pt-2 md:px-3 md:pb-6 md:pt-3'>

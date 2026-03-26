@@ -7,7 +7,6 @@ import {
 	CardDescription,
 	CardFooter,
 	CardHeader,
-	CardTitle,
 	Input,
 	InputPassword,
 	Label,
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui'
 import { useAuth } from '@/lib/auth-context'
 import axios from 'axios'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -62,16 +62,22 @@ export default function LoginPage() {
 	return (
 		<div className='flex min-h-screen items-center justify-center bg-background px-4 py-12'>
 			<Card className='w-full max-w-md border-border bg-card shadow-lg'>
-				<CardHeader className='space-y-1'>
-					<div className='mb-2 flex justify-center'>
-						<span className='text-4xl'>✨</span>
+				<CardHeader className='space-y-3 pb-6'>
+					<div className='flex justify-center'>
+						<div
+							className='overflow-hidden rounded-2xl border border-border/20 shadow-md'
+							style={{ backgroundColor: '#FDFCF9' }}
+						>
+							<Image
+								src='/logogreet.svg'
+								alt='Greet'
+								width={220}
+								height={147}
+								className='block h-auto w-[220px]'
+								priority
+							/>
+						</div>
 					</div>
-					<CardTitle
-						className='text-center text-2xl text-foreground'
-						style={{ fontFamily: 'var(--font-logo), serif' }}
-					>
-						Greet
-					</CardTitle>
 					<p className='text-center text-sm text-muted-foreground'>接待を、戦略に。</p>
 					<CardDescription className='text-center pt-1'>
 						アカウント情報を入力してログインしてください

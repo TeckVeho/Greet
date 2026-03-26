@@ -27,6 +27,13 @@ class UserController {
     res.status(result.statusCode).json(result)
   }
 
+  public changeUserPassword = async (req: Request, res: Response) => {
+    const rawUserId = req.params.userId
+    const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId
+    const result = await userService.changePasswordByAdmin(userId, req.body, req.user!)
+    res.status(result.statusCode).json(result)
+  }
+
   public deleteUser = async (req: Request, res: Response) => {
     const rawUserId = req.params.userId
     const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId

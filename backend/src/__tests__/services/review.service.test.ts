@@ -64,7 +64,7 @@ describe('ReviewService', () => {
         result: '大変好評でした。個室も広く雰囲気が良い。',
         rating: 5,
         authorId,
-        author: { id: authorId, name: 'テストユーザー', icon: '👤' },
+        author: { id: authorId, name: 'テストユーザー' },
         createdAt: new Date('2025-03-01'),
       })
     })

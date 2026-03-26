@@ -25,6 +25,16 @@ export const createUserSchema = z.object({
 })
 export const updateUserSchema = createUserSchema.partial()
 
+export const adminChangeUserPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, { message: 'パスワードは8文字以上である必要があります' })
+      .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, {
+        message: 'パスワードは英字と数字を含める必要があります',
+      }),
+  })
+
 export const listUserQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional(),
   page: z.coerce.number().int().positive().optional(),
@@ -43,3 +53,4 @@ export type createUserBody = z.infer<typeof createUserSchema>
 export type updateUserBody = z.infer<typeof updateUserSchema>
 export type listUserQuery = z.infer<typeof listUserQuerySchema>
 export type userIdParams = z.infer<typeof userIdSchema>
+export type adminChangeUserPasswordBody = z.infer<typeof adminChangeUserPasswordSchema>

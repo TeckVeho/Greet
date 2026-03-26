@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../../prisma'
 import { UserService } from '../../services/user.service'
@@ -20,9 +19,12 @@ jest.mock('../../prisma', () => ({
   },
 }))
 
-jest.mock('bcrypt', () => ({
-  hash: jest.fn().mockResolvedValue('$2b$12$mockedhash'),
+jest.mock('../../utils/password', () => ({
+  hashPassword: jest.fn().mockResolvedValue('$2b$12$mockedhash'),
+  comparePassword: jest.fn(),
 }))
+
+import { hashPassword } from '../../utils/password'
 
 const mockUserFindMany = prisma.user.findMany as jest.Mock
 const mockUserCount = prisma.user.count as jest.Mock
@@ -31,6 +33,7 @@ const mockCompanyFindUnique = prisma.company.findUnique as jest.Mock
 const mockUserCreate = prisma.user.create as jest.Mock
 const mockUserUpdate = prisma.user.update as jest.Mock
 const mockUserDelete = prisma.user.delete as jest.Mock
+const mockHashPassword = hashPassword as jest.Mock
 
 const mockCompany = { id: 'company-1', name: 'テスト会社' }
 
@@ -218,12 +221,12 @@ describe('UserService', () => {
       expect(result.data).not.toHaveProperty('passwordHash')
     })
 
-    it('パスワードがbcryptでハッシュ化される', async () => {
+    it('パスワードがhashPasswordでハッシュ化される', async () => {
       mockUserCreate.mockResolvedValue(mockUserFromDb)
 
       await service.create(createPayload)
 
-      expect(bcrypt.hash).toHaveBeenCalledWith('password123', 12)
+      expect(mockHashPassword).toHaveBeenCalledWith('password123')
       expect(mockUserCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -267,13 +270,13 @@ describe('UserService', () => {
       expect(result.data).not.toHaveProperty('passwordHash')
     })
 
-    it('パスワード更新時にbcryptでハッシュ化される', async () => {
+    it('パスワード更新時にhashPasswordでハッシュ化される', async () => {
       mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
       mockUserUpdate.mockResolvedValue(mockUserFromDb)
 
       await service.update('user-1', { password: 'newpassword' })
 
-      expect(bcrypt.hash).toHaveBeenCalledWith('newpassword', 12)
+      expect(mockHashPassword).toHaveBeenCalledWith('newpassword')
       expect(mockUserUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -283,13 +286,13 @@ describe('UserService', () => {
       )
     })
 
-    it('パスワードなしの更新ではbcryptが呼ばれない', async () => {
+    it('パスワードなしの更新ではhashPasswordが呼ばれない', async () => {
       mockUserFindUnique.mockResolvedValue({ companyId: 'company-1' })
       mockUserUpdate.mockResolvedValue(mockUserFromDb)
 
       await service.update('user-1', { name: '名前のみ更新' })
 
-      expect(bcrypt.hash).not.toHaveBeenCalled()
+      expect(mockHashPassword).not.toHaveBeenCalled()
     })
 
     it('更新失敗時にApiErrorをスローする', async () => {
@@ -347,6 +350,93 @@ describe('UserService', () => {
         }),
       ).rejects.toThrow('管理者ユーザーは削除できません')
       expect(mockUserDelete).not.toHaveBeenCalled()
+    })
+  })
+
+  // ─────────────────────────────────────────
+  // changePasswordByAdmin
+  // ─────────────────────────────────────────
+  describe('changePasswordByAdmin', () => {
+    const adminRequester = { userId: 'admin-1', role: 'admin' as const, companyId: 'company-1' }
+
+    it('adminが同社ユーザーのパスワードを正常に変更する', async () => {
+      mockUserFindUnique.mockResolvedValue({ id: 'user-1', companyId: 'company-1' })
+      mockUserUpdate.mockResolvedValue(mockUserFromDb)
+
+      const result = await service.changePasswordByAdmin(
+        'user-1',
+        { password: 'NewPass123' },
+        adminRequester,
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.statusCode).toBe(StatusCodes.OK)
+      expect(mockHashPassword).toHaveBeenCalledWith('NewPass123')
+      expect(mockUserUpdate).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { passwordHash: '$2b$12$mockedhash' },
+      })
+    })
+
+    it('adminが自分自身のパスワードを変更できる', async () => {
+      mockUserFindUnique.mockResolvedValue({ id: 'admin-1', companyId: 'company-1' })
+      mockUserUpdate.mockResolvedValue(mockUserFromDb)
+
+      const result = await service.changePasswordByAdmin(
+        'admin-1',
+        { password: 'NewPass123' },
+        adminRequester,
+      )
+
+      expect(result.success).toBe(true)
+      expect(mockUserUpdate).toHaveBeenCalled()
+    })
+
+    it('adminが他社ユーザーのパスワードを変更できる', async () => {
+      mockUserFindUnique.mockResolvedValue({ id: 'user-2', companyId: 'company-2' })
+      mockUserUpdate.mockResolvedValue(mockUserFromDb)
+
+      const result = await service.changePasswordByAdmin(
+        'user-2',
+        { password: 'NewPass123' },
+        adminRequester,
+      )
+
+      expect(result.success).toBe(true)
+      expect(mockUserUpdate).toHaveBeenCalled()
+    })
+
+    it('非adminはForbiddenエラーになる', async () => {
+      await expect(
+        service.changePasswordByAdmin(
+          'user-1',
+          { password: 'NewPass123' },
+          { userId: 'user-2', role: 'user', companyId: 'company-1' },
+        ),
+      ).rejects.toThrow(ApiError)
+      await expect(
+        service.changePasswordByAdmin(
+          'user-1',
+          { password: 'NewPass123' },
+          { userId: 'user-2', role: 'user', companyId: 'company-1' },
+        ),
+      ).rejects.toThrow('管理者のみ実行できます')
+      expect(mockUserUpdate).not.toHaveBeenCalled()
+    })
+
+    it('requesterなしはForbiddenエラーになる', async () => {
+      await expect(
+        service.changePasswordByAdmin('user-1', { password: 'NewPass123' }),
+      ).rejects.toThrow('管理者のみ実行できます')
+    })
+
+    it('存在しないユーザーはNotFoundエラーになる', async () => {
+      mockUserFindUnique.mockResolvedValue(null)
+
+      await expect(
+        service.changePasswordByAdmin('nonexistent', { password: 'NewPass123' }, adminRequester),
+      ).rejects.toThrow('ユーザーが見つかりません')
+      expect(mockUserUpdate).not.toHaveBeenCalled()
     })
   })
 })
