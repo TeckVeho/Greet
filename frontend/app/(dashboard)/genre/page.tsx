@@ -143,7 +143,7 @@ export default function GenrePage() {
 						})}
 					</div>
 					{/* 並び替え・ビュー切り替え (モバイルでは非表示) */}
-					<div className='hidden md:flex items-center gap-2 self-end md:self-auto'>
+					<div className='md:flex items-center gap-2 self-end md:self-auto'>
 						<Select value={sortOption} onValueChange={e => setSortOption(e as SortOption)}>
 							<SelectTrigger className='w-45'>
 								<SelectValue placeholder='Theme' />
@@ -160,16 +160,16 @@ export default function GenrePage() {
 						</Select>
 						<div className='hidden md:flex items-center rounded-md overflow-hidden'>
 							<Button
-								onClick={() => setViewMode('table')}
-								variant={viewMode === 'table' ? 'default' : 'secondary'}
+								onClick={() => setViewMode('cards')}
+								variant={viewMode === 'cards' ? 'default' : 'secondary'}
 								className='rounded-r-none'
 								title='テーブル表示'
 							>
 								<LayoutGrid className={'size-4'} />
 							</Button>
 							<Button
-								onClick={() => setViewMode('cards')}
-								variant={viewMode === 'cards' ? 'default' : 'secondary'}
+								onClick={() => setViewMode('table')}
+								variant={viewMode === 'table' ? 'default' : 'secondary'}
 								title='テーブル表示'
 								className='rounded-l-none'
 							>

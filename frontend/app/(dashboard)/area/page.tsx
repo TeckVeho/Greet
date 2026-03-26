@@ -115,7 +115,7 @@ export default function AreaPage() {
 						})}
 					</div>
 					{/* 並び替え・ビュー切り替え (モバイルでは非表示) */}
-					<div className='hidden md:flex items-center gap-2 self-end md:self-auto'>
+					<div className='md:flex items-center gap-2 self-end md:self-auto'>
 						<Select value={sortOption} onValueChange={e => setSortOption(e as SortOption)}>
 							<SelectTrigger className='w-45'>
 								<SelectValue placeholder='Theme' />
