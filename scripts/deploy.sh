@@ -167,12 +167,16 @@ if ! command -v pm2 >/dev/null 2>&1; then
 	npm install -g pm2
 fi
 
-# PM2 runs as a daemon and may keep an old PATH/Node binary.
-# Refresh daemon + app env so Next.js always runs with the current Node version.
+# PM2 runs as a daemon; refresh app env on restart without daemon-wide update.
 CURRENT_NODE_BIN="$(command -v node)"
 echo "Active node: $(node -v) ($CURRENT_NODE_BIN)"
-pm2 update
 pm2 restart "$PM2_CONFIG" --update-env 2>/dev/null || pm2 start "$PM2_CONFIG" --update-env
-pm2 save
+
+# On shared servers, avoid overwriting global dump.pm2 unless explicitly requested.
+if [ "${PM2_SAVE_AFTER_DEPLOY:-false}" = "true" ]; then
+	pm2 save
+else
+	echo "Skipping pm2 save (set PM2_SAVE_AFTER_DEPLOY=true to persist current PM2 list)."
+fi
 
 echo "=== Deploy Complete ==="
