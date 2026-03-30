@@ -9,7 +9,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Dispatch, SetStateAction } from 'react'
 import { Pagination } from '../pagination'
-import { Rating } from '../rating'
+import { OutlineStar, Rating } from '../rating'
 
 const getGenreVariant = (genreKey: string): any => {
 	switch (genreKey) {
@@ -103,11 +103,11 @@ export function DataCards({
 											}}
 											className='absolute top-3 right-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 bg-card/90 shadow-sm transition-colors hover:bg-card'
 										>
-											<Rating
-												rate={isFav ? 1 : 0}
-												max={1}
-												className='[&_svg]:size-5! [&>div]:size-5!'
-											/>
+											{isFav ? (
+												<Rating rate={1} max={1} className='[&_svg]:size-5! [&>div]:size-5!' />
+											) : (
+												<OutlineStar className='[&_svg]:size-5! [&>div]:size-5!' />
+											)}
 										</button>
 									</div>
 
@@ -133,7 +133,7 @@ export function DataCards({
 										</div>
 
 										<div className='mb-3 text-sm text-foreground font-medium'>
-											<span>予算:</span> {priceRangeLabel(restaurant.priceRange)}
+											<span>価格帯:</span> {priceRangeLabel(restaurant.priceRange)}
 										</div>
 
 										<div className='flex items-center gap-4 text-sm'>
@@ -155,7 +155,9 @@ export function DataCards({
 										</div>
 
 										<div className='mt-3 flex items-center justify-between border-t border-border/70 pt-3 text-xs'>
-											<div className='text-muted-foreground'>レビュー {restaurant.reviewCount} 件</div>
+											<div className='text-muted-foreground'>
+												レビュー {restaurant.reviewCount} 件
+											</div>
 										</div>
 									</div>
 								</Link>
@@ -170,12 +172,12 @@ export function DataCards({
 			</div>
 
 			{/* Paginatsiya (DataTable kabi) */}
-			<div className='flex items-center justify-between mt-4'>
-				<span className='whitespace-nowrap text-sm font-medium'>飲食店数: {total}</span>
-
-				{typeof pagination?.pageSize === 'number' &&
-					typeof pagination?.pageIndex === 'number' &&
-					setPagination && (
+			{typeof pagination?.pageSize === 'number' &&
+				typeof pagination?.pageIndex === 'number' &&
+				setPagination &&
+				typeof total === 'number' && (
+					<div className='flex items-center justify-between mt-4'>
+						<span className='whitespace-nowrap text-sm font-medium'>{total} 件の飲食店</span>
 						<Pagination
 							totalPages={totalPages}
 							pageIndex={pagination.pageIndex}
@@ -183,8 +185,8 @@ export function DataCards({
 							onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
 							onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
 						/>
-					)}
-			</div>
+					</div>
+				)}
 		</div>
 	)
 }

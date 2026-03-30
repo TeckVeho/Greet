@@ -1,27 +1,46 @@
 'use client'
 
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export function MainLogo() {
 	return (
-		<Link href='/'>
-			<SidebarMenu>
-				<SidebarMenuItem>
-					<SidebarMenuButton
-						size='lg'
-						className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
-					>
-						<div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-muted-foreground text-sidebar-primary-foreground'>
-							✨
-						</div>
-						<div className='grid flex-1 text-left text-sm leading-tight'>
-							<span className='truncate font-semibold'>Greet</span>
-							<span className='truncate text-xs'>接待を、戦略に。</span>
-						</div>
-					</SidebarMenuButton>
-				</SidebarMenuItem>
-			</SidebarMenu>
+		<Link
+			href='/'
+			className='block rounded-lg px-1 py-1 outline-none transition-opacity hover:opacity-75 focus-visible:ring-2 focus-visible:ring-sidebar-ring'
+		>
+			{/* Expanded: full logo + tagline */}
+			<div className='flex flex-col items-center group-data-[collapsible=icon]:hidden -mt-3 -ml-1'> 
+				{/* -mt-3 → 3px tepaga ko'tarish */}
+				{/* -ml-1 → 1px chapga surish */}
+				
+				<Image
+					src='/newlogogreet.png'
+					alt='Greet'
+					width={140}
+					height={93}
+					className='block h-auto w-[140px] -mb-5'
+					priority
+				/>
+				<span
+					className='text-xs font-semibold tracking-widest -mt-2'
+					style={{ color: '#7C4F2A' }}
+				>
+					接待を、戦略に。
+				</span>
+			</div>
+
+			{/* Collapsed: circle emblem only */}
+			<div className='hidden group-data-[collapsible=icon]:flex h-8 w-8 overflow-hidden rounded-full'>
+				<Image
+					src='/newlogogreet.png'
+					alt='Greet'
+					width={128}
+					height={85}
+					className='block h-auto w-[128px] -translate-x-[7px] -translate-y-[22px]' 
+					priority
+				/>
+			</div>
 		</Link>
 	)
 }

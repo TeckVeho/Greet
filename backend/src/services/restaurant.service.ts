@@ -13,7 +13,36 @@ type CreateRestaurantInput = createRestaurantBodySchema & { companyId: string; c
 type UpdateRestaurantInput = updateRestaurantBodySchema
 type ListQuery = listRestaurantsQueryBodySchema
 
-function mapUserSummary(user: { id: string; name: string; icon: string | null } | null) {
+const AREA_LABELS: Record<Area, string> = {
+  GINZA: '銀座',
+  AKASAKA: '赤坂',
+  ROPPONGI: '六本木',
+  SHIMBASHI: '新橋',
+  AZABU: '麻布',
+  EBIISU: '恵比寿',
+  OMOTESANDO: '表参道',
+  OTHER: 'その他',
+}
+
+const GENRE_LABELS: Record<Genre, string> = {
+  SUSHI: '寿司',
+  FRENCH: 'フレンチ',
+  ITALIAN: 'イタリアン',
+  WASHOKU: '和食',
+  CHINESE: '中華',
+  TEPPANYAKI: '鉄板焼き',
+  YAKINIKU: '焼肉',
+  TEMPURA: '天ぷら',
+  KAPPO: '割烹',
+  OTHER: 'その他',
+}
+
+function matchesSearch(term: string, enumKey: string, label: string) {
+  const normalized = term.toLowerCase()
+  return enumKey.toLowerCase().includes(normalized) || label.includes(term)
+}
+
+function mapUserSummary(user: { id: string; name: string } | null) {
   if (!user) {
     return null
   }
@@ -21,7 +50,6 @@ function mapUserSummary(user: { id: string; name: string; icon: string | null } 
   return {
     id: user.id,
     name: user.name,
-    icon: user.icon ?? undefined,
   }
 }
 
@@ -29,10 +57,20 @@ export class RestaurantService {
   async findAll(query: ListQuery) {
     const smokingAllowed = parseBoolean(query.smokingAllowed)
     const hasPrivateRoom = parseBoolean(query.hasPrivateRoom)
-    const sort = query.sort
-    let genres = cleanArray(query.genres)
-    let areas = cleanArray(query.areas)
-    let priceRanges = cleanArray(query.priceRanges)
+    const sort =
+      query.sort ??
+      (query.sortBy
+        ? `${
+            query.sortBy === 'priceRange'
+              ? 'price'
+              : query.sortBy === 'reviewCount'
+                ? 'reviews'
+                : query.sortBy
+          }_${query.sortOrder ?? 'desc'}`
+        : undefined)
+    let genres = cleanArray(query.genres?.length ? query.genres : query.genre)
+    let areas = cleanArray(query.areas?.length ? query.areas : query.area)
+    let priceRanges = cleanArray(query.priceRanges?.length ? query.priceRanges : query.priceRange)
     const search = query.search?.trim()
     const page = Math.max(1, Number(query.page) || 1)
     const limit = Math.max(1, Number(query.limit) || 10)
@@ -48,11 +86,15 @@ export class RestaurantService {
       priceRanges = [priceRanges]
     }
     const matchedAreas = search
-      ? Object.values(Area).filter(area => area.toLowerCase().includes(search.toLowerCase()))
+      ? (Object.values(Area).filter(area =>
+          matchesSearch(search, area, AREA_LABELS[area]),
+        ) as Area[])
       : []
 
     const matchedGenres = search
-      ? Object.values(Genre).filter(genre => genre.toLowerCase().includes(search.toLowerCase()))
+      ? (Object.values(Genre).filter(genre =>
+          matchesSearch(search, genre, GENRE_LABELS[genre]),
+        ) as Genre[])
       : []
     let orderBy: Prisma.RestaurantOrderByWithRelationInput = { createdAt: 'desc' }
 
@@ -123,7 +165,7 @@ export class RestaurantService {
           },
 
           createdBy: {
-            select: { id: true, name: true, icon: true },
+            select: { id: true, name: true },
           },
         },
       }),
@@ -198,7 +240,6 @@ export class RestaurantService {
               select: {
                 id: true,
                 name: true,
-                icon: true,
               },
             },
           },
@@ -210,7 +251,6 @@ export class RestaurantService {
           select: {
             id: true,
             name: true,
-            icon: true,
           },
         },
       },
@@ -249,6 +289,7 @@ export class RestaurantService {
     const data = {
       id: restaurant.id,
       name: restaurant.name,
+      icon: await resolveFileUrl(restaurant.icon),
       area: restaurant.area,
       genres: restaurant.genres.map(g => g.genre),
       hasPrivateRoom: restaurant.hasPrivateRoom,
@@ -258,7 +299,6 @@ export class RestaurantService {
       url: restaurant.url ?? undefined,
       smokingAllowed: restaurant.smokingAllowed,
       coverImage: await resolveFileUrl(restaurant.coverImage),
-      icon: await resolveFileUrl(restaurant.icon),
       createdBy: mapUserSummary(restaurant.createdBy),
       reviews: restaurant.reviews.map(r => ({
         id: r.id,

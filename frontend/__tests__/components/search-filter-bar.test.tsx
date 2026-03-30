@@ -32,7 +32,7 @@ describe('SearchFilterBar', () => {
 			<SearchFilterBar onSearchChange={onSearchChange} onFilterClick={jest.fn()} searchValue='' />,
 		)
 
-		fireEvent.change(screen.getByPlaceholderText('店名、エリア、ジャンルで検索...'), {
+		fireEvent.change(screen.getByPlaceholderText('店名、エリア、ジャンル、住所で検索...'), {
 			target: { value: '銀座' },
 		})
 

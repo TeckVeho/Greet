@@ -12,6 +12,13 @@ interface RatingProps {
 	max?: number
 }
 
+export const OutlineStar = ({ className }: { className: string }) => {
+	return (
+		<div className={className}>
+			<Star fill='none' />
+		</div>
+	)
+}
 const Rating = ({ rate, className, showScore, description, max = 5 }: RatingProps) => {
 	if (!rate) return
 

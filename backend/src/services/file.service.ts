@@ -24,6 +24,18 @@ function getBucket(): string {
   return bucket
 }
 
+function getS3Prefix(): string {
+  const rawPrefix = process.env.S3_KEY_PREFIX ?? ''
+  if (!rawPrefix) return ''
+  // Normalize to path fragments only (no leading/trailing slash)
+  return rawPrefix.replace(/^\/+|\/+$/g, '')
+}
+
+function withS3Prefix(key: string): string {
+  const prefix = getS3Prefix()
+  return prefix ? `${prefix}/${key}` : key
+}
+
 // ── Local helpers (development) ──
 
 function getMediaDir(): string {
@@ -82,7 +94,7 @@ export async function uploadFile(file: Express.Multer.File): Promise<string> {
   const filename = generateFilename(file.originalname)
 
   if (isProduction()) {
-    const key = `restaurants/${filename}`
+    const key = withS3Prefix(`restaurants/${filename}`)
     await getS3().send(
       new PutObjectCommand({
         Bucket: getBucket(),

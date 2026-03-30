@@ -1,6 +1,6 @@
+export { DialogCreateReview } from './dialog-create-review'
 export { DialogGlobalSearch } from './dialog-global-search'
 export { DialogRestaurantCreate } from './dialog-restaurant-create'
 export { DialogRestaurantFilter, type FilterState } from './dialog-restaurant-filter'
-export { DialogUserCreate } from './dialog-user-create'
-export { DialogUpdateUser } from './dialog-user-update'
+export { DialogUserCreateOrUpdate } from './dialog-user-create-or-update'
 export { DialogWarning } from './dialog-warning'

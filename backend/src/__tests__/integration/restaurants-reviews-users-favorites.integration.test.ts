@@ -55,6 +55,7 @@ jest.mock('../../services/user.service', () => ({
   userService: {
     findAll: jest.fn(),
     create: jest.fn(),
+    changePasswordByAdmin: jest.fn(),
   },
 }))
 
@@ -79,6 +80,7 @@ const mockRvCreate = reviewService.create as jest.Mock
 
 const mockUsFindAll = userService.findAll as jest.Mock
 const mockUsCreate = userService.create as jest.Mock
+const mockUsChangePassword = userService.changePasswordByAdmin as jest.Mock
 
 const mockFavList = favoriteService.listForUser as jest.Mock
 const mockFavAdd = favoriteService.add as jest.Mock
@@ -89,7 +91,7 @@ const mockFavRemove = favoriteService.remove as jest.Mock
 // ---------------------------------------------------------------------------
 
 const TEST_SECRET = 'test-jwt-secret'
-const VALID_UUID = '11111111-1111-1111-1111-111111111111'
+const VALID_UUID = '11111111-1111-4111-8111-111111111111'
 
 function makeToken(role: 'user' | 'admin' = 'user') {
   return jwt.sign(
@@ -190,6 +192,7 @@ describe('Integration: restaurants CRUD (IT #4-9)', () => {
       .send({
         name: 'New Restaurant',
         area: 'GINZA',
+        genres: ['SUSHI'],
         hasPrivateRoom: false,
         smokingAllowed: false,
         priceRange: 'RANGE_10000',
@@ -333,7 +336,7 @@ describe('Integration: users (IT #11-12)', () => {
     mockUsFindAll.mockResolvedValue({
       success: true,
       data: [],
-      meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
       statusCode: 200,
     })
 
@@ -398,7 +401,97 @@ describe('Integration: users (IT #11-12)', () => {
         email: 'newuser@example.com',
         companyId: '22222222-2222-4222-8222-222222222222',
       }),
+      undefined,
     )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// IT #12b  PATCH /users/:userId/password
+// ---------------------------------------------------------------------------
+
+describe('Integration: change user password (IT #12b)', () => {
+  let app: ReturnType<typeof createTestApp>
+
+  beforeEach(() => {
+    app = createTestApp()
+    jest.clearAllMocks()
+  })
+
+  it('IT #12b admin が正常にパスワードを変更できる (200)', async () => {
+    mockUsChangePassword.mockResolvedValue({
+      success: true,
+      data: { message: 'ユーザーのパスワードを変更しました' },
+      statusCode: 200,
+    })
+
+    const res = await request(app)
+      .patch(`/api/users/${VALID_UUID}/password`)
+      .set('Authorization', `Bearer ${makeToken('admin')}`)
+      .send({ password: 'NewPass123' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(mockUsChangePassword).toHaveBeenCalledWith(
+      VALID_UUID,
+      { password: 'NewPass123' },
+      expect.objectContaining({ role: 'admin' }),
+    )
+  })
+
+  it('IT #12b 非admin は 403 になる', async () => {
+    const res = await request(app)
+      .patch(`/api/users/${VALID_UUID}/password`)
+      .set('Authorization', `Bearer ${makeToken('user')}`)
+      .send({ password: 'NewPass123' })
+
+    expect(res.status).toBe(403)
+    expect(res.body.success).toBe(false)
+    expect(res.body.error.code).toBe('FORBIDDEN')
+    expect(mockUsChangePassword).not.toHaveBeenCalled()
+  })
+
+  it('IT #12b パスワードなし送信は 400 バリデーションエラー', async () => {
+    const res = await request(app)
+      .patch(`/api/users/${VALID_UUID}/password`)
+      .set('Authorization', `Bearer ${makeToken('admin')}`)
+      .send({})
+
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.error.code).toBe('VALIDATION_ERROR')
+    expect(mockUsChangePassword).not.toHaveBeenCalled()
+  })
+
+  it('IT #12b 短すぎるパスワードは 400 バリデーションエラー', async () => {
+    const res = await request(app)
+      .patch(`/api/users/${VALID_UUID}/password`)
+      .set('Authorization', `Bearer ${makeToken('admin')}`)
+      .send({ password: 'abc' })
+
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(mockUsChangePassword).not.toHaveBeenCalled()
+  })
+
+  it('IT #12b 英数字を含まないパスワードは 400 バリデーションエラー', async () => {
+    const res = await request(app)
+      .patch(`/api/users/${VALID_UUID}/password`)
+      .set('Authorization', `Bearer ${makeToken('admin')}`)
+      .send({ password: 'onlyletters' })
+
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(mockUsChangePassword).not.toHaveBeenCalled()
+  })
+
+  it('IT #12b 認証なしは 401', async () => {
+    const res = await request(app)
+      .patch(`/api/users/${VALID_UUID}/password`)
+      .send({ password: 'NewPass123' })
+
+    expect(res.status).toBe(401)
+    expect(mockUsChangePassword).not.toHaveBeenCalled()
   })
 })
 
@@ -426,7 +519,7 @@ describe('Integration: favorites (IT #13)', () => {
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    expect(mockFavList).toHaveBeenCalledWith('user-1')
+    expect(mockFavList).toHaveBeenCalledWith(expect.any(Object), 'user-1')
   })
 
   it('IT #13 POST /favorites - お気に入り追加 (201)', async () => {

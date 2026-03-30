@@ -5,6 +5,7 @@ import { Rating } from '@/components/rating'
 import { Button, Section, Spinner } from '@/components/ui'
 import { Callout } from '@/components/ui/callout'
 import { useFavoriteRestaurants } from '@/hooks/use-favorite-restaurants'
+import { useIsMobile } from '@/hooks/use-mobile'
 import type { RestaurantListItem } from '@/lib/api/restaurants'
 import { useAuth } from '@/lib/auth-context'
 import { PaginationState } from '@tanstack/react-table'
@@ -14,6 +15,7 @@ import * as React from 'react'
 
 export default function FavoritesPage() {
 	const router = useRouter()
+	const isMobile = useIsMobile()
 	const { user, isLoading: isAuthLoading } = useAuth()
 	const [viewMode, setViewMode] = React.useState<'table' | 'cards'>('cards')
 	const [pagination, setPagination] = React.useState<PaginationState>({
@@ -51,17 +53,10 @@ export default function FavoritesPage() {
 				<div className='mb-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
 					<div className='flex items-center gap-2'>
 						<Rating rate={1} max={1} className='[&_svg]:size-10! [&>div]:size-10!' />
-						<h1
-							className='text-2xl md:text-3xl font-bold text-zinc-900'
-							onClick={() => {
-								console.log(favoriteItems)
-							}}
-						>
-							お気に入り
-						</h1>
+						<h1 className='text-2xl md:text-3xl font-bold '>お気に入り</h1>
 					</div>
 					{favoriteItems?.data?.length && favoriteItems?.data?.length > 0 && (
-						<div className='hidden md:flex items-center border border-zinc-200 rounded-md overflow-hidden self-end md:self-auto'>
+						<div className='hidden md:flex items-center rounded-md overflow-hidden self-end md:self-auto'>
 							<Button
 								onClick={() => setViewMode('cards')}
 								variant={viewMode === 'table' ? 'secondary' : 'default'}
@@ -81,7 +76,7 @@ export default function FavoritesPage() {
 						</div>
 					)}
 				</div>
-				<p className='text-sm text-zinc-500'>お気に入りに登録した飲食店を表示</p>
+				<p className='text-sm text-muted-foreground'>お気に入りに登録した飲食店を表示</p>
 			</div>
 
 			{/* お気に入りが空の場合 */}
@@ -95,7 +90,7 @@ export default function FavoritesPage() {
 			) : (
 				<>
 					{/* お気に入りレストランのテーブル/カード表示（モバイルは常にカード） */}
-					{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
+					{viewMode === 'cards' || isMobile ? (
 						<DataCards
 							data={favoriteItems?.data?.map(item => item.restaurant as RestaurantListItem)!}
 							total={favoriteItems?.meta?.total}

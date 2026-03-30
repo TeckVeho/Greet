@@ -1,0 +1,388 @@
+'use client'
+
+import {
+	Button,
+	Dialog,
+	DialogBody,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+	Form as FormUi,
+	Input,
+	InputPassword,
+	ScrollArea,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui'
+import { useCompanies } from '@/hooks/use-companies'
+import { useChangeUserPassword, useCreateUser, useUpdateUser } from '@/hooks/use-users'
+
+import { UserFormDialogProps } from '@/lib/types'
+import { onError } from '@/lib/utils'
+import { toast } from 'sonner'
+import { schemaCreate, schemaUpdate } from '@/schemas/user.schema'
+import { zodResolver } from '@hookform/resolvers/zod'
+import Image from 'next/image'
+import * as React from 'react'
+import { useForm, UseFormReturn } from 'react-hook-form'
+import z from 'zod'
+import { ButtonRemoveImage } from '../button-remove'
+
+export type UserCreateFormData = z.infer<typeof schemaCreate>
+export type UserUpdateFormData = z.infer<typeof schemaUpdate>
+export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialogProps) {
+	const [open, setOpen] = React.useState(false)
+	const { data: companiesData, isPending: isPendingCompanies } = useCompanies()
+	const { mutateAsync: createUser, isPending: creating } = useCreateUser()
+	const { mutateAsync: updateUser, isPending: updating } = useUpdateUser(user?.id)
+	const { mutateAsync: changeUserPassword, isPending: changingPassword } = useChangeUserPassword(user?.id)
+	const formCreateUser = useForm<UserCreateFormData>({
+		mode: 'onSubmit',
+		defaultValues: {
+			name: '',
+			email: '',
+			password: '',
+			role: 'user',
+			department: '',
+			companyId: '',
+		},
+		resolver: zodResolver(schemaCreate),
+	})
+	const formUpdateUser = useForm<UserUpdateFormData>({
+		mode: 'onChange',
+		defaultValues: {
+			name: '',
+			email: '',
+			password: '',
+			role: 'user',
+			department: '',
+			companyId: '',
+		},
+		resolver: zodResolver(schemaUpdate),
+	})
+
+	React.useEffect(() => {
+		if (mode === 'update' && user) {
+			formUpdateUser.reset({
+				avatar: user.avatar,
+				name: user.name,
+				email: user.email,
+				role: user.role,
+				password: '',
+				department: user.department,
+				companyId: user.companyId,
+			})
+		} else {
+			formCreateUser.reset({
+				name: '',
+				email: '',
+				password: '',
+				role: 'user',
+				department: '',
+				companyId: '',
+			})
+		}
+	}, [mode, user])
+	const isUpdate = mode === 'update'
+	const form = isUpdate ? formUpdateUser : (formCreateUser as UseFormReturn<any>)
+	const fileInputRef = React.useRef<HTMLInputElement>(null)
+	const onSubmit = async (data: any) => {
+		const formData = new FormData()
+		const nextPassword = typeof data.password === 'string' ? data.password.trim() : ''
+
+		// Hamma fieldlarni FormData ga solamiz
+		Object.keys(data).forEach(key => {
+			if (key === 'password') {
+				return
+			}
+			if (data[key] !== undefined) {
+				formData.append(key, data[key])
+			}
+		})
+		if (isUpdate) {
+			await updateUser(formData)
+			if (nextPassword) {
+				await changeUserPassword(nextPassword)
+				toast.success('ユーザー情報とパスワードを更新しました。')
+			} else {
+				toast.success('ユーザー情報を更新しました。')
+			}
+			formUpdateUser.reset()
+			setOpen(false)
+		} else {
+			await createUser(formData)
+			toast.success('ユーザーを登録しました。')
+			formCreateUser.reset()
+			setOpen(false)
+		}
+	}
+	return (
+		<Dialog open={open} onOpenChange={setOpen}>
+			{trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+			<DialogContent aria-describedby={undefined}>
+				<DialogHeader>
+					<DialogTitle>{mode === 'create' ? '新規ユーザー登録' : 'ユーザー情報編集'}</DialogTitle>
+				</DialogHeader>
+				<ScrollArea className='max-h-[75vh]'>
+				<FormUi {...form}>
+					<form
+						id='form-user'
+						className='pr-4'
+						onSubmit={
+							mode === 'update'
+								? formUpdateUser.handleSubmit(onSubmit, onError)
+								: formCreateUser.handleSubmit(onSubmit, onError)
+						}
+					>
+						<DialogBody>
+								<div className='space-y-4'>
+									{/* avatar */}
+									<FormField
+										control={form.control}
+										name='avatar'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>プロフィール画像</FormLabel>
+												<FormControl>
+													<div>
+														<input
+															ref={fileInputRef}
+															type='file'
+															className='sr-only'
+															accept='image/jpeg,image/png,image/webp,image/gif'
+															id='avatar-input'
+															onChange={e => field.onChange(e.target.files?.[0])}
+														/>
+														{/* uploaded image */}
+														{field.value instanceof File ? (
+															<div className='relative flex items-center justify-center w-full h-32 rounded-lg overflow-hidden'>
+																<Image
+																	src={URL.createObjectURL(field.value)}
+																	alt='image restaourant'
+																	width={200}
+																	height={200}
+																	className='w-full h-full object-cover'
+																/>
+																<ButtonRemoveImage
+																	onClick={() => {
+																		field.onChange(null)
+																		if (fileInputRef.current) {
+																			fileInputRef.current.value = ''
+																		}
+																	}}
+																/>
+															</div>
+														) : // update時の既存画像
+														typeof field.value === 'string' ? (
+															<div className='relative flex items-center justify-center w-full h-32 rounded-lg overflow-hidden bg-zinc-100'>
+																<img
+																	src={field.value}
+																	alt='image restaourant'
+																	width={200}
+																	height={200}
+																	className='w-full h-full object-cover'
+																/>
+																<ButtonRemoveImage
+																	onClick={() => {
+																		field.onChange(null)
+																		if (fileInputRef.current) {
+																			fileInputRef.current.value = ''
+																		}
+																	}}
+																/>
+															</div>
+														) : (
+															<button
+																type='button'
+																onClick={() => document.getElementById('avatar-input')?.click()}
+																className='flex w-full h-32 rounded-lg border border-dashed bg-accent transition-colors cursor-pointer items-center justify-center'
+															>
+																<div className='text-center'>
+																	<div className='text-2xl mb-1'>📷</div>
+																	<div className='text-sm text-muted-foreground'>
+																		クリックして画像をアップロード
+																	</div>
+																	<div className='text-xs text-zinc-400 mt-1'>
+																		JPEG, PNG, WebP, GIF（最大10MB）
+																	</div>
+																</div>
+															</button>
+														)}
+													</div>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									{/* 名前 */}
+									<FormField
+										control={form.control}
+										name='name'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel required>お名前</FormLabel>
+												<FormControl>
+													<Input {...field} placeholder='例: 山田太郎' required />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									{/* メールアドレス */}
+									<FormField
+										control={form.control}
+										name='email'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel required>メールアドレス</FormLabel>
+												<FormControl>
+													<Input
+														{...field}
+														type='email'
+														placeholder='yamada@example.com'
+														required
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+
+									<div className='flex items-center gap-4'>
+										{/* 部署 */}
+										<FormField
+											control={form.control}
+											name='department'
+											render={({ field }) => (
+												<FormItem className='flex-1'>
+													<FormLabel>部署</FormLabel>
+													<FormControl>
+														<Input {...field} type='text' placeholder='営業部' />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+									<div className='flex items-center gap-4'>
+										{/* 所属会社 */}
+										<FormField
+											control={form.control}
+											name='companyId'
+											render={({ field }) => (
+												<FormItem className='flex-1'>
+													<FormLabel required>所属会社</FormLabel>
+													<FormControl>
+														<Select value={field.value} onValueChange={field.onChange}>
+															<SelectTrigger className='m-0'>
+																<SelectValue placeholder='会社を選択' />
+															</SelectTrigger>
+															<SelectContent className='max-h-70'>
+																{isPendingCompanies
+																	? 'Loading...'
+																	: companiesData?.companies.map(company => (
+																			<SelectItem key={company.id} value={company.id}>
+																				{company.icon} {company.name}
+																			</SelectItem>
+																		))}
+															</SelectContent>
+														</Select>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={form.control}
+											name='role'
+											render={({ field }) => (
+												<FormItem className='flex-1'>
+													<FormLabel required>ユーザー権限</FormLabel>
+													<FormControl>
+														<Select value={field.value} onValueChange={field.onChange}>
+															<SelectTrigger className='mb-0'>
+																<SelectValue placeholder='権限を選択' />
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value='user'>一般ユーザー</SelectItem>
+																<SelectItem value='admin'>管理者</SelectItem>
+															</SelectContent>
+														</Select>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									{/* パスワード */}
+									{mode === 'create' ? (
+										<FormField
+											control={formCreateUser.control}
+											name='password'
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel required>パスワード</FormLabel>
+													<FormControl>
+														<InputPassword {...field} placeholder='8文字以上' required />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									) : (
+										<FormField
+											control={formUpdateUser.control}
+											name='password'
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>新しいパスワード（任意）</FormLabel>
+													<FormControl>
+														<InputPassword
+															{...field}
+															value={field.value ?? ''}
+															placeholder='変更する場合のみ入力（8文字以上）'
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									)}
+								</div>
+						</DialogBody>
+					</form>
+				</FormUi>
+				</ScrollArea>
+				<DialogFooter className='max-sm:gap-3'>
+					<Button
+						type='button'
+						variant='secondary'
+						onClick={() => setOpen(false)}
+						disabled={creating || updating || changingPassword}
+					>
+						キャンセル
+					</Button>
+					<Button type='submit' form='form-user' disabled={creating || updating || changingPassword}>
+						{creating || updating || changingPassword
+							? '保存中...'
+							: mode === 'create'
+								? '登録'
+								: '更新'}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	)
+}

@@ -133,13 +133,13 @@ export const Pagination: React.FC<PaginationProps> = ({
 			<Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
 				<SelectTrigger className='hidden gap-3 lg:flex whitespace-nowrap'>
 					<List className='text-brand-primary size-5' />
-					{pageSize} ページごとの
+					{pageSize} 件ごとの
 				</SelectTrigger>
 				<SelectContent>
 					<SelectGroup>
 						{[5, 10, 20, 30, 50].map(v => (
 							<SelectItem key={v} value={String(v)}>
-								{v} ページごとの
+								{v} 件ごとの
 							</SelectItem>
 						))}
 					</SelectGroup>

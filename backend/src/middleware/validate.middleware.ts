@@ -23,7 +23,15 @@ export const validator =
       return
     }
 
-    ;(req as any)[target] = validate.data
+    if (target === 'body') {
+      req.body = validate.data
+    } else if (target === 'query') {
+      Object.assign(req.query, validate.data)
+    } else if (target === 'params') {
+      Object.assign(req.params, validate.data)
+    } else {
+      Object.assign(req.headers, validate.data)
+    }
     next()
   }
 export function validateBody<T extends z.ZodTypeAny>(schema: T) {

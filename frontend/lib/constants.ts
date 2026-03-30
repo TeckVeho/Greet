@@ -11,6 +11,16 @@ export const AREA_LABELS: Record<string, string> = {
 	OTHER: 'その他',
 }
 
+export const sortOptions = [
+	{ value: 'createdAt_desc', label: '登録日（新しい順）' },
+	{ value: 'createdAt_asc', label: '登録日（古い順）' },
+	{ value: 'name_asc', label: '店名（あいうえお順）' },
+	{ value: 'name_desc', label: '店名（逆順）' },
+	{ value: 'price_asc', label: '価格帯（低い順）' },
+	{ value: 'price_desc', label: '価格帯（高い順）' },
+	{ value: 'reviews_desc', label: 'レビュー件数（多い順）' },
+	{ value: 'rating_desc', label: '平均評価（高い順）' },
+]
 export const GENRE_LABELS: Record<string, string> = {
 	SUSHI: '寿司',
 	FRENCH: 'フレンチ',

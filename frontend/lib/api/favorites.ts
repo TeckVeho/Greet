@@ -21,9 +21,7 @@ export async function listFavorites({
 	limit?: number
 	page?: number
 }): Promise<favoriteRestaurantListResponse> {
-	const res = await apiClient.get<ApiResponse<FavoriteItem[]>>('/favorites', {
-		params: { limit, page },
-	})
+	const res = await apiClient.get<ApiResponse<FavoriteItem[]>>('/favorites')
 
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
@@ -35,7 +33,7 @@ export async function listFavorites({
 			total: meta?.total ?? 0,
 			page: meta?.page ?? page,
 			limit: meta?.limit ?? limit,
-			total_pages: meta?.total_pages ?? 0,
+			totalPages: meta?.totalPages ?? 0,
 		},
 	}
 }

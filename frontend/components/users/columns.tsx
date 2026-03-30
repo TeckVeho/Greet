@@ -1,6 +1,6 @@
 'use client'
 
-import { DialogUpdateUser, DialogWarning } from '@/components/dialogs'
+import { DialogUserCreateOrUpdate as DialogUpdateUser, DialogWarning } from '@/components/dialogs'
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui'
 import { deleteUser } from '@/lib/api/users'
 import { User } from '@/lib/types'
@@ -13,62 +13,84 @@ import { SheetCompanyView } from '../sheets/sheet-company-view'
 export const UserColumns: ColumnDef<User>[] = [
 	{
 		accessorKey: 'avatar',
-		header: 'アバター',
+		header: 'お名前',
 		cell: ({ getValue, row }) => {
 			const avatarUrl = getValue<string>()
 			return (
-				<Avatar>
-					<AvatarImage src={avatarUrl} />
-					<AvatarFallback>{row.original.name.charAt(0)}</AvatarFallback>
-				</Avatar>
+				<div className='flex items-center gap-2'>
+					<Avatar>
+						<AvatarImage src={avatarUrl} className='object-cover' />
+						<AvatarFallback>{row.original.name.charAt(0)}</AvatarFallback>
+					</Avatar>
+					{row.original.name}
+				</div>
 			)
 		},
 	},
-	{
-		accessorKey: 'name',
-		header: '名前',
-	},
+
 	{
 		accessorKey: 'email',
 		header: 'メールアドレス',
 	},
 	{
-		accessorKey: 'department',
-		header: '部署',
-	},
-	{
-		accessorKey: 'role',
-		header: 'ロール',
-		cell: ({ getValue }) => {
-			const role = getValue<string>()
-			return <Badge variant={role === 'admin' ? 'chinese' : 'french'}>{role.toUpperCase()}</Badge>
-		},
-	},
-	{
-		accessorKey: 'icon',
-		header: 'アイコン',
-	},
-	{
 		accessorKey: 'company.name',
-		header: '会社名',
+		header: '所属会社',
 		cell: ({ getValue, row }) => {
 			const value = getValue<string>()
 			return (
 				<SheetCompanyView
-					trigger={<span className='text-blue-500 underline cursor-pointer'>{value}</span>}
+					trigger={
+						<span className=' hover:underline cursor-pointer whitespace-nowrap'>
+							{row.original.company?.icon} {value}
+						</span>
+					}
 					company_data={row.original.company || null}
 				/>
 			)
 		},
 	},
 	{
-		accessorKey: 'createdAt',
-		header: '作成日',
+		accessorKey: 'department',
+		header: '部署',
 		cell: ({ getValue }) => {
+			const department = (getValue<string | null | undefined>() ?? '').trim()
+			const display = department.length > 0 ? department : '-'
+			return (
+				<span className='block max-w-40 truncate whitespace-nowrap' title={display}>
+					{display}
+				</span>
+			)
+		},
+	},
+	{
+		accessorKey: 'role',
+		header: 'ユーザー権限',
+		cell: ({ row }) => {
+			const role = row.original.role
+			return (
+				<Badge variant={role === 'admin' ? 'chinese' : 'french'} className='whitespace-nowrap'>
+					{role === 'admin' ? '管理者' : '一般ユーザー'}
+				</Badge>
+			)
+		},
+	},
+	{
+		accessorKey: 'createdAt',
+		header: '登録日',
+		cell: ({ getValue }) => {
+			const value = getValue<string | Date | null>()
+			if (!value) {
+				return <span className='text-muted-foreground'>-</span>
+			}
+
+			const date = new Date(value)
+			if (Number.isNaN(date.getTime())) {
+				return <span className='text-muted-foreground'>-</span>
+			}
+
 			return (
 				<div className='flex flex-col'>
 					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
-					<span>{format(getValue<Date>(), 'HH:mm')}</span>
 				</div>
 			)
 		},
@@ -77,10 +99,20 @@ export const UserColumns: ColumnDef<User>[] = [
 		accessorKey: 'lastLoginAt',
 		header: '最終ログイン',
 		cell: ({ getValue }) => {
+			const value = getValue<string | Date | null>()
+			if (!value) {
+				return <span className='text-muted-foreground'>未ログイン</span>
+			}
+
+			const date = new Date(value)
+			if (Number.isNaN(date.getTime())) {
+				return <span className='text-muted-foreground'>未ログイン</span>
+			}
+
 			return (
 				<div className='flex flex-col'>
-					<span>{format(getValue<Date>(), 'MM/dd/yyyy')}</span>
-					<span>{format(getValue<Date>(), 'HH:mm')}</span>
+					<span>{format(date, 'MM/dd/yyyy')}</span>
+					<span>{format(date, 'HH:mm')}</span>
 				</div>
 			)
 		},
@@ -88,7 +120,7 @@ export const UserColumns: ColumnDef<User>[] = [
 
 	{
 		id: 'actions',
-		header: 'アクション',
+		header: '操作',
 		cell: ({ row }) => {
 			const [isLoading, setIsloading] = useState<boolean>(false)
 			const user_id = row.original.id
@@ -110,7 +142,8 @@ export const UserColumns: ColumnDef<User>[] = [
 								編集
 							</Button>
 						}
-						user_data={row.original}
+						user={row.original}
+						mode='update'
 					/>
 
 					<DialogWarning
@@ -126,7 +159,7 @@ export const UserColumns: ColumnDef<User>[] = [
 								削除
 							</Button>
 						}
-						actionButtonText={'削除'}
+						actionButtonText='削除'
 						deletingText='削除中...'
 					/>
 				</div>

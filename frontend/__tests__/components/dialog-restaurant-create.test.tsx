@@ -43,8 +43,12 @@ jest.mock('@/components/ui', () => {
       ComboboxContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
       ComboboxEmpty: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
       ComboboxItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-      ComboboxList: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-      ComboboxValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
+      ComboboxList: ({ children }: { children: React.ReactNode }) => (
+        <div>{typeof children === 'function' ? children({ value: 'SUSHI', label: '寿司' }) : children}</div>
+      ),
+      ComboboxValue: ({ children, placeholder }: { children?: React.ReactNode; placeholder?: string }) => (
+        <span>{typeof children === 'function' ? children([]) : children ?? placeholder}</span>
+      ),
     Checkbox: ({ onChange, defaultChecked, id }: { onChange?: (value: boolean) => void; defaultChecked?: boolean; id?: string }) => (
       <input
         type='checkbox'
@@ -161,7 +165,6 @@ describe('DialogRestaurantCreate', () => {
           name: '銀座 鮨 さいとう',
           url: 'https://maps.example.com/store',
           area: 'GINZA',
-          genre: expect.arrayContaining(['SUSHI']),
           genres: ['SUSHI'],
           coverImage: undefined,
         }),

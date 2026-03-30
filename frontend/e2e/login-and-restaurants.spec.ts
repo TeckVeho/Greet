@@ -72,7 +72,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
               updatedAt: new Date().toISOString(),
             },
           ],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -169,7 +169,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
         body: JSON.stringify({
           success: true,
           data: items,
-          meta: { total: items.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: items.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -179,7 +179,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
     await expect(page.getByText('銀座 鮨 さいとう')).toBeVisible()
     await expect(page.getByText('赤坂 ビストロ')).toBeVisible()
 
-    await page.getByPlaceholder('店名、エリア、ジャンルで検索...').fill('銀座')
+    await page.getByPlaceholder('店名、エリア、ジャンル、住所で検索...').fill('銀座')
 
     await expect(page.getByText('銀座 鮨 さいとう')).toBeVisible()
     await expect(page.getByText('赤坂 ビストロ')).toHaveCount(0)
@@ -265,7 +265,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
         body: JSON.stringify({
           success: true,
           data: items,
-          meta: { total: items.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: items.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -359,7 +359,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
         body: JSON.stringify({
           success: true,
           data: restaurants,
-          meta: { total: restaurants.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: restaurants.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -414,7 +414,7 @@ test.describe('E2E #1-#6: login, list/search, filter, create, detail/review', ()
         body: JSON.stringify({
           success: true,
           data: [restaurant],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -548,7 +548,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: [restaurant],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -665,7 +665,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: restaurants,
-          meta: { total: restaurants.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: restaurants.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -701,7 +701,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: [],
-          meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+          meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
         }),
       })
     })
@@ -732,7 +732,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
               lastLoginAt: nowIso(),
             },
           ],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -796,7 +796,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
               updatedAt: nowIso(),
             },
           ],
-          meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -816,7 +816,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: [],
-          meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+          meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
         }),
       })
     })
@@ -909,7 +909,7 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
         body: JSON.stringify({
           success: true,
           data: items,
-          meta: { total: items.length, page: 1, limit: 10, total_pages: 1 },
+          meta: { total: items.length, page: 1, limit: 10, totalPages: 1 },
         }),
       })
     })
@@ -923,13 +923,14 @@ test.describe('E2E #7-#11: favorites, category pages, admin access, global searc
     })
 
     await page.goto('/')
+    await page.waitForSelector('header.surface-glass', { state: 'visible' })
     await page.keyboard.press('Control+K')
 
     const searchDialog = page.getByRole('dialog')
     await expect(searchDialog).toBeVisible()
-    await expect(searchDialog.getByPlaceholder('店名、エリア、ジャンルで検索...')).toBeVisible()
+    await expect(searchDialog.getByPlaceholder('店名、エリア、ジャンル、住所で検索...')).toBeVisible()
 
-    await searchDialog.getByPlaceholder('店名、エリア、ジャンルで検索...').fill('グローバル')
+    await searchDialog.getByPlaceholder('店名、エリア、ジャンル、住所で検索...').fill('グローバル')
     await expect(searchDialog.getByText('グローバル検索対象店')).toBeVisible()
     await expect(searchDialog.getByText('別の店舗')).toHaveCount(0)
 

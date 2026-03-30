@@ -2,6 +2,7 @@ import type { User } from '@prisma/client'
 import { prisma } from '../prisma'
 import { comparePassword } from '../utils/password'
 import { signJwt } from '../utils/jwt'
+import { resolveFileUrl } from './file.service'
 
 interface LoginResult {
   token: string
@@ -54,6 +55,7 @@ export async function login(email: string, password: string): Promise<LoginResul
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordHash, ...userWithoutPassword } = user
+  userWithoutPassword.avatar = (await resolveFileUrl(userWithoutPassword.avatar)) ?? null
 
   return {
     token,
@@ -81,6 +83,7 @@ export async function getCurrentUser(userId: string): Promise<UserWithCompany | 
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordHash, ...userWithoutPassword } = user
+  userWithoutPassword.avatar = (await resolveFileUrl(userWithoutPassword.avatar)) ?? null
   return userWithoutPassword
 }
 

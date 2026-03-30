@@ -1,9 +1,10 @@
 import { Prisma } from '@prisma/client'
-import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import { prisma } from '../prisma'
+import { hashPassword } from '../utils/password'
 import { ApiError } from '../utils/utils'
 import { createUserBody, listUserQuery } from '../validators/user.validator'
+import { resolveFileUrl, uploadFile } from './file.service'
 
 type Requester = {
   userId: string
@@ -12,6 +13,41 @@ type Requester = {
 }
 
 export class UserService {
+  async changePasswordByAdmin(
+    id: string,
+    passwordData: { password: string },
+    requester?: Requester,
+  ) {
+    if (!requester || requester.role !== 'admin') {
+      throw new ApiError(StatusCodes.FORBIDDEN, '管理者のみ実行できます')
+    }
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, companyId: true },
+    })
+
+    if (!targetUser) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+    }
+
+    if (requester.role !== 'admin' && targetUser.companyId !== requester.companyId) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: {
+        passwordHash: await hashPassword(passwordData.password),
+      },
+    })
+
+    return {
+      success: true,
+      data: { message: 'ユーザーのパスワードを変更しました' },
+      statusCode: StatusCodes.OK,
+    }
+  }
+
   async findAll(query: listUserQuery, requester?: Requester) {
     const requestedCompanyId = query.companyId?.trim()
     // Tenant rule: only admins may access cross-company user data.
@@ -55,7 +91,12 @@ export class UserService {
         prisma.user.count({ where: whereCondition }),
       ])
 
-      const safeData = users.map(({ passwordHash, ...user }) => user)
+      const safeData = await Promise.all(
+        users.map(async ({ passwordHash, ...user }) => ({
+          ...user,
+          avatar: await resolveFileUrl(user.avatar),
+        })),
+      )
 
       return {
         success: true,
@@ -64,7 +105,7 @@ export class UserService {
           total: totalCount,
           page,
           limit,
-          total_pages: Math.ceil(totalCount / limit),
+          totalPages: Math.ceil(totalCount / limit),
         },
         statusCode: StatusCodes.OK,
       }
@@ -94,6 +135,7 @@ export class UserService {
         throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
       }
       const { passwordHash, ...safeUser } = user
+      safeUser.avatar = (await resolveFileUrl(safeUser.avatar)) ?? null
       return { success: true, data: safeUser, statusCode: StatusCodes.OK }
     } catch (err) {
       if (err instanceof ApiError) throw err
@@ -101,14 +143,38 @@ export class UserService {
     }
   }
 
-  async create(userData: createUserBody & { companyId: string }) {
+  async create(userData: createUserBody & { companyId: string }, file?: Express.Multer.File) {
     try {
+      const [existingUser, company] = await Promise.all([
+        prisma.user.findUnique({
+          where: { email: userData.email },
+          select: { id: true },
+        }),
+        prisma.company.findUnique({
+          where: { id: userData.companyId },
+          select: { id: true },
+        }),
+      ])
+
+      if (existingUser) {
+        throw new ApiError(StatusCodes.CONFLICT, '同じメールアドレスのユーザーが既に存在します')
+      }
+
+      if (!company) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, '有効な会社IDを指定してください')
+      }
+
       const { password, ...rest } = userData
-      const hashedPassword = await bcrypt.hash(password, 12)
+      const hashedPassword = await hashPassword(password)
+      let avatarUrl = undefined
+      if (file) {
+        avatarUrl = await uploadFile(file)
+      }
       const user = await prisma.user.create({
         data: {
           ...rest,
           passwordHash: hashedPassword,
+          avatar: avatarUrl,
         },
         include: {
           company: {
@@ -120,13 +186,29 @@ export class UserService {
         },
       })
       const { passwordHash, ...safeUser } = user
+      const resolvedAvatar = await resolveFileUrl(safeUser.avatar)
+      safeUser.avatar = resolvedAvatar ?? null
       return { success: true, data: safeUser, statusCode: StatusCodes.CREATED }
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error
+      }
+
+      const prismaError = error as { code?: string }
+      if (prismaError.code === 'P2002') {
+        throw new ApiError(StatusCodes.CONFLICT, '同じメールアドレスのユーザーが既に存在します')
+      }
+
       throw new ApiError(StatusCodes.BAD_REQUEST, 'ユーザー作成に失敗しました')
     }
   }
 
-  async update(id: string, userData: Partial<createUserBody>, requester?: Requester) {
+  async update(
+    id: string,
+    userData: Partial<createUserBody>,
+    requester?: Requester,
+    file?: Express.Multer.File,
+  ) {
     try {
       const existing = await prisma.user.findUnique({ where: { id }, select: { companyId: true } })
       if (!existing) {
@@ -136,10 +218,37 @@ export class UserService {
         throw new ApiError(StatusCodes.NOT_FOUND, 'ユーザーが見つかりません')
       }
 
+      if (userData.email) {
+        const existingEmailUser = await prisma.user.findUnique({
+          where: { email: userData.email },
+          select: { id: true },
+        })
+        if (existingEmailUser && existingEmailUser.id !== id) {
+          throw new ApiError(StatusCodes.CONFLICT, '同じメールアドレスのユーザーが既に存在します')
+        }
+      }
+
+      if (userData.companyId) {
+        const company = await prisma.company.findUnique({
+          where: { id: userData.companyId },
+          select: { id: true },
+        })
+        if (!company) {
+          throw new ApiError(StatusCodes.BAD_REQUEST, '有効な会社IDを指定してください')
+        }
+      }
+
       const { password, ...rest } = userData
       const data: any = { ...rest }
       if (password) {
-        data.passwordHash = await bcrypt.hash(password, 12)
+        data.passwordHash = await hashPassword(password)
+      }
+      if (file) {
+        data.avatar = await uploadFile(file)
+      } else if (userData.avatar === 'null' || userData.avatar === null) {
+        data.avatar = null
+      } else {
+        delete data.avatar
       }
       const user = await prisma.user.update({
         where: { id },
@@ -154,8 +263,19 @@ export class UserService {
         },
       })
       const { passwordHash, ...safeUser } = user
+      const resolvedAvatar = await resolveFileUrl(safeUser.avatar)
+      safeUser.avatar = resolvedAvatar ?? null
       return { success: true, data: safeUser, statusCode: StatusCodes.OK }
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error
+      }
+
+      const prismaError = error as { code?: string }
+      if (prismaError.code === 'P2002') {
+        throw new ApiError(StatusCodes.CONFLICT, '同じメールアドレスのユーザーが既に存在します')
+      }
+
       throw new ApiError(StatusCodes.BAD_REQUEST, 'ユーザー更新に失敗しました')
     }
   }

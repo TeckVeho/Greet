@@ -2,6 +2,7 @@ import cors from 'cors'
 import 'dotenv/config'
 import express from 'express'
 import path from 'path'
+import { prisma } from './prisma'
 import {
   authRouter,
   companyRouter,
@@ -34,7 +35,18 @@ app.use('/api/favorites', favoriteRouter)
 app.use('/api/restaurants', restaurantRouter)
 app.use('/api/reviews', reviewRouter)
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Server running: http://localhost:${PORT}`)
 })
+
+async function gracefulShutdown(signal: string) {
+  // eslint-disable-next-line no-console
+  console.log(`\n${signal} received — closing DB pool and HTTP server…`)
+  server.close()
+  await prisma.$disconnect()
+  process.exit(0)
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))

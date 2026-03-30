@@ -28,7 +28,6 @@ model User {
   role         Role         @default(user)
   department   String?      @db.VarChar(100)
   avatar       String?      @db.Text
-  icon         String?      @db.VarChar(10)
   companyId    String       @map("company_id")
   
   createdAt    DateTime     @default(now()) @map("created_at")

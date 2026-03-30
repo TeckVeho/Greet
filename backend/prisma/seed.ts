@@ -3,10 +3,70 @@ import { Area, Genre, PriceRange, PrismaClient, Role } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import 'dotenv/config'
 
-const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
+const dbUrl = new URL(process.env.DATABASE_URL!)
+const adapter = new PrismaMariaDb({
+  host: dbUrl.hostname,
+  port: parseInt(dbUrl.port, 10) || 3306,
+  user: decodeURIComponent(dbUrl.username),
+  password: decodeURIComponent(dbUrl.password),
+  database: dbUrl.pathname.slice(1),
+  connectionLimit: 5,
+  idleTimeout: 60,
+  acquireTimeout: 10_000,
+  connectTimeout: 10_000,
+})
 const prisma = new PrismaClient({ adapter })
 
 const SALT_ROUNDS = 12
+
+const ADDITIONAL_COMPANY_NAMES = [
+  'エブリー二十四',
+  '株式会社ダイエックス九州',
+  '株式会社ダイエックス中四国',
+  '株式会社ダイエックス関西',
+  '株式会社ダイエックス中部',
+  '株式会社ダイエックス東京',
+  '大宝レックス株式会社',
+  'ダイセー物流株式会社',
+  'ダイセー物流',
+  'ダイセー整備株式会社',
+  'daisei every24(thailand)',
+  'pkt every24',
+  'ダイセー倉庫運輸',
+  'ダイセーエコロジー株式会社',
+  'ダイセーロジスティクス',
+  'ヒタチ',
+  'イズミ物流(株)',
+  'ダイセーセントレックス',
+  'メジャーサービスジャパン',
+  'グローバルエアカーゴ',
+  'ダイセー阿波急行',
+  'ダイセーsdc',
+  'ダイセー北海道',
+  'ダイセー日研',
+  '日新トランスポート',
+  'ダイセーフロンティア株式会社',
+  '美和流通株式会社',
+  'pt．daisei log indonesia',
+  'ダイセーロジスティクス研究所',
+  'ダイセーホールディングス株式会社',
+  'ビジュアルテクノロジー株式会社',
+  'Ｄａｉｓｅｉ　ＶＥＨＯ　Ｗｏｒｋｓ　Ｃｏ，．Ｌｔｄ',
+  'dx研究所',
+  'ジェットエイト株式会社',
+  'フーズアンドフーズ株式会社',
+  '株式会社箱根湯本ホテル',
+  '箱根暁庵株式会社',
+  '箱根ベーカリー株式会社',
+  'さざなみ南海リゾート株式会社',
+  '橋本毛織株式会社',
+  'パシフィックオーシャン株式会社',
+  '大盛丸',
+  '大宝レックス',
+  '天津大盛運輸有限公司',
+  'marco polo cargo corporation',
+  'novashield',
+]
 
 async function main() {
   const passwordHash = await bcrypt.hash('password123', SALT_ROUNDS)
@@ -39,6 +99,20 @@ async function main() {
     },
   })
 
+  await Promise.all(
+    ADDITIONAL_COMPANY_NAMES.map((name, index) =>
+      prisma.company.upsert({
+        where: { code: `DAISEI_${String(index + 1).padStart(3, '0')}` },
+        update: { name },
+        create: {
+          name,
+          code: `DAISEI_${String(index + 1).padStart(3, '0')}`,
+          icon: '🏢',
+        },
+      }),
+    ),
+  )
+
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
     update: {},
@@ -48,7 +122,6 @@ async function main() {
       name: '管理者 太郎',
       role: Role.admin,
       department: '総務部',
-      icon: '👤',
       companyId: companyGreet.id,
     },
   })
@@ -62,7 +135,6 @@ async function main() {
       name: '山田 花子',
       role: Role.user,
       department: '営業部',
-      icon: '🌸',
       companyId: companyYamada.id,
     },
   })
@@ -75,7 +147,6 @@ async function main() {
       name: '鈴木 一郎',
       role: Role.user,
       department: '営業部',
-      icon: '🌟',
       companyId: companySuzuki.id,
     },
   })
@@ -88,7 +159,6 @@ async function main() {
       name: '佐藤 次郎',
       role: Role.user,
       department: 'マーケティング部',
-      icon: '🍀',
       companyId: companyGreet.id,
     },
   })
@@ -101,7 +171,6 @@ async function main() {
       name: '田中 三郎',
       role: Role.user,
       department: '人事部',
-      icon: '📌',
       companyId: companyYamada.id,
     },
   })
@@ -114,7 +183,6 @@ async function main() {
       name: '高橋 四郎',
       role: Role.user,
       department: '開発部',
-      icon: '🔧',
       companyId: companySuzuki.id,
     },
   })
@@ -127,7 +195,6 @@ async function main() {
       name: '伊藤 五郎',
       role: Role.user,
       department: '経理部',
-      icon: '📊',
       companyId: companyGreet.id,
     },
   })
@@ -284,7 +351,6 @@ async function main() {
         name: u.name,
         role: Role.user,
         department: u.dept,
-        icon: u.icon,
         companyId: u.comp,
       },
     })

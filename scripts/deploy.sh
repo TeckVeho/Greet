@@ -1,20 +1,45 @@
 #!/usr/bin/env bash
-# ──────────────────────────────────────────────
-# Deploy script – runs on EC2 after git pull
-# Called by GitHub Actions or manually:
-#   ssh deploy@server 'cd ~/Greet && bash scripts/deploy.sh'
-# ──────────────────────────────────────────────
+
 set -euo pipefail
+trap 'echo "Deploy failed at line $LINENO with exit code $?."' ERR
 
-PROJECT_DIR="$HOME/Greet"
 DEPLOY_BRANCH="${1:-development}"
-PM2_CONFIG="ecosystem.config.js"
 
-if [ "$DEPLOY_BRANCH" = "main" ] && [ -f "$PROJECT_DIR/ecosystem.prod.config.js" ]; then
-	PM2_CONFIG="ecosystem.prod.config.js"
+case "$DEPLOY_BRANCH" in
+	main)
+		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
+		PM2_CONFIG="ecosystem.prod.config.js"
+		PM2_GREET_NAMES="greet-backend greet-frontend"
+		;;
+	stage)
+		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet-stage}"
+		PM2_CONFIG="ecosystem.stage.config.js"
+		PM2_GREET_NAMES="greet-stage-backend greet-stage-frontend"
+		;;
+	*)
+		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
+		PM2_CONFIG="ecosystem.config.js"
+		PM2_GREET_NAMES="greet-backend greet-frontend"
+		;;
+esac
+
+if [ ! -d "$PROJECT_DIR/.git" ]; then
+	if [ -d "$PROJECT_DIR" ] && [ -n "$(ls -A "$PROJECT_DIR" 2>/dev/null)" ]; then
+		echo "Project directory exists but is not a git checkout: $PROJECT_DIR"
+		echo "Please clean this directory or point PROJECT_DIR to a valid checkout."
+		exit 1
+	fi
+
+	echo "Project directory not found at $PROJECT_DIR. Cloning repository..."
+	git clone https://github.com/TeckVeho/Greet.git "$PROJECT_DIR"
 fi
 
 cd "$PROJECT_DIR"
+
+if [ ! -f "$PM2_CONFIG" ]; then
+	echo "PM2 config not found: $PROJECT_DIR/$PM2_CONFIG"
+	exit 1
+fi
 
 if ! command -v node >/dev/null 2>&1; then
 	echo "Node.js is not installed. Please install Node.js 20+ before deploy."
@@ -34,7 +59,7 @@ npm_ci_with_retry() {
 
 	cd "$dir"
 	echo "Installing ${label} dependencies..."
-	if npm ci --no-audit --no-fund; then
+	if npm ci --no-audit --no-fund --progress=false; then
 		return 0
 	fi
 
@@ -42,10 +67,68 @@ npm_ci_with_retry() {
 	rm -rf node_modules
 	npm cache clean --force
 	npm cache verify
-	npm ci --no-audit --no-fund --prefer-online --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
+	npm ci --no-audit --no-fund --progress=false --prefer-online --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
+}
+
+run_npm_script() {
+	local dir="$1"
+	local script="$2"
+	(
+		cd "$dir"
+		npm run "$script"
+	)
+}
+
+run_prisma_migrate_deploy() {
+	local dir="$1"
+	(
+		cd "$dir"
+		npx prisma migrate deploy
+	)
+}
+
+install_if_lock_changed() {
+	local dir="$1"
+	local label="$2"
+	local required_bin="${3:-}"
+	local lock_file="$dir/package-lock.json"
+	local hash_file="$dir/.package-lock.sha256"
+
+	if [ ! -f "$lock_file" ]; then
+		echo "Missing lock file for ${label}: $lock_file"
+		exit 1
+	fi
+
+	local current_hash
+	current_hash="$(sha256sum "$lock_file" | awk '{print $1}')"
+	local previous_hash=""
+	if [ -f "$hash_file" ]; then
+		previous_hash="$(cat "$hash_file" 2>/dev/null || true)"
+	fi
+
+	if [ -d "$dir/node_modules" ] && [ "$current_hash" = "$previous_hash" ]; then
+		if [ -n "$required_bin" ] && [ ! -x "$dir/$required_bin" ]; then
+			echo "Lockfile unchanged for ${label}, but required binary is missing: $dir/$required_bin"
+			echo "Reinstalling ${label} dependencies..."
+		else
+		echo "Lockfile unchanged for ${label}; skipping npm ci."
+		return 0
+		fi
+	fi
+
+	npm_ci_with_retry "$dir" "$label"
+	printf '%s\n' "$current_hash" > "$hash_file"
 }
 
 echo "=== Deploying Greet (${DEPLOY_BRANCH}) ==="
+echo "Project directory: ${PROJECT_DIR}"
+echo "PM2 config: ${PM2_CONFIG}"
+echo "Node version: $(node -v)"
+echo "npm version: $(npm -v)"
+echo "Memory snapshot:"
+free -h || true
+echo "Disk snapshot:"
+df -h || true
 
 # ── Pull latest code ──
 echo "[1/6] Pulling latest code..."
@@ -54,23 +137,57 @@ git reset --hard "origin/$DEPLOY_BRANCH"
 
 # ── Backend ──
 echo "[2/6] Installing backend dependencies..."
-npm_ci_with_retry "$PROJECT_DIR/backend" "backend"
+install_if_lock_changed "$PROJECT_DIR/backend" "backend" "node_modules/.bin/prisma"
 
 echo "[3/6] Building backend..."
-npm run build
+run_npm_script "$PROJECT_DIR/backend" "build"
 
 echo "[4/6] Running database migrations..."
-npx prisma migrate deploy 2>/dev/null || echo "No pending migrations"
+run_prisma_migrate_deploy "$PROJECT_DIR/backend" 2>/dev/null || echo "No pending migrations"
 
 # ── Frontend ──
 echo "[5/6] Installing frontend dependencies & building..."
-npm_ci_with_retry "$PROJECT_DIR/frontend" "frontend"
-npm run build
+install_if_lock_changed "$PROJECT_DIR/frontend" "frontend" "node_modules/next/dist/bin/next"
+export NEXT_TELEMETRY_DISABLED=1
+export NODE_OPTIONS="--max-old-space-size=2048"
+# Avoid stale Next artifacts causing server-action ID mismatches across deploys.
+rm -rf "$PROJECT_DIR/frontend/.next"
+run_npm_script "$PROJECT_DIR/frontend" "build"
+
+if [ ! -f "$PROJECT_DIR/frontend/node_modules/next/dist/bin/next" ]; then
+	echo "Frontend runtime binary not found after install/build: $PROJECT_DIR/frontend/node_modules/next/dist/bin/next"
+	exit 1
+fi
 
 # ── Restart PM2 ──
-echo "[6/6] Restarting PM2 processes..."
+echo "[6/6] Starting PM2 processes for Greet (delete + start from ecosystem; does not touch other apps)..."
 cd "$PROJECT_DIR"
-pm2 restart "$PM2_CONFIG" 2>/dev/null || pm2 start "$PM2_CONFIG"
-pm2 save
+
+# Some servers may not have PM2 installed yet (e.g. if `scripts/setup-server.sh`
+# wasn't run once). Install it on-demand to make deployments self-healing.
+if ! command -v pm2 >/dev/null 2>&1; then
+	echo "PM2 not found; installing..."
+	npm install -g pm2
+fi
+
+# PM2 daemon may run under a different Node than the current shell (e.g. Node 16
+# while nvm has Node 20 active). Write the absolute path so ecosystem configs can
+# set `interpreter` and bypass the daemon's own binary.
+CURRENT_NODE_BIN="$(command -v node)"
+echo "Active node: $(node -v) ($CURRENT_NODE_BIN)"
+printf '%s\n' "$CURRENT_NODE_BIN" > "$PROJECT_DIR/.node-interpreter"
+
+# Remove only Greet process names, then start fresh from the ecosystem file.
+for name in $PM2_GREET_NAMES; do
+	pm2 delete "$name" 2>/dev/null || true
+done
+pm2 start "$PM2_CONFIG" --update-env
+
+# On shared servers, avoid overwriting global dump.pm2 unless explicitly requested.
+if [ "${PM2_SAVE_AFTER_DEPLOY:-false}" = "true" ]; then
+	pm2 save
+else
+	echo "Skipping pm2 save (set PM2_SAVE_AFTER_DEPLOY=true to persist current PM2 list)."
+fi
 
 echo "=== Deploy Complete ==="

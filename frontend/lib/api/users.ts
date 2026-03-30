@@ -10,7 +10,7 @@ export interface ListMeta {
 	total: number
 	page: number
 	limit: number
-	total_pages: number
+	totalPages: number
 }
 
 export interface UsersListResponse {
@@ -46,12 +46,13 @@ export async function listUsers({
 			total: meta?.total ?? 0,
 			page: meta?.page ?? page,
 			limit: meta?.limit ?? limit,
-			total_pages: meta?.total_pages ?? 0,
+			totalPages: meta?.totalPages ?? 0,
 		},
 	}
 }
 
 export interface CreateUserPayload {
+	avatar?: File
 	email: string
 	password: string
 	name: string
@@ -63,7 +64,7 @@ export interface CreateUserPayload {
 
 export type UpdateUserPayload = Partial<CreateUserPayload>
 
-export async function createUser(payload: CreateUserPayload): Promise<User> {
+export async function createUser(payload: FormData): Promise<User> {
 	const res = await apiClient.post<ApiResponse<User>>('/users', payload)
 
 	if (!res.data.success) {
@@ -73,16 +74,27 @@ export async function createUser(payload: CreateUserPayload): Promise<User> {
 	return res.data.data
 }
 
-export async function updateUser(id: string, payload: UpdateUserPayload): Promise<User> {
+export async function updateUser(id: string, payload: FormData): Promise<User> {
 	const res = await apiClient.put<ApiResponse<User>>(`/users/${id}`, payload)
 
 	if (!res.data.success) {
 		throw new Error(res.data.error.message)
 	}
-	toast.success('ユーザー情報を更新しました。')
-	document.getElementById('dialog-update-user-close-button')?.click()
 	queryClient.invalidateQueries({ queryKey: ['users'] })
 	return res.data.data
+}
+
+export async function changeUserPassword(
+	id: string,
+	payload: { password: string },
+): Promise<void> {
+	const res = await apiClient.patch<ApiResponse<{ message: string }>>(`/users/${id}/password`, payload)
+
+	if (!res.data.success) {
+		throw new Error(res.data.error.message)
+	}
+
+	queryClient.invalidateQueries({ queryKey: ['users'] })
 }
 
 export async function deleteUser(id: string): Promise<void> {

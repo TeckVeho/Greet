@@ -1,6 +1,6 @@
 'use client'
 
-import { BadgeCheck, ChevronsUpDown, LogOut } from 'lucide-react'
+import { ChevronsUpDown, LogOut } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/lib/auth-context'
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export function NavUser({
@@ -46,7 +45,7 @@ export function NavUser({
 							className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground data-[state=open]:shadow-md'
 						>
 							<Avatar className='h-8 w-8 rounded-lg'>
-								<AvatarImage src={user.avatar} alt={user.name} />
+								<AvatarImage src={user.avatar} alt={user.name} className={'object-cover'} />
 								<AvatarFallback
 									className={cn(`text-sm leading-none rounded-lg font-medium w-8`, open && 'w-10')}
 								>
@@ -69,7 +68,7 @@ export function NavUser({
 						<DropdownMenuLabel className='p-0 font-normal'>
 							<div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
 								<Avatar className='h-8 w-8 rounded-lg'>
-									<AvatarImage src={user.avatar} alt={user.name} />
+									<AvatarImage src={user.avatar} alt={user.name} className={'object-cover'} />
 									<AvatarFallback className='rounded-lg text-sm leading-none font-medium'>
 										{user.name.charAt(0)}
 									</AvatarFallback>
@@ -80,13 +79,6 @@ export function NavUser({
 								</div>
 							</div>
 						</DropdownMenuLabel>
-						<DropdownMenuSeparator />
-						<Link href='/profile'>
-							<DropdownMenuItem>
-								<BadgeCheck />
-								プロファイル
-							</DropdownMenuItem>
-						</Link>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
 							onClick={() => {

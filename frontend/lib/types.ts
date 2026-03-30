@@ -30,7 +30,6 @@ export interface Review {
 export interface UserSummary {
 	id: string
 	name: string
-	icon?: string
 }
 
 export type Area = '銀座' | '赤坂' | '六本木' | '新橋' | '麻布' | '恵比寿' | '表参道' | 'その他'
@@ -64,7 +63,11 @@ export interface User {
 	company?: Company // 所属会社情報（結合用）
 	department?: string
 	avatar?: string // アバター画像URL
-	icon?: string // アイコン絵文字
 	createdAt: Date
 	lastLogin?: Date
+}
+export interface UserFormDialogProps {
+	mode: 'create' | 'update'
+	user?: User
+	trigger?: React.ReactNode
 }

@@ -109,7 +109,7 @@ export function DataTable<TData, TValue>({
 				</Table>
 			</div>
 			<div className='flex items-center justify-between mt-4'>
-				<span className='whitespace-nowrap'>人数 {total}</span>
+				<span className='whitespace-nowrap'>{total ?? 0} 件のユーザー</span>
 				<Pagination
 					totalPages={table.getPageCount()}
 					pageIndex={pagination.pageIndex}

@@ -48,13 +48,13 @@ export const DialogWarning: React.FC<DialogDeleteItemProps> = ({
 					<DialogTitle>{title}</DialogTitle>
 					<DialogDescription>{description}</DialogDescription>
 				</DialogHeader>
-				<DialogFooter>
-					<Button variant='denger' onClick={() => deleteAction()}>
+				<DialogFooter className='max-sm:gap-3'>
+					<DialogClose asChild>
+						<Button variant='secondary'>{cancelButtonText}</Button>
+					</DialogClose>
+					<Button variant='danger' onClick={() => deleteAction()}>
 						{deleting ? <Spinner text={deletingText} /> : actionButtonText}
 					</Button>
-					<DialogClose asChild>
-						<Button>{cancelButtonText}</Button>
-					</DialogClose>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

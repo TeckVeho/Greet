@@ -1,9 +1,9 @@
 'use client'
 
 import { DialogWarning } from '@/components/dialogs'
+import { DialogCreateReview } from '@/components/dialogs/dialog-create-review'
 import { DialogRestaurantUpdate } from '@/components/dialogs/dialog-restaurant-update'
 import { Rating } from '@/components/rating'
-import { ReviewFormDialog } from '@/components/review-form-dialog'
 import { Section } from '@/components/ui'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,12 +24,12 @@ export default function RestaurantDetailPage() {
 	const restaurantId = params.id as string
 	const router = useRouter()
 	const { user, isLoading } = useAuth()
-
 	const {
 		data: restaurant,
 		isPending: isRestaurantPending,
 		refetch,
 	} = useRestaurantsById(restaurantId)
+	const isValidDelete = user?.role === 'admin' || restaurant?.createdBy?.id === user?.id
 	const { mutateAsync: deleteRestaurant, isPending: isDeletePending } =
 		useDeleteRestaurant(restaurantId)
 	const { isFavorite, toggleFavorite } = useFavorites()
@@ -127,31 +127,33 @@ export default function RestaurantDetailPage() {
 						<div className='mb-4 flex h-16 w-16 md:h-24 md:w-24 items-center justify-center rounded-lg border border-border bg-card text-4xl shadow-md md:text-5xl'>
 							{restaurant.icon}
 						</div>
-						<div className='flex items-center gap-3'>
-							<DialogWarning
-								deleteAction={deleteRestaurant}
-								deleting={isDeletePending}
-								trigger={
-									<Button size={'icon'} variant={'denger'}>
-										<Trash2 className='size-4' />
-									</Button>
-								}
-								actionButtonText='削除'
-								deletingText=''
-								description='本当に削除したいですか？'
-								title={`${restaurant.name}を削除`}
-							/>
-							<DialogRestaurantUpdate
-								trigger={
-									<Button>
-										<Edit className='size-4' />
-										変更
-									</Button>
-								}
-								restaurant={restaurant}
-								id={restaurantId}
-							/>
-						</div>
+						{isValidDelete && (
+							<div className='flex items-center gap-3'>
+								<DialogWarning
+									deleteAction={deleteRestaurant}
+									deleting={isDeletePending}
+									trigger={
+										<Button size={'icon'} variant={'danger'}>
+											<Trash2 className='size-4' />
+										</Button>
+									}
+									actionButtonText='削除'
+									deletingText=''
+									description='本当に削除したいですか？'
+									title={`${restaurant.name}を削除`}
+								/>
+								<DialogRestaurantUpdate
+									trigger={
+										<Button>
+											<Edit className='size-4' />
+											変更
+										</Button>
+									}
+									restaurant={restaurant}
+									id={restaurantId}
+								/>
+							</div>
+						)}
 					</div>
 					<div className='mb-2 flex items-center gap-3'>
 						<h1 className='text-2xl md:text-4xl font-bold text-foreground'>{restaurant.name}</h1>
@@ -187,7 +189,7 @@ export default function RestaurantDetailPage() {
 
 					<div className='flex items-start gap-3'>
 						<div className='w-24 shrink-0 text-sm font-medium text-muted-foreground'>価格帯</div>
-						<div className='flex-1 text-sm font-semibold text-foreground'>
+						<div className='flex-1 text-sm text-foreground'>
 							{priceRangeLabel(restaurant.priceRange)}
 						</div>
 					</div>
@@ -257,13 +259,8 @@ export default function RestaurantDetailPage() {
 						<div className='space-y-4'>
 							{restaurant.reviews.map(review => {
 								const authorName = review.author?.name ?? '削除済みユーザー'
-								const nameIcon = (
-									<div className='flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium text-foreground'>
-										{review.author?.icon ?? authorName.charAt(0)}
-									</div>
-								)
 								return (
-									<Callout key={review.id} icon={nameIcon}>
+									<Callout key={review.id}>
 										<div className='space-y-2'>
 											<div className='flex items-center justify-between'>
 												<div className='flex flex-wrap items-center gap-2'>
@@ -316,10 +313,9 @@ export default function RestaurantDetailPage() {
 
 			{/* レビュー投稿ダイアログ */}
 			{restaurant && (
-				<ReviewFormDialog
+				<DialogCreateReview
 					open={isReviewDialogOpen}
 					onOpenChange={setIsReviewDialogOpen}
-					restaurantId={restaurant.id}
 					onSubmit={handleReviewSubmit}
 				/>
 			)}

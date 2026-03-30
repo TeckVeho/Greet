@@ -14,7 +14,7 @@ function Spinner({
 				<Loader2Icon
 					role='status'
 					aria-label='Loading'
-					className={cn('size-8 animate-spin text-black', className)}
+					className={cn('size-8 animate-spin', className)}
 					{...props}
 				/>
 			</div>

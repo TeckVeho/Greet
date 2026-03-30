@@ -34,7 +34,6 @@ interface DataTableProps<TData, TValue> {
 	pagination?: PaginationState
 	total?: number
 	isLoading?: boolean
-	totlaHidden?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -46,8 +45,9 @@ export function DataTable<TData, TValue>({
 	isLoading,
 }: DataTableProps<TData, TValue>) {
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+	const safeData = Array.isArray(data) ? data : []
 	const table = useReactTable({
-		data,
+		data: safeData,
 		columns,
 		rowCount: total,
 		state: {
@@ -59,9 +59,10 @@ export function DataTable<TData, TValue>({
 		onColumnVisibilityChange: setColumnVisibility,
 		manualPagination: true,
 	})
+	const rows = table.getRowModel()?.rows ?? []
 	return (
 		<>
-			<div className='overflow-hidden border border-muted-foreground/30 rounded-lg relative'>
+			<div className='overflow-x-auto border border-muted-foreground/30 rounded-lg relative '>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild className='absolute top-1 right-1 z-10'>
 						<Button variant='default' className='rounded-full' size={'icon'}>
@@ -80,13 +81,15 @@ export function DataTable<TData, TValue>({
 										checked={column.getIsVisible()}
 										onCheckedChange={value => column.toggleVisibility(!!value)}
 									>
-										{column.id}
+										{typeof column.columnDef.header === 'string'
+											? column.columnDef.header
+											: column.id}
 									</DropdownMenuCheckboxItem>
 								)
 							})}
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<Table>
+				<Table className='min-w-max'>
 					<TableHeader className='bg-muted/60'>
 						{table.getHeaderGroups().map(headerGroup => (
 							<TableRow key={headerGroup.id} className='hover:bg-transparent'>
@@ -113,15 +116,15 @@ export function DataTable<TData, TValue>({
 									</TableCell>
 								</TableRow>
 							))
-						) : table.getRowModel().rows?.length ? (
-							table.getRowModel().rows.map(row => (
+						) : rows.length > 0 ? (
+							rows.map(row => (
 								<TableRow
 									key={row.id}
 									data-state={row.getIsSelected() && 'selected'}
 									className='transition-colors hover:bg-muted/40'
 								>
 									{row.getVisibleCells().map(cell => (
-										<TableCell key={cell.id} className='text-sm'>
+										<TableCell key={cell.id} className='text-sm whitespace-nowrap'>
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}
 										</TableCell>
 									))}
@@ -142,24 +145,21 @@ export function DataTable<TData, TValue>({
 					</TableBody>
 				</Table>
 			</div>
-			{typeof pagination?.pageIndex === 'number' &&
-				typeof pagination?.pageSize === 'number' &&
-				setPagination && (
-					<div className='flex items-center justify-between mt-4'>
-						<span className='whitespace-nowrap'>飲食店数 {total}</span>
-						{typeof pagination?.pageIndex === 'number' &&
-							typeof pagination.pageSize === 'number' &&
-							setPagination && (
-								<Pagination
-									totalPages={table.getPageCount()}
-									pageIndex={pagination.pageIndex}
-									pageSize={pagination.pageSize}
-									onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
-									onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
-								/>
-							)}
-					</div>
-				)}
+
+			<div className='flex items-center justify-between mt-4'>
+				<span className='whitespace-nowrap'>{total} 件の飲食店</span>
+				{typeof pagination?.pageIndex === 'number' &&
+					typeof pagination.pageSize === 'number' &&
+					setPagination && (
+						<Pagination
+							totalPages={table.getPageCount()}
+							pageIndex={pagination.pageIndex}
+							pageSize={pagination.pageSize}
+							onPageChange={pageIndex => setPagination(prev => ({ ...prev, pageIndex }))}
+							onPageSizeChange={pageSize => setPagination({ pageIndex: 0, pageSize })}
+						/>
+					)}
+			</div>
 		</>
 	)
 }

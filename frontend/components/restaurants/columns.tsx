@@ -8,7 +8,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { Check, X } from 'lucide-react'
 import Link from 'next/link'
-import { Rating } from '../rating'
+import { OutlineStar, Rating } from '../rating'
 import { SheetReviewView } from '../sheets/sheet-review-view'
 export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	{
@@ -27,7 +27,11 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 					}}
 					className='h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-border/70 bg-card/90 shadow-sm transition-colors hover:bg-card'
 				>
-					<Rating rate={isFav ? 1 : 0} max={1} className='[&_svg]:size-5! [&>div]:size-5! ' />
+					{isFav ? (
+						<Rating rate={1} max={1} className='[&_svg]:size-5! [&>div]:size-5!' />
+					) : (
+						<OutlineStar className='[&_svg]:size-5! [&>div]:size-5!' />
+					)}
 				</Badge>
 			)
 		},
@@ -159,9 +163,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 					{reviews.map((review, index) => (
 						<Avatar className='shadow-sm hover:z-10 ' key={index}>
 							<AvatarFallback className='bg-muted text-[10px]'>
-								{review.author?.icon
-									? review.author.icon
-									: (review.author?.name?.charAt(0) ?? '退')}
+								{review.author?.name?.charAt(0) ?? '退'}
 							</AvatarFallback>
 						</Avatar>
 					))}
@@ -179,10 +181,10 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	},
 	{
 		accessorKey: 'url',
-		header: 'URL',
+		header: '地図',
 		cell: ({ getValue }) => {
 			const url = getValue<string>()
-			return (
+			return url ? (
 				<a
 					href={url}
 					target='_blank'
@@ -191,7 +193,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 				>
 					Google Mapで見る
 				</a>
-			)
+			) : null
 		},
 	},
 	{

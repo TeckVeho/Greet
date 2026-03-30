@@ -5,9 +5,10 @@ import { adminMiddleware } from '../middleware/admin.middleware'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { errorMiddleware } from '../middleware/error.middleware'
 import { upload } from '../middleware/upload.middleware'
-import { validateBody, validateParams } from '../middleware/validate.middleware'
+import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware'
 import {
   createRestaurantSchema,
+  listRestaurantsQuerySchema,
   restaurantIdSchema,
   updateRestaurantSchema,
 } from '../validators/restaurant.validator'
@@ -18,7 +19,7 @@ const router = Router()
 router.use(authMiddleware)
 
 // GET /api/restaurants
-router.get('/', restaurantController.getRestaurants)
+router.get('/', validateQuery(listRestaurantsQuerySchema), restaurantController.getRestaurants)
 
 // POST /api/restaurants
 router.post('/', validateBody(createRestaurantSchema), restaurantController.createRestaurant)
@@ -30,7 +31,11 @@ router.post('/upload-image', upload.single('image'), restaurantController.upload
 router.post('/delete-image', restaurantController.deleteImage)
 
 // GET /api/restaurants/:id
-router.get('/:restaurantId', validateParams(restaurantIdSchema), restaurantController.getRestaurantById)
+router.get(
+  '/:restaurantId',
+  validateParams(restaurantIdSchema),
+  restaurantController.getRestaurantById,
+)
 
 // PUT /api/restaurants/:id
 router.put(

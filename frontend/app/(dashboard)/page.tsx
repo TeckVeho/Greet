@@ -6,7 +6,8 @@ import {
 	type FilterState,
 } from '@/components/dialogs'
 import { DataCards, DataTable, RestaurantColumns, SearchFilterBar } from '@/components/restaurants'
-import { Section, Spinner } from '@/components/ui'
+import { Button, Section, Spinner } from '@/components/ui'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useRestaurants } from '@/hooks/use-restaurants'
 import { useAuth } from '@/lib/auth-context'
 import { type SortOption } from '@/lib/utils'
@@ -14,8 +15,10 @@ import { PaginationState } from '@tanstack/react-table'
 import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 
 export default function Home() {
+	const isMobile = useIsMobile()
 	const router = useRouter()
 	const [pagination, setPagination] = React.useState<PaginationState>({
 		pageIndex: 0,
@@ -88,7 +91,7 @@ export default function Home() {
 
 	return (
 		<>
-			<Section>
+			<Section className='relative'>
 				{/* ページヘッダー */}
 				<div className='mb-8'>
 					<div className='mb-2 flex items-center gap-2'>
@@ -112,9 +115,9 @@ export default function Home() {
 				/>
 
 				{/* テーブル/カード表示（モバイルは常にカード） */}
-				{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
+				{viewMode === 'cards' || isMobile ? (
 					<DataCards
-						data={restaurants?.data!}
+						data={restaurants?.data ?? []}
 						pagination={pagination}
 						setPagination={setPagination}
 						total={restaurants?.meta?.total}
@@ -123,7 +126,7 @@ export default function Home() {
 				) : (
 					<DataTable
 						columns={RestaurantColumns}
-						data={restaurants?.data!}
+						data={restaurants?.data ?? []}
 						pagination={pagination}
 						setPagination={setPagination}
 						total={restaurants?.meta?.total}
@@ -136,13 +139,15 @@ export default function Home() {
 			</Section>
 
 			{/* モバイル用固定CTAボタン */}
-			<button
-				onClick={handleNewRestaurant}
-				className='md:hidden fixed bottom-4 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all'
-				aria-label='新規登録'
-			>
-				<Plus />
-			</button>
+			{createPortal(
+				<Button
+					onClick={handleNewRestaurant}
+					className='md:hidden fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full'
+				>
+					<Plus />
+				</Button>,
+				document.body,
+			)}
 
 			{/* 新規登録モーダル */}
 			<DialogRestaurantCreate open={isDialogOpen} onOpenChange={setIsDialogOpen} />
