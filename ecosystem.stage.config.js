@@ -18,6 +18,7 @@ module.exports = {
     {
       name: 'greet-stage-backend',
       interpreter: nodeInterpreter,
+      exec_mode: 'fork',
       cwd: './backend',
       script: 'dist/index.js',
       node_args: '--experimental-wasm-gc',
@@ -32,6 +33,7 @@ module.exports = {
     {
       name: 'greet-stage-frontend',
       interpreter: nodeInterpreter,
+      exec_mode: 'fork',
       cwd: './frontend',
       script: 'node_modules/next/dist/bin/next',
       args: 'start -p 3302',
