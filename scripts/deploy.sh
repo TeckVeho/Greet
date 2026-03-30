@@ -170,10 +170,14 @@ if ! command -v pm2 >/dev/null 2>&1; then
 	npm install -g pm2
 fi
 
-# PM2 keeps stale script/cwd in RAM after dump/resurrect; `restart` does not always
-# re-read the ecosystem file. Remove only Greet process names, then start from file.
+# PM2 daemon may run under a different Node than the current shell (e.g. Node 16
+# while nvm has Node 20 active). Write the absolute path so ecosystem configs can
+# set `interpreter` and bypass the daemon's own binary.
 CURRENT_NODE_BIN="$(command -v node)"
 echo "Active node: $(node -v) ($CURRENT_NODE_BIN)"
+printf '%s\n' "$CURRENT_NODE_BIN" > "$PROJECT_DIR/.node-interpreter"
+
+# Remove only Greet process names, then start fresh from the ecosystem file.
 for name in $PM2_GREET_NAMES; do
 	pm2 delete "$name" 2>/dev/null || true
 done

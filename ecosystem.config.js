@@ -2,10 +2,21 @@
 // Usage: pm2 start ecosystem.config.js
 // Env vars are loaded from each app's .env file.
 
+const fs = require('fs')
+const path = require('path')
+
+let nodeInterpreter = 'node'
+try {
+  nodeInterpreter = fs
+    .readFileSync(path.join(__dirname, '.node-interpreter'), 'utf8')
+    .trim()
+} catch {}
+
 module.exports = {
   apps: [
     {
       name: 'greet-backend',
+      interpreter: nodeInterpreter,
       cwd: './backend',
       script: 'dist/index.js',
       node_args: '--experimental-wasm-gc',
@@ -16,8 +27,8 @@ module.exports = {
     },
     {
       name: 'greet-frontend',
+      interpreter: nodeInterpreter,
       cwd: './frontend',
-      // PM2 runs a real JS file reliably; the .bin/next shim can be mis-resolved after resurrect.
       script: 'node_modules/next/dist/bin/next',
       args: 'start -p 3002',
       instances: 1,

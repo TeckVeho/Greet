@@ -27,3 +27,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Written by deploy.sh so ecosystem configs can pin the Node interpreter
+.node-interpreter
