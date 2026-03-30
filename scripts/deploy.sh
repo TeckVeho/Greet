@@ -9,14 +9,17 @@ case "$DEPLOY_BRANCH" in
 	main)
 		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
 		PM2_CONFIG="ecosystem.prod.config.js"
+		PM2_GREET_NAMES="greet-backend greet-frontend"
 		;;
 	stage)
 		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet-stage}"
 		PM2_CONFIG="ecosystem.stage.config.js"
+		PM2_GREET_NAMES="greet-stage-backend greet-stage-frontend"
 		;;
 	*)
 		PROJECT_DIR="${PROJECT_DIR:-$HOME/Greet}"
 		PM2_CONFIG="ecosystem.config.js"
+		PM2_GREET_NAMES="greet-backend greet-frontend"
 		;;
 esac
 
@@ -144,20 +147,20 @@ run_prisma_migrate_deploy "$PROJECT_DIR/backend" 2>/dev/null || echo "No pending
 
 # ── Frontend ──
 echo "[5/6] Installing frontend dependencies & building..."
-install_if_lock_changed "$PROJECT_DIR/frontend" "frontend" "node_modules/.bin/next"
+install_if_lock_changed "$PROJECT_DIR/frontend" "frontend" "node_modules/next/dist/bin/next"
 export NEXT_TELEMETRY_DISABLED=1
 export NODE_OPTIONS="--max-old-space-size=2048"
 # Avoid stale Next artifacts causing server-action ID mismatches across deploys.
 rm -rf "$PROJECT_DIR/frontend/.next"
 run_npm_script "$PROJECT_DIR/frontend" "build"
 
-if [ ! -x "$PROJECT_DIR/frontend/node_modules/.bin/next" ]; then
-	echo "Frontend runtime binary not found after install/build: $PROJECT_DIR/frontend/node_modules/.bin/next"
+if [ ! -f "$PROJECT_DIR/frontend/node_modules/next/dist/bin/next" ]; then
+	echo "Frontend runtime binary not found after install/build: $PROJECT_DIR/frontend/node_modules/next/dist/bin/next"
 	exit 1
 fi
 
 # ── Restart PM2 ──
-echo "[6/6] Restarting PM2 processes..."
+echo "[6/6] Starting PM2 processes for Greet (delete + start from ecosystem; does not touch other apps)..."
 cd "$PROJECT_DIR"
 
 # Some servers may not have PM2 installed yet (e.g. if `scripts/setup-server.sh`
@@ -167,10 +170,14 @@ if ! command -v pm2 >/dev/null 2>&1; then
 	npm install -g pm2
 fi
 
-# PM2 runs as a daemon; refresh app env on restart without daemon-wide update.
+# PM2 keeps stale script/cwd in RAM after dump/resurrect; `restart` does not always
+# re-read the ecosystem file. Remove only Greet process names, then start from file.
 CURRENT_NODE_BIN="$(command -v node)"
 echo "Active node: $(node -v) ($CURRENT_NODE_BIN)"
-pm2 restart "$PM2_CONFIG" --update-env 2>/dev/null || pm2 start "$PM2_CONFIG" --update-env
+for name in $PM2_GREET_NAMES; do
+	pm2 delete "$name" 2>/dev/null || true
+done
+pm2 start "$PM2_CONFIG" --update-env
 
 # On shared servers, avoid overwriting global dump.pm2 unless explicitly requested.
 if [ "${PM2_SAVE_AFTER_DEPLOY:-false}" = "true" ]; then

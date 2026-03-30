@@ -17,7 +17,8 @@ module.exports = {
     {
       name: 'greet-frontend',
       cwd: './frontend',
-      script: 'node_modules/.bin/next',
+      // PM2 runs a real JS file reliably; the .bin/next shim can be mis-resolved after resurrect.
+      script: 'node_modules/next/dist/bin/next',
       args: 'start -p 3002',
       instances: 1,
       autorestart: true,
