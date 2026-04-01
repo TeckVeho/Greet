@@ -63,7 +63,10 @@ export const favoriteRestaurantsColumns: ColumnDef<Restaurant>[] = [
 		cell: ({ getValue, row }) => {
 			const name = getValue<string>()
 			return (
-				<Link href={`/restaurants/${row.original.id}`} className='font-medium  hover:text-blue-500'>
+				<Link
+					href={`/restaurants/${row.original.id}`}
+					className='font-medium hover:text-blue-500 whitespace-nowrap'
+				>
 					{row.original.icon} {name}
 				</Link>
 			)
@@ -118,7 +121,11 @@ export const favoriteRestaurantsColumns: ColumnDef<Restaurant>[] = [
 		header: '住所',
 		cell: ({ getValue }) => {
 			const address = getValue<string>()
-			return address ? <span>{address}</span> : <Badge variant={'danger'}>なし</Badge>
+			return address ? (
+				<span className='whitespace-nowrap'>{address}</span>
+			) : (
+				<Badge variant={'danger'}>なし</Badge>
+			)
 		},
 	},
 	{
@@ -126,7 +133,11 @@ export const favoriteRestaurantsColumns: ColumnDef<Restaurant>[] = [
 		header: '電話番号',
 		cell: ({ getValue }) => {
 			const phone = getValue<string>()
-			return phone ? <span>{phone}</span> : <Badge variant={'danger'}>なし</Badge>
+			return phone ? (
+				<span className='whitespace-nowrap'>{phone}</span>
+			) : (
+				<Badge variant={'danger'}>なし</Badge>
+			)
 		},
 	},
 	{

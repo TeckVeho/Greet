@@ -49,19 +49,19 @@ export const SheetReviewView: React.FC<{ trigger: ReactNode; reviews: Review[] |
 									<div className='space-y-2'>
 										<div className='flex items-center justify-between'>
 											<div className='flex flex-wrap items-center gap-2'>
-												<div className='font-semibold text-zinc-900'>{authorName}</div>
+												<div className='font-semibold text-access'>{authorName}</div>
 											</div>
-											<div className='text-xs text-zinc-500'>
+											<div className='text-xs text-muted-foreground'>
 												{new Date(review.createdAt).toLocaleDateString('ja-JP')}
 											</div>
 										</div>
-										<div className='text-sm text-zinc-700'>
+										<div className='text-sm text-muted-foreground'>
 											<div className='mb-2'>
-												<span className='font-medium text-zinc-900'>利用シーン：</span>
+												<span className='font-medium text-muted-foreground'>利用シーン：</span>
 												{review.occasion}
 											</div>
 											<div>
-												<span className='font-medium text-zinc-900'>結果：</span>
+												<span className='font-medium text-muted-foreground'>結果：</span>
 												{review.result}
 											</div>
 										</div>

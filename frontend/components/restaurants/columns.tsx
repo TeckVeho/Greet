@@ -181,7 +181,7 @@ export const RestaurantColumns: ColumnDef<Restaurant>[] = [
 	},
 	{
 		accessorKey: 'url',
-		header: '地図',
+		header: 'Google Map URL',
 		cell: ({ getValue }) => {
 			const url = getValue<string>()
 			return url ? (

@@ -133,8 +133,8 @@ export default function GenrePage() {
 								<Button
 									key={genre}
 									onClick={() => setSelectedGenre(genre)}
-									className={colorClass}
-									variant={selectedGenre === genre ? 'default' : 'ghost'}
+									// className={colorClass}
+									variant={selectedGenre === genre ? 'default' : 'secondary'}
 								>
 									{genreLabel(genre)}
 									<span className='ml-1.5 text-xs opacity-70'>({count})</span>
