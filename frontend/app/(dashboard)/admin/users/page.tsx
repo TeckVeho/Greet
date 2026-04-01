@@ -123,7 +123,7 @@ export default function UsersPage() {
 							mode='create'
 							trigger={
 								<Button>
-									<Plus />
+									<Plus className={'size-4'} />
 									新規ユーザー
 								</Button>
 							}

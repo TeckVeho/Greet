@@ -29,12 +29,12 @@ import { useChangeUserPassword, useCreateUser, useUpdateUser } from '@/hooks/use
 
 import { UserFormDialogProps } from '@/lib/types'
 import { onError } from '@/lib/utils'
-import { toast } from 'sonner'
 import { schemaCreate, schemaUpdate } from '@/schemas/user.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import * as React from 'react'
 import { useForm, UseFormReturn } from 'react-hook-form'
+import { toast } from 'sonner'
 import z from 'zod'
 import { ButtonRemoveImage } from '../button-remove'
 
@@ -45,7 +45,9 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 	const { data: companiesData, isPending: isPendingCompanies } = useCompanies()
 	const { mutateAsync: createUser, isPending: creating } = useCreateUser()
 	const { mutateAsync: updateUser, isPending: updating } = useUpdateUser(user?.id)
-	const { mutateAsync: changeUserPassword, isPending: changingPassword } = useChangeUserPassword(user?.id)
+	const { mutateAsync: changeUserPassword, isPending: changingPassword } = useChangeUserPassword(
+		user?.id,
+	)
 	const formCreateUser = useForm<UserCreateFormData>({
 		mode: 'onSubmit',
 		defaultValues: {
@@ -134,17 +136,17 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 					<DialogTitle>{mode === 'create' ? '新規ユーザー登録' : 'ユーザー情報編集'}</DialogTitle>
 				</DialogHeader>
 				<ScrollArea className='max-h-[75vh]'>
-				<FormUi {...form}>
-					<form
-						id='form-user'
-						className='pr-4'
-						onSubmit={
-							mode === 'update'
-								? formUpdateUser.handleSubmit(onSubmit, onError)
-								: formCreateUser.handleSubmit(onSubmit, onError)
-						}
-					>
-						<DialogBody>
+					<FormUi {...form}>
+						<form
+							id='form-user'
+							className='pr-4'
+							onSubmit={
+								mode === 'update'
+									? formUpdateUser.handleSubmit(onSubmit, onError)
+									: formCreateUser.handleSubmit(onSubmit, onError)
+							}
+						>
+							<DialogBody>
 								<div className='space-y-4'>
 									{/* avatar */}
 									<FormField
@@ -361,9 +363,9 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 										/>
 									)}
 								</div>
-						</DialogBody>
-					</form>
-				</FormUi>
+							</DialogBody>
+						</form>
+					</FormUi>
 				</ScrollArea>
 				<DialogFooter className='max-sm:gap-3'>
 					<Button
@@ -374,7 +376,11 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 					>
 						キャンセル
 					</Button>
-					<Button type='submit' form='form-user' disabled={creating || updating || changingPassword}>
+					<Button
+						type='submit'
+						form='form-user'
+						disabled={creating || updating || changingPassword}
+					>
 						{creating || updating || changingPassword
 							? '保存中...'
 							: mode === 'create'
