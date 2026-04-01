@@ -135,7 +135,7 @@ export function DialogUserCreateOrUpdate({ mode, user, trigger }: UserFormDialog
 				<DialogHeader>
 					<DialogTitle>{mode === 'create' ? '新規ユーザー登録' : 'ユーザー情報編集'}</DialogTitle>
 				</DialogHeader>
-				<ScrollArea className='max-h-[75vh]'>
+				<ScrollArea className='max-h-[60vh]'>
 					<FormUi {...form}>
 						<form
 							id='form-user'

@@ -181,7 +181,7 @@ export const DialogRestaurantUpdate: React.FC<{
 				<DialogHeader className='px-5'>
 					<DialogTitle>飲食店情報を更新</DialogTitle>
 				</DialogHeader>
-				<ScrollArea className='max-h-[75vh]'>
+				<ScrollArea className='max-h-[60vh]'>
 					<Form {...form}>
 						<form
 							onSubmit={form.handleSubmit(onSubmit, onError)}

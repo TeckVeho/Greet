@@ -163,7 +163,7 @@ export function DialogRestaurantCreate({ open, onOpenChange }: RestaurantFormDia
 				<DialogHeader className='px-5'>
 					<DialogTitle>新規飲食店登録</DialogTitle>
 				</DialogHeader>
-				<ScrollArea className='max-h-[75vh]'>
+				<ScrollArea className='max-h-[60vh]'>
 					<Form {...form}>
 						<form
 							onSubmit={form.handleSubmit(onSubmit, onError)}
