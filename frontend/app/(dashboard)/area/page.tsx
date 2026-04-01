@@ -18,15 +18,16 @@ import { useAuth } from '@/lib/auth-context'
 import { areaLabel, sortOptions } from '@/lib/constants'
 import type { Area } from '@/lib/types'
 import { sortRestaurants, type SortOption } from '@/lib/utils'
+import { useStore } from '@/store/store'
 import { LayoutGrid, Table } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
 export default function AreaPage() {
+	const { areaViewFormat, setAreaViewFormat } = useStore()
 	const router = useRouter()
 	const { user, isLoading: isAuthLoading } = useAuth()
 	const [selectedArea, setSelectedArea] = React.useState<Area | 'all'>('all')
-	const [viewMode, setViewMode] = React.useState<'table' | 'cards'>('cards')
 	const [sortOption, setSortOption] = React.useState<SortOption>('createdAt_desc')
 
 	// 認証チェック
@@ -132,16 +133,16 @@ export default function AreaPage() {
 						</Select>
 						<div className='hidden md:flex items-center rounded-md overflow-hidden'>
 							<Button
-								onClick={() => setViewMode('table')}
-								variant={viewMode === 'table' ? 'default' : 'secondary'}
+								onClick={() => setAreaViewFormat('cards')}
+								variant={areaViewFormat === 'cards' ? 'default' : 'secondary'}
 								className='rounded-r-none'
 								title='テーブル表示'
 							>
 								<LayoutGrid className={'size-4'} />
 							</Button>
 							<Button
-								onClick={() => setViewMode('cards')}
-								variant={viewMode === 'cards' ? 'default' : 'secondary'}
+								onClick={() => setAreaViewFormat('table')}
+								variant={areaViewFormat === 'table' ? 'default' : 'secondary'}
 								title='テーブル表示'
 								className='rounded-l-none'
 							>
@@ -164,7 +165,7 @@ export default function AreaPage() {
 									<Badge variant='default'>{restaurants.length}件</Badge>
 								</div>
 								{/* モバイルは常にカード表示 */}
-								{viewMode === 'cards' ||
+								{areaViewFormat === 'cards' ||
 								(typeof window !== 'undefined' && window.innerWidth < 768) ? (
 									<DataCards data={restaurants} />
 								) : (
@@ -179,7 +180,8 @@ export default function AreaPage() {
 			) : (
 				<>
 					{/* 特定エリアのテーブル/カード表示（モバイルは常にカード） */}
-					{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
+					{areaViewFormat === 'cards' ||
+					(typeof window !== 'undefined' && window.innerWidth < 768) ? (
 						<DataCards data={displayedRestaurants} />
 					) : (
 						<div className='rounded-lg border border-border bg-card'>

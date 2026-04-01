@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { useRestaurants } from '@/hooks/use-restaurants'
 import { useAuth } from '@/lib/auth-context'
 import { type SortOption } from '@/lib/utils'
+import { useStore } from '@/store/store'
 import { PaginationState } from '@tanstack/react-table'
 import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -18,6 +19,7 @@ import * as React from 'react'
 import { createPortal } from 'react-dom'
 
 export default function Home() {
+	const { restaurantsViewFormat, setRestaurantsViewFormat } = useStore()
 	const isMobile = useIsMobile()
 	const router = useRouter()
 	const [pagination, setPagination] = React.useState<PaginationState>({
@@ -29,7 +31,6 @@ export default function Home() {
 	const [isDialogOpen, setIsDialogOpen] = React.useState(false)
 	const [isFilterOpen, setIsFilterOpen] = React.useState(false)
 	// モバイルでは常にカード表示
-	const [viewMode, setViewMode] = React.useState<'table' | 'cards'>('table')
 	const [filterState, setFilterState] = React.useState<FilterState>({
 		areas: [],
 		genres: [],
@@ -108,14 +109,14 @@ export default function Home() {
 					onFilterClick={handleFilterClick}
 					onNewClick={handleNewRestaurant}
 					activeFilterCount={activeFilterCount}
-					viewMode={viewMode}
-					onViewModeChange={setViewMode}
+					viewMode={restaurantsViewFormat}
+					onViewModeChange={setRestaurantsViewFormat}
 					sortOption={sortOption}
 					onSortChange={setSortOption}
 				/>
 
 				{/* テーブル/カード表示（モバイルは常にカード） */}
-				{viewMode === 'cards' || isMobile ? (
+				{restaurantsViewFormat === 'cards' || isMobile ? (
 					<DataCards
 						data={restaurants?.data ?? []}
 						pagination={pagination}

@@ -17,6 +17,7 @@ import { listRestaurants, type RestaurantListItem } from '@/lib/api/restaurants'
 import { useAuth } from '@/lib/auth-context'
 import { genreLabel, sortOptions } from '@/lib/constants'
 import { sortRestaurants, type SortOption } from '@/lib/utils'
+import { useStore } from '@/store/store'
 import { useQuery } from '@tanstack/react-query'
 import { LayoutGrid, Table } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -36,10 +37,10 @@ const genreColors: Record<string, string> = {
 }
 
 export default function GenrePage() {
+	const { genreViewFormat, setGenreViewFormat } = useStore()
 	const router = useRouter()
 	const { user, isLoading: isAuthLoading } = useAuth()
 	const [selectedGenre, setSelectedGenre] = React.useState<string>('all')
-	const [viewMode, setViewMode] = React.useState<'table' | 'cards'>('cards')
 	const [sortOption, setSortOption] = React.useState<SortOption>('createdAt_desc')
 
 	// 認証チェック
@@ -160,16 +161,16 @@ export default function GenrePage() {
 						</Select>
 						<div className='hidden md:flex items-center rounded-md overflow-hidden'>
 							<Button
-								onClick={() => setViewMode('cards')}
-								variant={viewMode === 'cards' ? 'default' : 'secondary'}
+								onClick={() => setGenreViewFormat('cards')}
+								variant={genreViewFormat === 'cards' ? 'default' : 'secondary'}
 								className='rounded-r-none'
 								title='テーブル表示'
 							>
 								<LayoutGrid className={'size-4'} />
 							</Button>
 							<Button
-								onClick={() => setViewMode('table')}
-								variant={viewMode === 'table' ? 'default' : 'secondary'}
+								onClick={() => setGenreViewFormat('table')}
+								variant={genreViewFormat === 'table' ? 'default' : 'secondary'}
 								title='テーブル表示'
 								className='rounded-l-none'
 							>
@@ -195,7 +196,7 @@ export default function GenrePage() {
 									<Badge variant='default'>{genreRestaurants.length}件</Badge>
 								</div>
 								{/* モバイルは常にカード表示 */}
-								{viewMode === 'cards' ||
+								{genreViewFormat === 'cards' ||
 								(typeof window !== 'undefined' && window.innerWidth < 768) ? (
 									<DataCards data={genreRestaurants} total={genreRestaurants.length} />
 								) : (
@@ -212,7 +213,8 @@ export default function GenrePage() {
 			) : (
 				<>
 					{/* 特定ジャンルのテーブル/カード表示（モバイルは常にカード） */}
-					{viewMode === 'cards' || (typeof window !== 'undefined' && window.innerWidth < 768) ? (
+					{genreViewFormat === 'cards' ||
+					(typeof window !== 'undefined' && window.innerWidth < 768) ? (
 						<DataCards data={displayedRestaurants} total={displayedRestaurants.length} />
 					) : (
 						<DataTable

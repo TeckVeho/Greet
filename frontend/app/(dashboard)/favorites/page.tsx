@@ -8,16 +8,17 @@ import { useFavoriteRestaurants } from '@/hooks/use-favorite-restaurants'
 import { useIsMobile } from '@/hooks/use-mobile'
 import type { RestaurantListItem } from '@/lib/api/restaurants'
 import { useAuth } from '@/lib/auth-context'
+import { useStore } from '@/store/store'
 import { PaginationState } from '@tanstack/react-table'
 import { LayoutGrid, Table } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
 export default function FavoritesPage() {
+	const { favoriteRestaurantsViewFormat, setFavoriteRestaurantsViewFormat } = useStore()
 	const router = useRouter()
 	const isMobile = useIsMobile()
 	const { user, isLoading: isAuthLoading } = useAuth()
-	const [viewMode, setViewMode] = React.useState<'table' | 'cards'>('cards')
 	const [pagination, setPagination] = React.useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: 10,
@@ -58,16 +59,16 @@ export default function FavoritesPage() {
 					{favoriteItems?.data?.length && favoriteItems?.data?.length > 0 && (
 						<div className='hidden md:flex items-center rounded-md overflow-hidden self-end md:self-auto'>
 							<Button
-								onClick={() => setViewMode('cards')}
-								variant={viewMode === 'table' ? 'secondary' : 'default'}
+								onClick={() => setFavoriteRestaurantsViewFormat('cards')}
+								variant={favoriteRestaurantsViewFormat === 'table' ? 'secondary' : 'default'}
 								className='rounded-r-none'
 								title='カード表示'
 							>
 								<LayoutGrid className={'size-4'} />
 							</Button>
 							<Button
-								onClick={() => setViewMode('table')}
-								variant={viewMode === 'table' ? 'default' : 'secondary'}
+								onClick={() => setFavoriteRestaurantsViewFormat('table')}
+								variant={favoriteRestaurantsViewFormat === 'table' ? 'default' : 'secondary'}
 								title='テーブル表示'
 								className='rounded-l-none'
 							>
@@ -90,7 +91,7 @@ export default function FavoritesPage() {
 			) : (
 				<>
 					{/* お気に入りレストランのテーブル/カード表示（モバイルは常にカード） */}
-					{viewMode === 'cards' || isMobile ? (
+					{favoriteRestaurantsViewFormat === 'cards' || isMobile ? (
 						<DataCards
 							data={favoriteItems?.data?.map(item => item.restaurant as RestaurantListItem)!}
 							total={favoriteItems?.meta?.total}
