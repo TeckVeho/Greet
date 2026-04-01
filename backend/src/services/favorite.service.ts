@@ -31,6 +31,7 @@ export class FavoriteService {
               reviews: {
                 select: {
                   rating: true,
+                  author: { select: { name: true, id: true } },
                 },
               },
               createdBy: {
@@ -75,6 +76,7 @@ export class FavoriteService {
             address: restaurant.address ?? undefined,
             phone: restaurant.phone ?? undefined,
             url: restaurant.url ?? undefined,
+            reviews: restaurant.reviews,
             smokingAllowed: restaurant.smokingAllowed,
             coverImage: await resolveFileUrl(restaurant.coverImage),
             reviewCount,

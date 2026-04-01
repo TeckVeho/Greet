@@ -1,6 +1,6 @@
 'use client'
 
-import { Badge, Skeleton } from '@/components/ui'
+import { Avatar, AvatarFallback, Badge, Skeleton } from '@/components/ui'
 import type { RestaurantListItem } from '@/lib/api/restaurants'
 import { areaLabel, genreLabel, priceRangeLabel } from '@/lib/constants'
 import { useFavorites } from '@/lib/favorites-context'
@@ -52,7 +52,7 @@ export function DataCards({
 
 	return (
 		<div className='space-y-6'>
-			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+			<div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'>
 				{isLoading ? (
 					Array.from({ length: pagination?.pageSize || 0 }).map((_, index) => (
 						<div
@@ -74,11 +74,20 @@ export function DataCards({
 				) : data?.length > 0 ? (
 					data.map(restaurant => {
 						const isFav = isFavorite(restaurant.id)
+						const limit = 3
+						const totalReviews = restaurant.reviews.length
+						const remainingCount = totalReviews - limit
 						return (
-							<div key={restaurant.id} className='relative group'>
+							<div
+								key={restaurant.id}
+								className='relative group'
+								onClick={() => {
+									console.log(restaurant)
+								}}
+							>
 								<Link
 									href={`/restaurants/${restaurant.id}`}
-									className='block rounded-lg border border-border bg-card overflow-hidden transition-all hover:shadow-md hover:scale-[1.01]'
+									className='block rounded-lg border border-border bg-card overflow-hidden transition-all hover:shadow-md hover:scale-[1.01] flex-col h-full'
 								>
 									<div className='relative w-full h-48 bg-linear-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-700'>
 										{restaurant.coverImage ? (
@@ -136,7 +145,7 @@ export function DataCards({
 											<span>予算:</span> {priceRangeLabel(restaurant.priceRange)}
 										</div>
 
-										<div className='flex items-center gap-4 text-sm'>
+										<div className='flex items-center gap-4 text-sm mb-3'>
 											<div className='flex items-center gap-1.5'>
 												{restaurant.hasPrivateRoom ? (
 													<span className='text-green-600 flex items-center gap-1 italic'>
@@ -154,10 +163,28 @@ export function DataCards({
 											)}
 										</div>
 
-										<div className='mt-3 flex items-center justify-between border-t border-border/70 pt-3 text-xs'>
-											<div className='text-muted-foreground'>
-												レビュー {restaurant.reviewCount} 件
-											</div>
+										<div className='flex items-center'>
+											<span className='text-xs text-muted-foreground'>利用者：</span>
+											{restaurant.reviews.length === 0 ? (
+												<Badge variant='danger' className='ml-2'>
+													まだありません
+												</Badge>
+											) : (
+												<div className='flex -space-x-4 overflow-hidden p-1'>
+													{restaurant.reviews.map((review, index) => (
+														<Avatar className='shadow-sm hover:z-10 ' key={index}>
+															<AvatarFallback className='bg-muted text-[10px]'>
+																{review.author?.name?.charAt(0) ?? '退'}
+															</AvatarFallback>
+														</Avatar>
+													))}
+													{remainingCount > 0 && (
+														<div className='flex h-10 w-10 items-center justify-center rounded-full  bg-muted text-[12px] font-medium text-muted-foreground shadow-sm z-11'>
+															+{remainingCount}
+														</div>
+													)}
+												</div>
+											)}
 										</div>
 									</div>
 								</Link>
