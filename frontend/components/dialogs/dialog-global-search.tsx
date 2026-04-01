@@ -63,10 +63,14 @@ export function DialogGlobalSearch() {
 					<Kbd>⌘ K</Kbd>
 				</Button>
 			</DialogTrigger>
-			<DialogContent className='max-w-[95vw] md:max-w-2xl p-0' showClose={isMobile ? true : false}>
+			<DialogContent
+				className='max-w-[95vw] md:max-w-2xl p-0 '
+				showClose={isMobile ? true : false}
+				closeButtonClassName='size-6'
+			>
 				<DialogHeader className='px-6 pt-5 pb-4 border-b border-zinc-300'>
 					<DialogTitle className='sr-only'>レストラン検索</DialogTitle>
-					<InputGroup className={cn('h-13', isMobile && 'mt-6')}>
+					<InputGroup className={cn('h-13', isMobile && 'mt-7')}>
 						<InputGroupInput
 							placeholder='店名、エリア、ジャンル、住所で検索...'
 							onChange={e => setSearchQuery(e.target.value)}
@@ -91,7 +95,7 @@ export function DialogGlobalSearch() {
 					</InputGroup>
 				</DialogHeader>
 
-				<div className='overflow-y-auto max-h-[calc(80vh-8rem)] px-2 py-2'>
+				<div className='overflow-y-auto min-h-[50vh] max-h-[50vh] px-2 py-2'>
 					{isPending ? (
 						<div className='text-center py-12 '>
 							<p className='text-sm'>飲食店を読み込み中です...</p>
@@ -140,11 +144,11 @@ export function DialogGlobalSearch() {
 					)}
 				</div>
 				<DialogFooter>
-					{restaurants && restaurants?.data.length > 0 && (
-						<div className='px-6 py-3 border-t border-zinc-200 text-xs text-muted-foreground w-full'>
-							{restaurants?.data.length} 件の飲食店が見つかりました
-						</div>
-					)}
+					<div className='px-6 py-3 border-t border-zinc-200 text-xs text-muted-foreground w-full'>
+						{restaurants?.data.length === 0
+							? '0 件の飲食店が見つかりました'
+							: `${restaurants?.data.length} 件の飲食店が見つかりました`}
+					</div>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
