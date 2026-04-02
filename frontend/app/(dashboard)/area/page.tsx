@@ -169,9 +169,11 @@ export default function AreaPage() {
 								(typeof window !== 'undefined' && window.innerWidth < 768) ? (
 									<DataCards data={restaurants} />
 								) : (
-									<div className='rounded-lg border border-border bg-card'>
-										<DataTable columns={RestaurantColumns} data={restaurants} />
-									</div>
+									<DataTable
+										columns={RestaurantColumns}
+										data={restaurants}
+										total={restaurants?.length}
+									/>
 								)}
 							</div>
 						)
